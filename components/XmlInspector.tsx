@@ -178,114 +178,97 @@ export const XmlInspector: React.FC = () => {
     ogUrl="https://yourdomain.com/xml-inspector"
   />
       
-<TwoColumnLayout
-        left={{
-          header: <h2 className="text-xl font-semibold">Input Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <h2 className="text-xl font-semibold">Input XML</h2>
-              <div className="relative flex-grow min-h-0">
-                  <CodeEditor 
-                        value={inputXml}
-                        onChange={handleInputChange}
-                        placeholder={`Paste your XML code here...`} 
-                        language={''}            
-                  />
-                  <div className="absolute top-2 right-2 z-10">
-                      <Tooltip content="Upload XML file">
-                          <button
-                              onClick={() => fileInputRef.current?.click()}
-                              className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-600"
-                          >
-                              <UploadIcon className="h-4 w-4" />
-                          </button>
-                      </Tooltip>
-                  </div>
-              </div>
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Input XML</h2>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
+            <textarea
+              value={inputXml}
+              onChange={e => handleInputChange(e.target.value)}
+              placeholder="Paste your XML code here..."
+              className="w-full h-96 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
+            />
+            <div className="flex gap-2 mt-2 flex-wrap">
+              <input ref={fileInputRef} type="file" accept=".xml,.txt" className="hidden" onChange={handleFileChange} />
+              <button onClick={() => fileInputRef.current?.click()} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
+              <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
+              <button onClick={handleFormat} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Format</button>
+              <button onClick={handleMinify} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Minify</button>
+              <button onClick={() => resetState()} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
             </div>
-          )
-        }}
-        right={{
-          header: <h2 className="text-xl font-semibold">Output Section</h2>,
-      content: (
+          </div>
+        </div>
+
         <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
           <div className="flex justify-between items-center flex-wrap gap-2">
             <h2 className="text-xl font-semibold">Output</h2>
             <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
-                 <Tooltip content="View the formatted or minified XML code">
-                    <button
-                        onClick={() => handleOutputTabClick('code')}
-                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}
-                    >
-                        <XmlIcon className="h-5 w-5" /> Code
-                    </button>
-                </Tooltip>
-                <Tooltip content={!isValidated ? "Validate XML to enable Tree View" : "View the XML as an interactive tree"}>
-                    <div className="inline-block">
-                        <button
-                            onClick={() => handleOutputTabClick('tree')}
-                            disabled={!isValidated}
-                            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'tree' && isValidated ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'} ${!isValidated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            <TreeIcon className="h-5 w-5" /> Tree View
-                        </button>
-                    </div>
-</Tooltip>
-                <Tooltip content={!isValidated ? "Validate XML to enable conversion" : "Convert the valid XML to JSON"}>
-                    <div className="inline-block">
-                        <button
-                            onClick={() => handleOutputTabClick('json')}
-                            disabled={!isValidated}
-                            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'json' && isValidated ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'} ${!isValidated ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        >
-                            <CodeBracketIcon className="h-5 w-5" /> JSON
-                        </button>
-                    </div>
-                </Tooltip>
+              <Tooltip content="View the formatted or minified XML code">
+                <button
+                  onClick={() => handleOutputTabClick('code')}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}
+                >
+                  <XmlIcon className="h-5 w-5" /> Code
+                </button>
+              </Tooltip>
+              <Tooltip content={!isValidated ? "Validate XML to enable Tree View" : "View the XML as an interactive tree"}>
+                <div className="inline-block">
+                  <button
+                    onClick={() => handleOutputTabClick('tree')}
+                    disabled={!isValidated}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'tree' && isValidated ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'} ${!isValidated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <TreeIcon className="h-5 w-5" /> Tree View
+                  </button>
+                </div>
+              </Tooltip>
+              <Tooltip content={!isValidated ? "Validate XML to enable conversion" : "Convert the valid XML to JSON"}>
+                <div className="inline-block">
+                  <button
+                    onClick={() => handleOutputTabClick('json')}
+                    disabled={!isValidated}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'json' && isValidated ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'} ${!isValidated ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <CodeBracketIcon className="h-5 w-5" /> JSON
+                  </button>
+                </div>
+              </Tooltip>
             </div>
-        </div>
-        <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
             <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                {isValidating ? (
-                    <ValidationLoading />
-                ) : isCorrecting ? (
-                    <AutoCorrectionLoading />
-                ) : validationError ? (
-                    <ErrorAnalysisDisplay
-                        title="Validation Failed"
-                        analysisText={validationError.reason}
-                        showAutoCorrectButton={validationError.isFixable}
-                        onAutoCorrect={handleAutoCorrect}
-                        isCorrecting={isCorrecting}
-                    />
-                ) : (
-                  <>
-                    {activeOutputTab === 'code' && outputXml && <CodeViewer code={outputXml} language="xml" />}
-                    {activeOutputTab === 'tree' && isValidated && <XmlTreeView xmlString={inputXml} />}
-                    {activeOutputTab === 'json' && outputJson && <JsonSyntaxHighlighter jsonString={outputJson} />}
-                    
-                    {/* Placeholder Logic */}
-                    {(!outputXml && !validationError && !isValidated) && (
-                         <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
-                           <XmlIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
-                           <p>Format, minify, or validate your XML to see the output here.</p>
-                        </div>
-                    )}
-                  </>
-                )}
+              {isValidating ? (
+                <ValidationLoading />
+              ) : isCorrecting ? (
+                <AutoCorrectionLoading />
+              ) : validationError ? (
+                <ErrorAnalysisDisplay
+                  title="Validation Failed"
+                  analysisText={validationError.reason}
+                  showAutoCorrectButton={validationError.isFixable}
+                  onAutoCorrect={handleAutoCorrect}
+                  isCorrecting={isCorrecting}
+                />
+              ) : (
+                <>
+                  {activeOutputTab === 'code' && outputXml && <CodeViewer code={outputXml} language="xml" />}
+                  {activeOutputTab === 'tree' && isValidated && <XmlTreeView xmlString={inputXml} />}
+                  {activeOutputTab === 'json' && outputJson && <JsonSyntaxHighlighter jsonString={outputJson} />}
+                  
+                  {!outputXml && !validationError && !isValidated && (
+                    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                      <XmlIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                      <p>Format, minify, or validate your XML to see the output here.</p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
-          )
-        }}
-      />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".xml,.txt"
-        onChange={handleFileChange}
-        className="hidden"
-      />
+      </div>
     </>
   );
 };

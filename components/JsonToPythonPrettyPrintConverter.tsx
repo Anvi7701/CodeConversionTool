@@ -136,66 +136,56 @@ return (
       ogUrl="https://yourdomain.com/json-to-python-pretty-print"
     />
     
-    <TwoColumnLayout
-      left={{
-        header: <h2 className="text-xl font-semibold">Input JSON</h2>,
-        content: (
-          <div className="flex flex-col gap-4">
-            <div className="relative flex-grow min-h-0">
-              <div className="relative flex-grow min-h-0">
-                <CodeEditor
-                  value={inputJson}
-                  onChange={handleInputChange}
-                  placeholder={`Paste your JSON code here...`}
-                  language="json" />
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
-                  <Tooltip content="Upload JSON file">
-                    <button
-                      onClick={handleUploadClick}
-                      className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-600"
-                    >
-                      <UploadIcon className="h-4 w-4" />
-                    </button>
-                  </Tooltip>
-                </div>
-              </div>
-            </div>
+    <div className="w-full flex flex-col lg:flex-row gap-6">
+      <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+        <h2 className="text-xl font-semibold">Input JSON</h2>
+
+        <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
+          <textarea
+            value={inputJson}
+            onChange={e => handleInputChange(e.target.value)}
+            className="w-full h-96 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
+          />
+          <div className="flex gap-2 mt-2 flex-wrap">
+            <input ref={fileInputRef} type="file" accept=".json,.txt" className="hidden" onChange={handleFileChange} />
+            <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
+            <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
+            <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Generate</button>
+            <button onClick={handleClear} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
           </div>
-        )
-      }}
-      right={{
-        header: <h2 className="text-xl font-semibold">Python Pretty Print Script</h2>,
-        content: (
-          <div className="flex flex-col gap-4">
-            <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  {isValidating ? (
-                    <ValidationLoading />
-                  ) : error ? (
-                    <div className="absolute inset-0 p-6 overflow-auto bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200">
-                      <p>{error}</p>
-                    </div>
-                  ) : successMessage ? (
-                    <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
-                      <CheckIcon className="h-10 w-10 mb-4" />
-                      <p>{successMessage}</p>
-                    </div>
-                  ) : outputScript ? (
-                    <CodeViewer code={outputScript} language="python" />
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
-                      <PythonIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
-                      <p>The Python script will appear here after generation.</p>
-                    </div>
-                  )}
-                </div>
+        </div>
+      </div>
+
+      <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+        <div className="flex justify-between items-center flex-wrap gap-2">
+          <h2 className="text-xl font-semibold">Python Pretty Print Script</h2>
+        </div>
+
+        <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+          <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+            {isValidating ? (
+              <ValidationLoading />
+            ) : error ? (
+              <div className="absolute inset-0 p-6 overflow-auto bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200">
+                <p className="whitespace-pre-wrap">{error}</p>
               </div>
-            </div>
+            ) : successMessage ? (
+              <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
+                <CheckIcon className="h-10 w-10 mb-4" />
+                <p>{successMessage}</p>
+              </div>
+            ) : outputScript ? (
+              <CodeViewer code={outputScript} language="python" />
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                <PythonIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                <p>The Python script will appear here after generation.</p>
+              </div>
+            )}
           </div>
-        )
-      }}
-    />
+        </div>
+      </div>
+    </div>
   </>
 );
 }

@@ -155,15 +155,20 @@ export const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
 
   return (
     <div className="h-full flex flex-col">
-      <div className="px-4 border-b border-slate-200 dark:border-slate-700">
-        <nav className="-mb-px flex space-x-4" aria-label="Tabs">
-            <button onClick={() => onTabChange('details')} className={getTabClassName('details')}>
-              Node Details
-            </button>
-            <button onClick={() => onTabChange('summary')} className={getTabClassName('summary')}>
-              JSON Summary
-            </button>
-        </nav>
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Explanation</h2>
+        <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <button onClick={() => onTabChange('details')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+            activeTab === 'details' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-500 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'
+          }`}>
+            Node Details
+          </button>
+          <button onClick={() => onTabChange('summary')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${
+            activeTab === 'summary' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-500 hover:bg-slate-200/50 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'
+          }`}>
+            JSON Summary
+          </button>
+        </div>
       </div>
       <div className="flex-grow overflow-auto">
         {activeTab === 'details' ? renderDetailsTab() : renderSummaryTab()}

@@ -319,31 +319,20 @@ export const CodeToHtmlConverter: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-            <CodeEditor value={currentInput} language={activeTab} onChange={handleInputChange} />
-          </div>
-
-          <div className="flex gap-2 mt-2 flex-wrap">
-            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
-            <Tooltip content="Upload file">
-              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
-                <UploadIcon className="h-5 w-5" />
-              </button>
-            </Tooltip>
-            <Tooltip content="Copy input">
-              <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
-                {isCopied ? 'Copied' : 'Copy'}
-              </button>
-            </Tooltip>
-            <Tooltip content="Clear input">
-              <button onClick={handleClear} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">Clear</button>
-            </Tooltip>
-            <Tooltip content={validateTooltip}>
-              <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-teal-500 text-white rounded">Validate</button>
-            </Tooltip>
-            <Tooltip content={convertTooltip}>
-              <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-indigo-600 text-white rounded">Convert</button>
-            </Tooltip>
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
+            <textarea
+              value={currentInput}
+              onChange={e => handleInputChange(e.target.value)}
+              className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
+            />
+            <div className="flex gap-2 mt-2 flex-wrap">
+              <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
+              <button onClick={handleValidate} disabled={isActionDisabled} title={validateTooltip} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
+              <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} title={convertTooltip} className="px-3 py-1 bg-slate-100 rounded">Convert</button>
+              <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 rounded">{isCopied ? 'Copied' : 'Copy'}</button>
+              <button onClick={handleClear} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
+            </div>
           </div>
         </div>
 

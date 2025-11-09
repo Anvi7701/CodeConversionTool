@@ -161,100 +161,75 @@ export const DataToClassConverter: React.FC = () => {
         ogUrl="https://yourdomain.com/data-to-class"
       />
       
-      <TwoColumnLayout
-        left={{
-          header: <h2 className="text-xl font-semibold">Input Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <h2 className="text-xl font-semibold">Input Data</h2>
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex justify-between items-center">
-                  <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
-                    {(Object.keys(inputLanguageDetails) as InputLanguage[]).map(lang => (
-                      <Tooltip content={`Switch to ${inputLanguageDetails[lang].label} input`} key={lang}>
-                        <button onClick={() => setActiveInputTab(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeInputTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-                          {inputLanguageDetails[lang].icon} {inputLanguageDetails[lang].label}
-                        </button>
-                      </Tooltip>
-                    ))}
-                  </div>
-                  <Tooltip content="Upload a file">
-                    <button onClick={() => fileInputRef.current?.click()} className="p-2 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700">
-                      <UploadIcon className="h-5 w-5" />
-                    </button>
-                  </Tooltip>
-                </div>
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Input Data</h2>
+          
+          <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-fit">
+            {(Object.keys(inputLanguageDetails) as InputLanguage[]).map(lang => (
+              <button key={lang} onClick={() => setActiveInputTab(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeInputTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                {inputLanguageDetails[lang].icon} {inputLanguageDetails[lang].label}
+              </button>
+            ))}
+          </div>
 
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  <CodeEditor value={inputCode} onChange={handleInputChange} language={activeInputTab} placeholder={`Paste your ${activeInputTab.toUpperCase()} data here...`} />
-                </div>
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
+            <textarea
+              value={inputCode}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder={`Paste your ${activeInputTab.toUpperCase()} data here...`}
+              className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
+            />
+            <div className="flex items-center gap-2 mt-3 mb-3">
+              <label className="text-sm font-medium">Root Class Name:</label>
+              <input
+                type="text"
+                value={rootClassName}
+                onChange={(e) => setRootClassName(e.target.value)}
+                className="px-3 py-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
+                placeholder="Root"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <input ref={fileInputRef} type="file" accept={allowedExtensions[activeInputTab].join(',')} className="hidden" onChange={handleFileChange} />
+              <button onClick={() => fileInputRef.current?.click()} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
+              <button onClick={handleGenerate} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">{isLoading ? 'Generating...' : 'Generate'}</button>
+              <button onClick={() => resetState()} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
+            </div>
+          </div>
+        </div>
 
-                <div className="p-3 border-t border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center gap-2 mb-3">
-                    <label className="text-sm font-medium">Root Class Name:</label>
-                    <input
-                      type="text"
-                      value={rootClassName}
-                      onChange={(e) => setRootClassName(e.target.value)}
-                      className="px-3 py-1 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800"
-                      placeholder="Root"
-                    />
-                  </div>
-                  <button
-                    onClick={handleGenerate}
-                    disabled={isActionDisabled}
-                    className="w-full px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? 'Generating...' : 'Generate Classes'}
-                  </button>
-                </div>
-              </div>
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Generated Code</h2>
+          
+          <div className="overflow-x-auto">
+            <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max">
+              {(Object.keys(outputLanguageDetails) as OutputLanguage[]).map(lang => (
+                <button key={lang} onClick={() => setActiveOutputTab(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+                  {outputLanguageDetails[lang].icon} {outputLanguageDetails[lang].label}
+                </button>
+              ))}
             </div>
-          )
-        }}
-        right={{
-          header: <h2 className="text-xl font-semibold">Output Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <h2 className="text-xl font-semibold">Generated Code</h2>
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
-                  <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max">
-                    {(Object.keys(outputLanguageDetails) as OutputLanguage[]).map(lang => (
-                      <Tooltip content={`View generated ${outputLanguageDetails[lang].label}`} key={lang}>
-                        <button onClick={() => setActiveOutputTab(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-                          {outputLanguageDetails[lang].icon} {outputLanguageDetails[lang].label}
-                        </button>
-                      </Tooltip>
-                    ))}
-                  </div>
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+              {error ? (
+                <div className="h-full flex flex-col items-center justify-center text-red-700 dark:text-red-300 p-4 text-center">
+                  <p>{error}</p>
                 </div>
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  {error ? (
-                    <div className="h-full flex flex-col items-center justify-center text-red-700 dark:text-red-300 p-4 text-center">
-                      <p>{error}</p>
-                    </div>
-                  ) : currentOutput ? (
-                    <CodeViewer code={currentOutput} language={outputLanguageDetails[activeOutputTab].language} />
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
-                      <CubeStackIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
-                      <p>Generated code will appear here.</p>
-                    </div>
-                  )}
+              ) : currentOutput ? (
+                <CodeViewer code={currentOutput} language={outputLanguageDetails[activeOutputTab].language} />
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                  <CubeStackIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                  <p>Generated code will appear here.</p>
                 </div>
-              </div>
+              )}
             </div>
-          )
-        }}
-      />
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={allowedExtensions[activeInputTab].join(',')}
-        onChange={handleFileChange}
-        className="hidden"
-      />
+          </div>
+        </div>
+      </div>
     </>
   );
 };

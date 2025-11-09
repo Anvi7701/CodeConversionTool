@@ -3,7 +3,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
 // Lazy load components
-const ExplainerView = lazy(() => import('./components/ExplainerView.tsx').then(m => ({ default: m.ExplainerView })));
+const JsonExplainerPage = lazy(() => import('./components/JsonExplainerPage.tsx').then(m => ({ default: m.JsonExplainerPage })));
 const CodeToJsonConverter = lazy(() => import('./components/CodeToJsonConverter.tsx').then(m => ({ default: m.CodeToJsonConverter })));
 const CodeToXmlConverter = lazy(() => import('./components/CodeToXmlConverter.tsx').then(m => ({ default: m.CodeToXmlConverter })));
 const CodeToHtmlConverter = lazy(() => import('./components/CodeToHtmlConverter.tsx').then(m => ({ default: m.CodeToHtmlConverter })));
@@ -24,21 +24,21 @@ const App: React.FC = () => {
       {/* Navigation Bar */}
       <nav>
         <Link to="/">JSON Explainer</Link> | 
-        <Link to="/code-to-json">Code → JSON</Link> | 
-        <Link to="/code-to-xml">Code → XML</Link> | 
-        <Link to="/code-to-html">Code → HTML</Link> | 
-        <Link to="/code-to-python">Code → Python</Link> | 
-        <Link to="/code-to-js">Code → JS</Link> | 
-        <Link to="/json-to-python-pretty">JSON → Python Pretty</Link> | 
+        <Link to="/code-to-json">Convert To JSON</Link> | 
+        <Link to="/code-to-xml">Convert To XML</Link> | 
+        <Link to="/code-to-html">Convert To HTML</Link> | 
+        <Link to="/code-to-python">Convert To Python</Link> | 
+        <Link to="/code-to-js">Convert To JavaScript</Link> | 
+        <Link to="/json-to-python-pretty">JSON To Python Pretty</Link> | 
         <Link to="/xml-inspector">XML Inspector</Link> | 
-        <Link to="/data-to-class">Data → Class</Link> | 
+        <Link to="/data-to-class">Data To Class</Link> | 
         <Link to="/online-formatter">Online Formatter</Link>
       </nav>
 
       {/* Routes */}
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
-          <Route path="/" element={<ExplainerView />} />
+          <Route path="/" element={<JsonExplainerPage />} />
           <Route path="/code-to-json" element={<CodeToJsonConverter />} />
           <Route path="/code-to-xml" element={<CodeToXmlConverter />} />
           <Route path="/code-to-html" element={<CodeToHtmlConverter />} />

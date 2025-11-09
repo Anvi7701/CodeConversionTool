@@ -7,9 +7,11 @@ import { Explanation, Selection, GraphData } from '../types';
 import { TreeIcon, GraphIcon, CopyIcon, CheckIcon, UploadIcon } from './icons';
 import { GraphViewer } from './GraphViewer';
 import { Tooltip } from './Tooltip';
-import type { ViewMode, ExplanationTab } from '../App';
 import type { Theme } from './ThemeToggle';
 import { CodeEditor } from './CodeEditor';
+
+type ViewMode = 'tree' | 'graph';
+type ExplanationTab = 'details' | 'summary';
 
 
 interface ExplainerViewProps {
@@ -225,40 +227,26 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
                     )}
                 </div>
             ) : (
-                <div className="flex-grow flex flex-col p-6 gap-4 min-h-0">
-                    <div className="relative flex-grow min-h-0">
-                        <CodeEditor 
-                            value={inputText} 
-                            onChange={handleInputChange} 
+                <div className="flex-grow p-6 overflow-hidden flex flex-col">
+                    <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
+                        <textarea
+                            value={inputText}
+                            onChange={(e) => handleInputChange(e.target.value)}
                             placeholder="Paste or upload your JSON here..."
+                            className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
                         />
-                        <div className="absolute top-2 right-2 z-10">
-                            <Tooltip content="Upload JSON file">
-                                <button
-                                    onClick={handleUploadClick}
-                                    className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-white/50 dark:bg-slate-700/50 hover:bg-white dark:hover:bg-slate-600"
-                                >
-                                    <UploadIcon className="h-5 w-5" />
-                                </button>
-                            </Tooltip>
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                accept=".json,.txt"
+                                onChange={handleFileChange}
+                            />
+                            <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
+                            <button onClick={handleValidate} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
+                            <button onClick={() => { setInputText(''); setInputFileName(null); }} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
                         </div>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            className="hidden"
-                            accept=".json,.txt"
-                            onChange={handleFileChange}
-                        />
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Tooltip content="Validate and process the JSON input.">
-                        <button 
-                            onClick={handleValidate}
-                            className="w-full flex items-center justify-center px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-md shadow-sm transition-colors"
-                        >
-                            Validate
-                        </button>
-                        </Tooltip>
                     </div>
                 </div>
             )}
