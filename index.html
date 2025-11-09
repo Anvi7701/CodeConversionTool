@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO & Metadata -->
+    <title>AI JSON Tools | Inspector, Validator & Code Converter</title>
+    <meta name="description" content="An all-in-one suite of developer tools powered by AI. Inspect and visualize any JSON with an interactive tree and graph. Validate, format, and auto-correct JSON syntax. Seamlessly convert code between JSON, XML, HTML, Python, JavaScript, and more." />
+    <meta name="keywords" content="JSON tools, JSON inspector, JSON validator, JSON formatter, code converter, JSON to Python, JSON to JavaScript, XML to JSON, CSV to JSON, AI developer tools, Gemini API" />
+    <link rel="canonical" href="https://aistudio.google.com/app/your-unique-app-id" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://aistudio.google.com/app/your-unique-app-id" />
+    <meta property="og:title" content="AI JSON Tools | Inspector, Validator & Code Converter" />
+    <meta property="og:description" content="Inspect, validate, and convert JSON and other code formats with a powerful suite of AI-driven tools." />
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'brand-primary': '#0d9488', // teal-600
+              'brand-secondary': '#14b8a6', // teal-500
+              'light-bg': '#f0f9ff', // sky-50
+              'light-card': '#ffffff',
+              'dark-bg': '#0f172a',
+              'dark-card': '#1e293b',
+              'dark-text': '#e2e8f0',
+              'light-text': '#1e293b', // slate-800
+            },
+          },
+        },
+      }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/standalone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/babel.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/estree.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/html.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/typescript.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/yaml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/graphql.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.28.0",
+    "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm",
+    "highlight.js": "https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.9.0/es/highlight.min.js",
+    "acorn": "https://cdn.jsdelivr.net/npm/acorn@8.11.3/+esm"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="font-sans bg-light-bg dark:bg-dark-bg transition-colors duration-300">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
