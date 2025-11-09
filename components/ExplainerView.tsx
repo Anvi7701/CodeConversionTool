@@ -148,9 +148,25 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
     <div className="w-full flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-dark-card rounded-lg shadow-lg overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center gap-4 flex-wrap">
-              <h2 className="text-lg font-semibold truncate" title={jsonData ? fileName : 'Input JSON'}>
-                {jsonData ? fileName : 'Input JSON'}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold truncate" title={jsonData ? fileName : 'Input JSON'}>
+                  {jsonData ? fileName : 'Input JSON'}
+                </h2>
+                {!jsonData && (
+                  <Tooltip content="Upload a JSON file">
+                    <button onClick={handleUploadClick} className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700">
+                      <UploadIcon className="h-5 w-5" />
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept=".json,.txt"
+                onChange={handleFileChange}
+              />
               <div className="flex items-center gap-2">
                 {jsonData && activeView === 'graph' && (
                   <div className="flex items-center gap-2 border-r border-gray-200 dark:border-gray-700 pr-2">
@@ -236,14 +252,6 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
                             className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
                         />
                         <div className="flex gap-2 mt-2 flex-wrap">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                className="hidden"
-                                accept=".json,.txt"
-                                onChange={handleFileChange}
-                            />
-                            <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
                             <button onClick={handleValidate} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
                             <button onClick={() => { setInputText(''); setInputFileName(null); }} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
                         </div>

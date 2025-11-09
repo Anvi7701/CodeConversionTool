@@ -248,6 +248,11 @@ export const OnlineFormatter: React.FC = () => {
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Input</h2>
             <div className="flex items-center gap-2">
+              <Tooltip content="Upload a code file to input">
+                <button onClick={() => fileInputRef.current?.click()} disabled={isActionDisabled} className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700">
+                  <UploadIcon className="h-5 w-5" />
+                </button>
+              </Tooltip>
               <label htmlFor="language-select" className="text-sm font-medium">Format:</label>
               <select
                 id="language-select"
@@ -262,6 +267,8 @@ export const OnlineFormatter: React.FC = () => {
             </div>
           </div>
 
+          <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
+
           <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
             <textarea
               value={inputCode}
@@ -270,8 +277,6 @@ export const OnlineFormatter: React.FC = () => {
               className="w-full h-96 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
             />
             <div className="flex gap-2 mt-2 flex-wrap">
-              <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
-              <button onClick={() => fileInputRef.current?.click()} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
               <button onClick={handleValidate} disabled={isActionDisabled || !inputCode.trim()} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
               <button onClick={handleFormat} disabled={isActionDisabled || !inputCode.trim()} className="px-3 py-1 bg-slate-100 rounded">Format</button>
               <button onClick={() => resetState()} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
@@ -281,6 +286,7 @@ export const OnlineFormatter: React.FC = () => {
 
         <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
           <h2 className="text-xl font-semibold">Formatted Output</h2>
+
           <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
             <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
               {isLoading ? (

@@ -20,7 +20,7 @@ const model = "gemini-2.5-flash";
  */
 const handleApiCall = async <T>(action: () => Promise<T>): Promise<T> => {
     const timeoutPromise = new Promise<T>((_, reject) =>
-        setTimeout(() => reject(new Error("The AI request timed out after 30 seconds. Please try again.")), 30000)
+        setTimeout(() => reject(new Error("The AI request timed out after 60 seconds. Please try again.")), 60000)
     );
 
     try {
@@ -311,6 +311,80 @@ export const convertCodeToXml = (code: string, language: string): Promise<string
 
 export const convertCodeToHtml = (code: string, language: string): Promise<string> => {
     return convertCodeWithAi(code, language, 'HTML');
+};
+
+export const convertJsonToJava = async (jsonData: string): Promise<string> => {
+    return handleApiCall(async () => {
+        const result = await ai.models.generateContent({
+            model,
+            contents: `You are an expert Java developer. Convert the following JSON data to Java classes (POJOs) with the following requirements:
+
+1. Generate proper Java class structure with private fields
+2. Include getters and setters for all fields
+3. Add proper constructors (default and parameterized)
+4. Use appropriate Java data types (String, int, double, boolean, List, etc.)
+5. Handle nested objects by creating separate classes
+6. Add proper imports if needed
+7. Use proper naming conventions (PascalCase for classes, camelCase for fields/methods)
+8. Add toString(), equals(), and hashCode() methods
+9. Consider using annotations like @Override where appropriate
+
+**JSON Data:**
+\`\`\`json
+${jsonData}
+\`\`\`
+
+Return ONLY the Java code, properly formatted and ready to use. Do not include any explanations or markdown formatting.`
+        });
+        
+        let javaCode = result.text.trim();
+        
+        // Clean up any markdown formatting if present
+        if (javaCode.startsWith('```java')) {
+            javaCode = javaCode.replace(/^```java\n/, '').replace(/\n```$/, '');
+        } else if (javaCode.startsWith('```')) {
+            javaCode = javaCode.replace(/^```\n/, '').replace(/\n```$/, '');
+        }
+        
+        return javaCode.trim();
+    });
+};
+
+export const convertJsonToXml = async (jsonData: string): Promise<string> => {
+    return handleApiCall(async () => {
+        const result = await ai.models.generateContent({
+            model,
+            contents: `You are an expert XML developer. Convert the following JSON data to well-formed XML with the following requirements:
+
+1. Generate properly formatted XML with appropriate indentation
+2. Use meaningful element names derived from JSON keys
+3. Handle arrays by creating repeating elements
+4. Handle nested objects by creating nested XML elements
+5. Include XML declaration (<?xml version="1.0" encoding="UTF-8"?>)
+6. Escape special XML characters properly (&, <, >, ", ')
+7. Use attributes for simple key-value pairs when appropriate
+8. Ensure valid XML element names (no spaces, must start with letter or underscore)
+9. Pretty print the output with 2-space indentation
+
+**JSON Data:**
+\`\`\`json
+${jsonData}
+\`\`\`
+
+Return ONLY the XML code, properly formatted and ready to use. Do not include any explanations or markdown formatting.`
+        });
+        
+        let xmlCode = result.text.trim();
+        
+        // Clean up any markdown formatting if present
+        if (xmlCode.startsWith('```xml')) {
+            xmlCode = xmlCode.replace(/^```xml\n/, '').replace(/\n```$/, '');
+        } else if (xmlCode.startsWith('```')) {
+            xmlCode = xmlCode.replace(/^```\n/, '').replace(/\n```$/, '');
+        }
+        
+        return xmlCode.trim();
+    });
 };
 
 export const validateCodeSyntax = async (code: string, language: string): Promise<{ isValid: boolean; reason: string; isFixableSyntaxError: boolean; suggestedLanguage?: string }> => {

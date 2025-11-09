@@ -329,7 +329,16 @@ export const CodeToPythonConverter: React.FC = () => {
 
       <div className="w-full flex flex-col lg:flex-row gap-6">
         <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-          <h2 className="text-xl font-semibold">Input Data / Code</h2>
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Input Data / Code</h2>
+            <Tooltip content="Upload a file to input">
+              <button onClick={handleUploadClick} className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700">
+                <UploadIcon className="h-5 w-5" />
+              </button>
+            </Tooltip>
+          </div>
+
+          <input ref={fileInputRef} type="file" accept={allowedExtensions[activeTab].join(',')} className="hidden" onChange={handleFileChange} />
 
           <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
             <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
@@ -370,8 +379,6 @@ export const CodeToPythonConverter: React.FC = () => {
               className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
             />
             <div className="flex gap-2 mt-2 flex-wrap">
-              <input ref={fileInputRef} type="file" accept={allowedExtensions[activeTab].join(',')} className="hidden" onChange={handleFileChange} />
-              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
               <button onClick={handleValidate} disabled={isActionDisabled} title={validateTooltip} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
               <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} title={convertTooltip} className="px-3 py-1 bg-slate-100 rounded">Convert</button>
               <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 rounded">{isCopied ? 'Copied' : 'Copy'}</button>

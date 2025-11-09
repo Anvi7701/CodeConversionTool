@@ -138,7 +138,16 @@ return (
     
     <div className="w-full flex flex-col lg:flex-row gap-6">
       <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-        <h2 className="text-xl font-semibold">Input JSON</h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Input JSON</h2>
+          <Tooltip content="Upload a JSON file to input">
+            <button onClick={handleUploadClick} className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700">
+              <UploadIcon className="h-5 w-5" />
+            </button>
+          </Tooltip>
+        </div>
+
+        <input ref={fileInputRef} type="file" accept=".json,.txt" className="hidden" onChange={handleFileChange} />
 
         <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 p-4">
           <textarea
@@ -147,8 +156,6 @@ return (
             className="w-full h-96 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
           />
           <div className="flex gap-2 mt-2 flex-wrap">
-            <input ref={fileInputRef} type="file" accept=".json,.txt" className="hidden" onChange={handleFileChange} />
-            <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 rounded">Upload</button>
             <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
             <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-slate-100 rounded">Generate</button>
             <button onClick={handleClear} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
