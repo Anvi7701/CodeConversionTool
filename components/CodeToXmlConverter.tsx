@@ -288,106 +288,105 @@ export const CodeToXmlConverter: React.FC = () => {
         ogUrl="https://yourdomain.com/code-to-xml"
       />
 
-      <TwoColumnLayout
-        left={{
-          header: <h2 className="text-xl font-semibold">Input Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <h2 className="text-xl font-semibold">Input Data / Code</h2>
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
-                  <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
-                    {tabOrder.map((lang, index) => {
-                      const { label, icon } = languageDetails[lang];
-                      return (
-                        <div key={lang} draggable onDragStart={() => handleDragStart(index)} onDragEnter={() => handleDragEnter(index)} onDragEnd={handleDrop} className={`relative cursor-grab ${dragItem.current === index ? 'opacity-50' : ''} ${getDropIndicatorClass(index)}`}>
-                          <Tooltip content={`Switch to ${label} input`}>
-                            <button onClick={() => handleTabClick(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full ${activeTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'}`}>
-                              {icon} {label}
-                            </button>
-                          </Tooltip>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Input Data / Code</h2>
 
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  <CodeEditor value={currentInput} onChange={handleInputChange} language={activeTab} />
-                </div>
-
-                <div className="p-3 flex items-center gap-2">
-                  <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
-                  <button onClick={handleUploadClick} title="Upload"><UploadIcon className="h-5 w-5" /></button>
-                  <button onClick={handleValidate} disabled={isActionDisabled} title={validateTooltip}><SpinnerIcon className="h-4 w-4" /> Validate</button>
-                  <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} title={convertTooltip}><XmlIcon className="h-4 w-4" /> Convert</button>
-                  <button onClick={handleClear} title="Clear"><CodeBracketIcon className="h-4 w-4" /> Clear</button>
-                </div>
-              </div>
-            </div>
-          )
-        }}
-        right={{
-          header: <h2 className="text-xl font-semibold">Output Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <h2 className="text-xl font-semibold">XML Output</h2>
-                {isConverted && (
-                  <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
-                    <Tooltip content="View the raw XML code">
-                      <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                        <XmlIcon className="h-5 w-5" /> Code
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="View the XML as an interactive tree">
-                      <button onClick={() => setActiveOutputTab('tree')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'tree' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                        <TreeIcon className="h-5 w-5" /> Tree View
+          <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
+            <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
+              {tabOrder.map((lang, index) => {
+                const { label, icon } = languageDetails[lang];
+                return (
+                  <div key={lang} draggable onDragStart={() => handleDragStart(index)} onDragEnter={() => handleDragEnter(index)} onDragEnd={handleDrop} className={`relative cursor-grab ${dragItem.current === index ? 'opacity-50' : ''} ${getDropIndicatorClass(index)}`}>
+                    <Tooltip content={`Switch to ${label} input`}>
+                      <button onClick={() => handleTabClick(lang)} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full ${activeTab === lang ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'}`}>
+                        {icon} {label}
                       </button>
                     </Tooltip>
                   </div>
-                )}
-              </div>
-
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  {isValidating ? (
-                    <ValidationLoading />
-                  ) : isCorrecting ? (
-                    <AutoCorrectionLoading />
-                  ) : outputError ? (
-                    <ErrorAnalysisDisplay title="Conversion Failed" analysisText={outputError} />
-                  ) : validationError ? (
-                    <ErrorAnalysisDisplay
-                      title="Validation Failed"
-                      analysisText={validationError.reason + (validationError.suggestedLanguage && validationError.suggestedLanguage.toLowerCase() !== activeTab.toLowerCase() ? ` It looks like you pasted ${validationError.suggestedLanguage} code.` : '')}
-                      showAutoCorrectButton={!!validationError.isFixableSyntaxError}
-                      onAutoCorrect={handleAutoCorrect}
-                      isCorrecting={isCorrecting}
-                    />
-                  ) : successMessage ? (
-                    <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
-                      <CheckIcon className="h-10 w-10 mb-4" />
-                      <p>{successMessage}</p>
-                    </div>
-                  ) : outputXml && isConverted ? (
-                    <>
-                      {activeOutputTab === 'code' && <CodeViewer code={outputXml} language="xml" />}
-                      {activeOutputTab === 'tree' && <XmlTreeView xmlString={outputXml} />}
-                    </>
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
-                      <XmlIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
-                      <p>XML output will appear here after conversion.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                );
+              })}
             </div>
-          )
-        }}
-      />
+          </div>
 
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
+            <CodeEditor value={currentInput} onChange={handleInputChange} language={activeTab} />
+          </div>
+
+          <div className="flex gap-2 mt-2 flex-wrap">
+            <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+            <Tooltip content="Upload file">
+              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                <UploadIcon className="h-5 w-5" />
+              </button>
+            </Tooltip>
+            <Tooltip content={validateTooltip}>
+              <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-teal-500 text-white rounded">Validate</button>
+            </Tooltip>
+            <Tooltip content={convertTooltip}>
+              <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-indigo-600 text-white rounded">Convert</button>
+            </Tooltip>
+            <Tooltip content="Clear input">
+              <button onClick={handleClear} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">Clear</button>
+            </Tooltip>
+          </div>
+        </div>
+
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h2 className="text-xl font-semibold">XML Output</h2>
+            {isConverted && (
+              <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
+                <Tooltip content="View the raw XML code">
+                  <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <XmlIcon className="h-5 w-5" /> Code
+                  </button>
+                </Tooltip>
+                <Tooltip content="View the XML as an interactive tree">
+                  <button onClick={() => setActiveOutputTab('tree')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'tree' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <TreeIcon className="h-5 w-5" /> Tree View
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+              {isValidating ? (
+                <ValidationLoading />
+              ) : isCorrecting ? (
+                <AutoCorrectionLoading />
+              ) : outputError ? (
+                <ErrorAnalysisDisplay title="Conversion Failed" analysisText={outputError} />
+              ) : validationError ? (
+                <ErrorAnalysisDisplay
+                  title="Validation Failed"
+                  analysisText={validationError.reason + (validationError.suggestedLanguage && validationError.suggestedLanguage.toLowerCase() !== activeTab.toLowerCase() ? ` It looks like you pasted ${validationError.suggestedLanguage} code.` : '')}
+                  showAutoCorrectButton={!!validationError.isFixableSyntaxError}
+                  onAutoCorrect={handleAutoCorrect}
+                  isCorrecting={isCorrecting}
+                />
+              ) : successMessage ? (
+                <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
+                  <CheckIcon className="h-10 w-10 mb-4" />
+                  <p>{successMessage}</p>
+                </div>
+              ) : outputXml && isConverted ? (
+                <>
+                  {activeOutputTab === 'code' && <CodeViewer code={outputXml} language="xml" />}
+                  {activeOutputTab === 'tree' && <XmlTreeView xmlString={outputXml} />}
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                  <XmlIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                  <p>XML output will appear here after conversion.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

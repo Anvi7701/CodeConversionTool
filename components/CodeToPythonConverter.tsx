@@ -327,108 +327,125 @@ export const CodeToPythonConverter: React.FC = () => {
         ogUrl="https://yourdomain.com/code-to-python"
       />
 
-      <TwoColumnLayout
-        left={{
-          header: <h2 className="text-xl font-semibold">Input Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <h2 className="text-xl font-semibold">Input Data / Code</h2>
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
-                  <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
-                    {tabOrder.map((lang, index) => {
-                      const { label, icon } = languageDetails[lang];
-                      return (
-                        <div
-                          key={lang}
-                          draggable
-                          onDragStart={() => handleDragStart(index)}
-                          onDragEnter={() => handleDragEnter(index)}
-                          onDragEnd={handleDrop}
-                          className={`relative cursor-grab ${dragItem.current === index ? 'opacity-50' : ''} ${getDropIndicatorClass(index)}`}
-                        >
-                          <Tooltip content={`Switch to ${label} input`}>
-                            <button
-                              onClick={() => handleTabClick(lang)}
-                              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full ${
-                                activeTab === lang
-                                  ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50'
-                                  : 'font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'
-                              }`}
-                            >
-                              {icon}
-                              {label}
-                            </button>
-                          </Tooltip>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-                {/* ...rest of your input section... */}
-              </div>
-            </div>
-          ),
-        }}
-        right={{
-          header: <h2 className="text-xl font-semibold">Output Section</h2>,
-          content: (
-            <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-              <div className="flex justify-between items-center flex-wrap gap-2">
-                <h2 className="text-xl font-semibold">Python Output</h2>
-                {isConverted && (
-                  <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
-                    <Tooltip content="View the converted Python code">
-                      <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                        <PythonIcon className="h-5 w-5" /> Code
-                      </button>
-                    </Tooltip>
-                    <Tooltip content="View AI analysis and suggestions">
-                      <button onClick={() => setActiveOutputTab('analysis')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'analysis' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                        <LightBulbIcon className="h-5 w-5" /> Analysis
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Input Data / Code</h2>
+
+          <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
+            <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
+              {tabOrder.map((lang, index) => {
+                const { label, icon } = languageDetails[lang];
+                return (
+                  <div
+                    key={lang}
+                    draggable
+                    onDragStart={() => handleDragStart(index)}
+                    onDragEnter={() => handleDragEnter(index)}
+                    onDragEnd={handleDrop}
+                    className={`relative cursor-grab ${dragItem.current === index ? 'opacity-50' : ''} ${getDropIndicatorClass(index)}`}
+                  >
+                    <Tooltip content={`Switch to ${label} input`}>
+                      <button
+                        onClick={() => handleTabClick(lang)}
+                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors w-full ${
+                          activeTab === lang
+                            ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50'
+                            : 'font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-white'
+                        }`}
+                      >
+                        {icon}
+                        {label}
                       </button>
                     </Tooltip>
                   </div>
-                )}
-              </div>
-              <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
-                <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-                  {isValidating ? (
-                    <ValidationLoading />
-                  ) : isCorrecting ? (
-                    <AutoCorrectionLoading />
-                  ) : outputError ? (
-                    <ErrorAnalysisDisplay title="Conversion Failed" analysisText={outputError} />
-                  ) : validationError ? (
-                    <ErrorAnalysisDisplay
-                      title="Validation Failed"
-                      analysisText={validationError.reason + (validationError.suggestedLanguage && validationError.suggestedLanguage.toLowerCase() !== activeTab.toLowerCase() ? ` It looks like you pasted ${validationError.suggestedLanguage} code.` : '')}
-                      showAutoCorrectButton={!!validationError.isFixableSyntaxError}
-                      onAutoCorrect={handleAutoCorrect}
-                      isCorrecting={isCorrecting}
-                    />
-                  ) : successMessage ? (
-                    <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
-                      <CheckIcon className="h-10 w-10 mb-4" />
-                      <p>{successMessage}</p>
-                    </div>
-                  ) : outputPython && isConverted ? (
-                    <>
-                      {activeOutputTab === 'code' && <CodeViewer code={outputPython} language="python" />}
-                      {activeOutputTab === 'analysis' && <AnalysisViewer analysis={aiAnalysis} />}
-                    </>
-                  ) : (
-                    <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
-                      <PythonIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
-                      <p>Python output will appear here after conversion.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+                );
+              })}
             </div>
-          ),
-        }}
-      />
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
+            <CodeEditor value={currentInput} language={activeTab} onChange={handleInputChange} />
+          </div>
+
+          <div className="flex gap-2 mt-2 flex-wrap">
+            <input ref={fileInputRef} type="file" accept={allowedExtensions[activeTab].join(',')} className="hidden" onChange={handleFileChange} />
+            <Tooltip content="Upload a file">
+              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                <UploadIcon className="h-5 w-5" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Copy input">
+              <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                {isCopied ? 'Copied' : 'Copy'}
+              </button>
+            </Tooltip>
+            <Tooltip content="Clear input">
+              <button onClick={handleClear} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">Clear</button>
+            </Tooltip>
+            <Tooltip content={validateTooltip}>
+              <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-teal-500 text-white rounded">Validate</button>
+            </Tooltip>
+            <Tooltip content={convertTooltip}>
+              <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-indigo-600 text-white rounded">Convert</button>
+            </Tooltip>
+          </div>
+        </div>
+
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h2 className="text-xl font-semibold">Python Output</h2>
+            {isConverted && (
+              <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
+                <Tooltip content="View the converted Python code">
+                  <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <PythonIcon className="h-5 w-5" /> Code
+                  </button>
+                </Tooltip>
+                <Tooltip content="View AI analysis and suggestions">
+                  <button onClick={() => setActiveOutputTab('analysis')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'analysis' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <LightBulbIcon className="h-5 w-5" /> Analysis
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+              {isValidating ? (
+                <ValidationLoading />
+              ) : isCorrecting ? (
+                <AutoCorrectionLoading />
+              ) : outputError ? (
+                <ErrorAnalysisDisplay title="Conversion Failed" analysisText={outputError} />
+              ) : validationError ? (
+                <ErrorAnalysisDisplay
+                  title="Validation Failed"
+                  analysisText={validationError.reason + (validationError.suggestedLanguage && validationError.suggestedLanguage.toLowerCase() !== activeTab.toLowerCase() ? ` It looks like you pasted ${validationError.suggestedLanguage} code.` : '')}
+                  showAutoCorrectButton={!!validationError.isFixableSyntaxError}
+                  onAutoCorrect={handleAutoCorrect}
+                  isCorrecting={isCorrecting}
+                />
+              ) : successMessage ? (
+                <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
+                  <CheckIcon className="h-10 w-10 mb-4" />
+                  <p>{successMessage}</p>
+                </div>
+              ) : outputPython && isConverted ? (
+                <>
+                  {activeOutputTab === 'code' && <CodeViewer code={outputPython} language="python" />}
+                  {activeOutputTab === 'analysis' && <AnalysisViewer analysis={aiAnalysis} />}
+                </>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                  <PythonIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                  <p>Python output will appear here after conversion.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

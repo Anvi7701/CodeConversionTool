@@ -143,8 +143,8 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
   const viewSwitcherTooltip = !jsonData ? "Load JSON to enable views" : undefined;
 
   return (
-    <>
-        <div className="lg:w-1/2 flex flex-col bg-white dark:bg-dark-card rounded-lg shadow-lg overflow-hidden">
+    <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-dark-card rounded-lg shadow-lg overflow-hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center gap-4 flex-wrap">
               <h2 className="text-lg font-semibold truncate" title={jsonData ? fileName : 'Input JSON'}>
                 {jsonData ? fileName : 'Input JSON'}
@@ -263,7 +263,7 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
                 </div>
             )}
         </div>
-        <div className="lg:w-1/2 flex flex-col bg-white dark:bg-dark-card rounded-lg shadow-lg overflow-hidden">
+        <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-dark-card rounded-lg shadow-lg overflow-hidden">
           <ExplanationPanel 
             selectedNode={selectedNode}
             explanations={explanations}
@@ -276,6 +276,6 @@ export const ExplainerView: React.FC<ExplainerViewProps> = ({
             onGenerateSummary={onGenerateSummary}
           />
         </div>
-      </>
+      </div>
   );
 };

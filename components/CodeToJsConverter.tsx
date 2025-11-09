@@ -305,20 +305,18 @@ export const CodeToJsConverter: React.FC = () => {
   return (
     <>
       <SEO
-    title="Code to JavaScript Converter | AI JSON Tools"
-    description="Convert JSON, XML, Python, Java, and HTML code to JavaScript instantly using AI-powered tools. Validate, correct, and analyze JavaScript output."
-    keywords="code to javascript converter, AI JS Tools, convert code, JSON to JS, XML to JS, Python to JS"
-    canonical="https://yourdomain.com/code-to-js"
-    ogImage="https://yourdomain.com/images/code-to-js.jpg"
-    ogUrl="https://yourdomain.com/code-to-js"
-  />
+        title="Code to JavaScript Converter | AI JSON Tools"
+        description="Convert JSON, XML, Python, Java, and HTML code to JavaScript instantly using AI-powered tools. Validate, correct, and analyze JavaScript output."
+        keywords="code to javascript converter, AI JS Tools, convert code, JSON to JS, XML to JS, Python to JS"
+        canonical="https://yourdomain.com/code-to-js"
+        ogImage="https://yourdomain.com/images/code-to-js.jpg"
+        ogUrl="https://yourdomain.com/code-to-js"
+      />
       
-<TwoColumnLayout
-  left={{
-    header: <h2 className="text-xl font-semibold">Input Section</h2>,
-    content: (
-      <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-        <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
+      <div className="w-full flex flex-col lg:flex-row gap-6">
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <h2 className="text-xl font-semibold">Input Data / Code</h2>
+
           <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 overflow-x-auto">
             <div className="flex flex-nowrap items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg w-max" onDrop={handleDrop} onDragOver={e => e.preventDefault()}>
               {tabOrder.map((lang, index) => {
@@ -336,65 +334,56 @@ export const CodeToJsConverter: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 flex gap-2 items-center">
-            <div className="flex items-center gap-2">
-              <Tooltip content="Upload a file">
-                <button onClick={handleUploadClick} className="px-3 py-2 rounded-md bg-slate-100 dark:bg-slate-800">
-                  <UploadIcon className="h-5 w-5" />
-                </button>
-              </Tooltip>
-              <input ref={fileInputRef} type="file" accept={allowedExtensions[activeTab].join(',')} className="hidden" onChange={handleFileChange} />
-              <Tooltip content="Copy input">
-                <button onClick={handleCopyInput} className="px-3 py-2 rounded-md bg-slate-100 dark:bg-slate-800">
-                  <CopyIcon className="h-5 w-5" />
-                </button>
-              </Tooltip>
-              <Tooltip content="Clear input">
-                <button onClick={handleClear} className="px-3 py-2 rounded-md bg-slate-100 dark:bg-slate-800">Clear</button>
-              </Tooltip>
-            </div>
-
-            <div className="ml-auto flex gap-2">
-              <Tooltip content={validateTooltip}>
-                <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-2 rounded-md bg-teal-500 text-white">Validate</button>
-              </Tooltip>
-              <Tooltip content={convertTooltip}>
-                <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-2 rounded-md bg-indigo-600 text-white">Convert</button>
-              </Tooltip>
-            </div>
-          </div>
-
-            <div className="flex-grow relative overflow-hidden">
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
             <CodeEditor value={currentInput} language={activeTab} onChange={handleInputChange} />
-            </div>
-        </div>
-      </div>
-    ),
-    scrollable: true,
-    minHeight: "500px"
-  }}
-  right={{
-    header: <h2 className="text-xl font-semibold">Output Section</h2>,
-    content: (
-      <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-        <div className="flex justify-between items-center flex-wrap gap-2">
-          <h2 className="text-xl font-semibold">JavaScript Output</h2>
-        {isConverted && (
-          <>
-          <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
-            <Tooltip content="View the converted JavaScript code">
-              <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                <JavascriptIcon className="h-5 w-5" /> Code
+          </div>
+
+          <div className="flex gap-2 mt-2 flex-wrap">
+            <input ref={fileInputRef} type="file" accept={allowedExtensions[activeTab].join(',')} className="hidden" onChange={handleFileChange} />
+            <Tooltip content="Upload a file">
+              <button onClick={handleUploadClick} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                <UploadIcon className="h-5 w-5" />
               </button>
             </Tooltip>
-            <Tooltip content="View AI analysis and suggestions">
-              <button onClick={() => setActiveOutputTab('analysis')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'analysis' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
-                <LightBulbIcon className="h-5 w-5" /> Analysis
+            <Tooltip content="Copy input">
+              <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">
+                {isCopied ? 'Copied' : 'Copy'}
               </button>
+            </Tooltip>
+            <Tooltip content="Clear input">
+              <button onClick={handleClear} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded">Clear</button>
+            </Tooltip>
+            <Tooltip content={validateTooltip}>
+              <button onClick={handleValidate} disabled={isActionDisabled} className="px-3 py-1 bg-teal-500 text-white rounded">Validate</button>
+            </Tooltip>
+            <Tooltip content={convertTooltip}>
+              <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} className="px-3 py-1 bg-indigo-600 text-white rounded">Convert</button>
             </Tooltip>
           </div>
-          <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
-            {isValidating ? (
+        </div>
+
+        <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <h2 className="text-xl font-semibold">JavaScript Output</h2>
+            {isConverted && (
+              <div className="flex items-center gap-1 p-1 bg-slate-200 dark:bg-slate-900 rounded-lg">
+                <Tooltip content="View the converted JavaScript code">
+                  <button onClick={() => setActiveOutputTab('code')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'code' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <JavascriptIcon className="h-5 w-5" /> Code
+                  </button>
+                </Tooltip>
+                <Tooltip content="View AI analysis and suggestions">
+                  <button onClick={() => setActiveOutputTab('analysis')} className={`flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors ${activeOutputTab === 'analysis' ? 'font-semibold bg-teal-100 text-brand-primary dark:bg-teal-900/50' : 'font-medium text-slate-600 hover:bg-slate-100 dark:hover:text-white'}`}>
+                    <LightBulbIcon className="h-5 w-5" /> Analysis
+                  </button>
+                </Tooltip>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
+              {isValidating ? (
                 <ValidationLoading />
               ) : isCorrecting ? (
                 <AutoCorrectionLoading />
@@ -425,16 +414,9 @@ export const CodeToJsConverter: React.FC = () => {
                 </div>
               )}
             </div>
-          </>
-        )}
+          </div>
         </div>
       </div>
-    ),
-    scrollable: true,
-    minHeight: "500px"
-  }}
-/>
-
     </>
   );
 };
