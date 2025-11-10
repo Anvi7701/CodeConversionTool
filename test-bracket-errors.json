@@ -1,0 +1,28 @@
+{
+  "company": "Tech Solutions Inc",
+  "name": "Tech Solutions Inc",
+  "founded": 2010,
+  "isActive": true,
+  "departments": [
+    {
+      "id": 101,
+      "name": "Engineering",
+      "manager": {
+        "id": 1,
+        "name": "Alice"
+      },
+      "employees": [
+        { "id": 201, "name": "Bob" },
+        { "id": 202, "name": "Charlie"
+      ]
+    },
+    {
+      "id": 102,
+      "name": "Sales"
+      "budget": 50000
+    ]
+  ],
+  "settings": {
+    "theme": "dark",
+    "notifications": true
+  }
