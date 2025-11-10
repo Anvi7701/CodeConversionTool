@@ -98,16 +98,117 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
 
   // Check if error is complex (not fixable by simple auto-fix)
   const isComplexError = (error: ErrorPosition): boolean => {
+    const message = error.message || '';
+    
+    // First check if it's a bracket/structural error (always complex)
+    const complexPatterns = [
+      'Mismatched brackets',
+      'Unclosed',
+      'Unexpected closing bracket',
+      'expected \'}\' but found',
+      'expected \']\' but found',
+      'Missing opening bracket',
+      'Missing closing bracket'
+    ];
+    
+    // If it matches complex patterns, it's definitely complex
+    if (complexPatterns.some(pattern => message.includes(pattern))) {
+      return true;
+    }
+    
+    // Check if error message mentions "Expected" with bracket symbols - this indicates structural issues
+    if (message.includes('Expected') && (message.includes('}') || message.includes(']'))) {
+      return true;
+    }
+    
+    // Check if it's a simple pattern (specific cases only)
     const simplePatterns = [
-      'Missing comma',
+      'Missing comma after property value',
       'Trailing comma',
       'single quote',
-      'Unquoted key',
-      'Expected \',\''
+      'Unquoted key'
     ];
-    return !simplePatterns.some(pattern => 
-      error.message?.includes(pattern)
-    );
+    
+    // If it matches simple patterns, it's simple
+    // Otherwise it's complex
+    return !simplePatterns.some(pattern => message.includes(pattern));
+  };
+
+  // Detect if input content is likely not JSON (e.g., C++ code, natural language, etc.)
+  const detectNonJsonContent = (text: string): { isNonJson: boolean; detectedType: string } => {
+    const trimmed = text.trim();
+    
+    // Empty input is fine
+    if (!trimmed) {
+      return { isNonJson: false, detectedType: '' };
+    }
+    
+    // Check for common programming language patterns
+    const cppPatterns = [
+      /^#include\s+</,           // #include <iostream>
+      /^using\s+namespace/,       // using namespace std;
+      /int\s+main\s*\(/,          // int main()
+      /std::/,                    // std::cout
+      /cout\s*<<|cin\s*>>/,       // cout << or cin >>
+      /class\s+\w+\s*{/,          // class Name {
+      /public:|private:|protected:/, // access modifiers
+    ];
+    
+    const pythonPatterns = [
+      /^def\s+\w+\s*\(/,          // def function():
+      /^class\s+\w+:/, // class Name:
+      /^import\s+\w+/,            // import module
+      /^from\s+\w+\s+import/,     // from module import
+      /^print\s*\(/,              // print()
+      /if\s+__name__\s*==\s*['"]__main__['"]/,  // if __name__ == "__main__"
+    ];
+    
+    const javaPatterns = [
+      /^public\s+class/,          // public class
+      /^package\s+\w+/,           // package com.example
+      /System\.out\.print/,       // System.out.println
+      /^import\s+java\./,         // import java.util
+    ];
+    
+    const htmlXmlPatterns = [
+      /^<!DOCTYPE/i,              // <!DOCTYPE html>
+      /^<html/i,                  // <html>
+      /^<\?xml/,                  // <?xml version="1.0"?>
+      /^<[a-zA-Z]+\s*[^>]*>/,     // <tag> (but JSON can start with "{", not "<")
+    ];
+    
+    const naturalLanguagePatterns = [
+      /^(hello|hi|please|how|what|why|when|where|who|can|could|would|should)\s+/i,
+      /\.\s+[A-Z][a-z]+\s+/,      // Sentences with periods
+      /^[A-Z][a-z]+\s+[a-z]+\s+[a-z]+/, // Natural sentences
+    ];
+    
+    // Check if it's clearly not JSON structure
+    if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) {
+      // Check for code patterns
+      if (cppPatterns.some(pattern => pattern.test(trimmed))) {
+        return { isNonJson: true, detectedType: 'C++ code' };
+      }
+      if (pythonPatterns.some(pattern => pattern.test(trimmed))) {
+        return { isNonJson: true, detectedType: 'Python code' };
+      }
+      if (javaPatterns.some(pattern => pattern.test(trimmed))) {
+        return { isNonJson: true, detectedType: 'Java code' };
+      }
+      if (htmlXmlPatterns.some(pattern => pattern.test(trimmed))) {
+        return { isNonJson: true, detectedType: 'HTML/XML content' };
+      }
+      if (naturalLanguagePatterns.some(pattern => pattern.test(trimmed))) {
+        return { isNonJson: true, detectedType: 'natural language text' };
+      }
+      
+      // If it doesn't start with { or [ and has no typical JSON structure
+      if (!/[{[]/.test(trimmed.slice(0, 100))) {
+        return { isNonJson: true, detectedType: 'non-JSON content' };
+      }
+    }
+    
+    return { isNonJson: false, detectedType: '' };
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,10 +218,20 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       reader.onload = (e) => {
         const content = e.target?.result as string;
         setJsonInput(content);
-        setError('');
         setInputChanged(true); // Mark input as changed
         setHasConverted(false); // Reset conversion state
         setSwitchedToSmartMode(false); // Clear flag when uploading file
+        
+        // Detect non-JSON content in uploaded file
+        const { isNonJson, detectedType } = detectNonJsonContent(content);
+        
+        if (isNonJson) {
+          setError(`⚠️ Invalid File Content: This file appears to contain ${detectedType}, not JSON data. Please upload a valid JSON file.`);
+          setErrorLines([]);
+          setXmlOutput('');
+        } else {
+          setError('');
+        }
       };
       reader.onerror = () => {
         setError('Failed to read file');
@@ -142,6 +253,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       const correctedJson = await correctCodeSyntax(jsonInput, 'JSON');
       setJsonInput(correctedJson);
       setError(''); // Clear error after successful correction
+      setErrorLines([]); // Clear error lines after successful correction
       console.log('AI successfully corrected the JSON syntax');
       
       // Automatically convert the corrected JSON to XML
@@ -165,6 +277,9 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       } catch (convErr: any) {
         console.error('Auto-conversion error:', convErr);
         setError(convErr.message || 'Failed to convert corrected JSON to XML');
+        // Re-validate to show any remaining errors
+        const remainingErrors = validateJsonSyntax(correctedJson);
+        setErrorLines(remainingErrors);
         // Reset flags on error
         setHasConverted(false);
         setInputChanged(true);
@@ -172,6 +287,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
     } catch (err: any) {
       console.error('Auto-correction failed:', err);
       setError(err.message || 'AI auto-correction failed. Please fix the JSON manually.');
+      // Keep existing error lines to show what went wrong
       // Reset flags on error
       setHasConverted(false);
       setInputChanged(true);
@@ -182,31 +298,44 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
   };
 
   // Handle automatic fixing of simple errors
-  const handleFixSimpleErrors = () => {
+  const handleFixSimpleErrors = async () => {
     const result = fixSimpleJsonErrors(jsonInput);
     
     if (result.wasFixed) {
       // Update the input with fixed JSON
       setJsonInput(result.fixed);
       setAppliedFixes(result.changes);
-      setShowFixSummary(true);
       
       // Re-validate to check for remaining errors
       const remainingErrors = validateJsonSyntax(result.fixed);
       setErrorLines(remainingErrors);
       
-      // If there are remaining errors, set error state to show error panel
+      // If there are remaining errors, show them
       if (remainingErrors.length > 0) {
         setError(`Remaining errors after auto-fix: ${remainingErrors.length} error${remainingErrors.length > 1 ? 's' : ''}`);
+        setXmlOutput('');
+        setShowFixSummary(true);
+        setHasConverted(false);
+        setInputChanged(false);
       } else {
-        // All errors fixed! Show success message
-        setError('SUCCESS_ALL_FIXED');
+        // All errors fixed! Automatically convert to XML and show both corrected JSON and XML
+        setError('');
+        setShowFixSummary(false);
+        
+        // Convert the fixed JSON to XML immediately
+        setIsLoading(true);
+        try {
+          // convertJsonToXmlCode expects a JSON string, not a parsed object
+          const xml = convertJsonToXmlCode(result.fixed);
+          setXmlOutput(xml);
+          setHasConverted(true);
+          setInputChanged(false);
+        } catch (err: any) {
+          setError(err.message || 'Failed to convert JSON to XML');
+        } finally {
+          setIsLoading(false);
+        }
       }
-      
-      // Clear any previous output
-      setXmlOutput('');
-      setHasConverted(false);
-      setInputChanged(false);
     } else {
       // No fixes could be applied
       setAppliedFixes([]);
@@ -343,31 +472,6 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
             Convert JSON data to well-formed XML - Fast (code-based) or Smart (AI-powered)
           </p>
         </div>
-
-        {/* Mode Info Banner */}
-        <div className={`mb-6 p-4 rounded-lg ${
-          conversionMode === 'fast' 
-            ? 'bg-blue-50 border-2 border-blue-300 dark:bg-blue-900/30 dark:border-blue-700'
-            : 'bg-purple-50 border-2 border-purple-300 dark:bg-purple-900/30 dark:border-purple-700'
-        }`}>
-          <h3 className={`font-bold text-lg mb-2 ${
-            conversionMode === 'fast' ? 'text-blue-800 dark:text-blue-300' : 'text-purple-800 dark:text-purple-300'
-          }`}>
-            {conversionMode === 'fast' ? 'FAST MODE (CODE-BASED)' : 'SMART MODE (AI-POWERED)'}
-          </h3>
-          <p className={conversionMode === 'fast' ? 'text-blue-700 dark:text-blue-200' : 'text-purple-700 dark:text-purple-200'}>
-            {conversionMode === 'fast' 
-              ? '✓ Instant conversion • No internet required • Free • Deterministic output'
-              : '✓ AI-powered conversion • Better quality • Handles complex structures • Requires internet'
-            }
-          </p>
-          <p className={`mt-2 text-sm font-semibold ${
-            conversionMode === 'fast' ? 'text-blue-600 dark:text-blue-300' : 'text-purple-600 dark:text-purple-300'
-          }`}>
-            💡 Click the big "Convert to XML" button below to start conversion
-          </p>
-        </div>
-
         {/* Control Panel */}
         <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
           <div className="flex items-center gap-4 flex-wrap">
@@ -430,7 +534,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                 <button
                   onClick={() => {
                     setConversionMode('fast');
-                    setSwitchedToSmartMode(false); // Clear flag when manually switching modes
+                    setSwitchedToSmartMode(false);
                   }}
                   className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 ${
                     conversionMode === 'fast'
@@ -444,7 +548,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                 <button
                   onClick={() => {
                     setConversionMode('smart');
-                    setSwitchedToSmartMode(false); // Clear flag when manually switching modes
+                    setSwitchedToSmartMode(false);
                   }}
                   className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 ${
                     conversionMode === 'smart'
@@ -537,13 +641,39 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                 ref={textareaRef}
                 value={jsonInput}
                 onChange={(e) => {
-                  setJsonInput(e.target.value);
+                  const newValue = e.target.value;
+                  setJsonInput(newValue);
                   setInputChanged(true);
                   setHasConverted(false);
-                  setErrorLines([]);
                   setShowFixSummary(false);
                   setAppliedFixes([]);
                   setSwitchedToSmartMode(false); // Clear flag when user manually edits input
+                  
+                  // Real-time validation: Detect non-JSON content
+                  const { isNonJson, detectedType } = detectNonJsonContent(newValue);
+                  
+                  if (isNonJson) {
+                    // Show error immediately for non-JSON content
+                    setError(`⚠️ Invalid Input Detected: This appears to be ${detectedType}, not JSON data. Please paste valid JSON format starting with '{' or '['.`);
+                    setErrorLines([]);
+                    setXmlOutput('');
+                  } else if (newValue.trim()) {
+                    // Try to parse JSON for real-time error detection
+                    try {
+                      JSON.parse(newValue);
+                      // Valid JSON - clear errors
+                      setError('');
+                      setErrorLines([]);
+                    } catch (err: any) {
+                      // Invalid JSON but it's JSON-like structure - clear error, will validate on convert
+                      setError('');
+                      setErrorLines([]);
+                    }
+                  } else {
+                    // Empty input - clear everything
+                    setError('');
+                    setErrorLines([]);
+                  }
                 }}
                 onScroll={handleTextareaScroll}
                 placeholder='Enter JSON here, e.g., {"name": "John", "age": 30}'
@@ -712,154 +842,124 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                   </div>
                 )}
                 
-                {/* Display errors in two-column layout: Simple vs Complex */}
+                {/* Display errors in single column */}
                 {errorLines.length > 0 ? (
                   <>
-                    {/* Two-Column Error Display */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    {/* Single-Column Error Display - showing ALL errors line by line */}
+                    <div className="border-2 border-red-300 dark:border-red-700 rounded-lg p-4 bg-red-50/50 dark:bg-red-900/10 mb-4">
+                      <h4 className="text-sm font-bold text-red-800 dark:text-red-300 mb-3 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
+                      </h4>
                       
-                      {/* LEFT COLUMN: Simple/Fixable Errors */}
-                      <div className="border-2 border-blue-300 dark:border-blue-700 rounded-lg p-4 bg-blue-50/50 dark:bg-blue-900/10">
-                        <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-3 flex items-center gap-2">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                          </svg>
-                          Simple Errors (Auto-Fixable)
-                        </h4>
-                        
-                        {errorLines.filter(e => !isComplexError(e)).length > 0 ? (
-                          <>
-                            {/* Display simple errors */}
-                            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                              {errorLines.filter(e => !isComplexError(e)).map((error, idx) => (
-                                <div key={idx} className="p-2 bg-white dark:bg-gray-800 rounded border-l-4 border-blue-500 text-xs">
-                                  <p className="font-semibold text-blue-700 dark:text-blue-300">
-                                    Line {error.line}, Column {error.column}
-                                  </p>
-                                  <p className="text-blue-600 dark:text-blue-400 mt-1 font-mono">
-                                    {error.message || 'Syntax error detected'}
-                                  </p>
-                                </div>
-                              ))}
+                      {/* Display ALL errors line by line */}
+                      <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                        {errorLines.map((error, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`p-2 bg-white dark:bg-gray-800 rounded border-l-4 ${
+                              isComplexError(error) 
+                                ? 'border-purple-500' 
+                                : 'border-blue-500'
+                            } text-xs`}
+                          >
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className={`font-semibold ${
+                                isComplexError(error)
+                                  ? 'text-purple-700 dark:text-purple-300'
+                                  : 'text-blue-700 dark:text-blue-300'
+                              }`}>
+                                Line {error.line}, Column {error.column}
+                              </span>
+                              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                isComplexError(error)
+                                  ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                                  : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                              }`}>
+                                {isComplexError(error) ? 'Complex' : 'Simple'}
+                              </span>
                             </div>
-                            
-                            {/* Fix Simple Errors Button */}
-                            {conversionMode === 'fast' && (
-                              <div className="mt-3">
-                                <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
-                                  Automatically fix common errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate).
-                                </p>
-                                <button
-                                  onClick={handleFixSimpleErrors}
-                                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                  </svg>
-                                  Fix Simple Errors
-                                </button>
-                              </div>
-                            )}
-                          </>
-                        ) : (
-                          /* No simple errors - show friendly message */
-                          <div className="text-center py-6">
-                            <svg className="w-12 h-12 text-blue-300 dark:text-blue-700 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-2">
-                              No Simple Errors Detected
+                            <p className={`${
+                              isComplexError(error)
+                                ? 'text-purple-600 dark:text-purple-400'
+                                : 'text-blue-600 dark:text-blue-400'
+                            } font-mono`}>
+                              {error.message || 'Syntax error detected'}
                             </p>
-                            <p className="text-xs text-blue-500 dark:text-blue-500">
-                              All errors require advanced fixing
-                            </p>
-                            {conversionMode === 'fast' && (
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Action Buttons based on Mode and Error Type */}
+                      {conversionMode === 'fast' ? (
+                        /* FAST MODE */
+                        <>
+                          {/* Case 1: Only Simple Errors - Enable "Fix Simple Errors" */}
+                          {errorLines.every(e => !isComplexError(e)) ? (
+                            <div className="mt-3">
+                              <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                                ✓ All errors can be automatically fixed! Click below to fix common errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate).
+                              </p>
                               <button
-                                disabled
-                                className="w-full mt-3 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                                onClick={handleFixSimpleErrors}
+                                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
                               >
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                                 Fix Simple Errors
                               </button>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* RIGHT COLUMN: Complex Errors */}
-                      <div className="border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4 bg-purple-50/50 dark:bg-purple-900/10">
-                        <h4 className="text-sm font-bold text-purple-800 dark:text-purple-300 mb-3 flex items-center gap-2">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-                          </svg>
-                          Complex Errors (AI Required)
-                        </h4>
-                        
-                        {errorLines.filter(e => isComplexError(e)).length > 0 ? (
-                          <>
-                            {/* Display complex errors */}
-                            <div className="space-y-2 mb-4 max-h-48 overflow-y-auto">
-                              {errorLines.filter(e => isComplexError(e)).map((error, idx) => (
-                                <div key={idx} className="p-2 bg-white dark:bg-gray-800 rounded border-l-4 border-purple-500 text-xs">
-                                  <p className="font-semibold text-purple-700 dark:text-purple-300">
-                                    Line {error.line}, Column {error.column}
-                                  </p>
-                                  <p className="text-purple-600 dark:text-purple-400 mt-1 font-mono">
-                                    {error.message || 'Syntax error detected'}
-                                  </p>
-                                </div>
-                              ))}
                             </div>
-                            
-                            {/* Fix Complex Errors with AI Button */}
+                          ) : (
+                            /* Case 2 & 3: Has Complex Errors - Disabled "Fix Simple Errors" with advice */
                             <div className="mt-3">
-                              <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
-                                These errors require advanced fixing with bracket matching, structural fixes, and context-aware repairs.
-                              </p>
+                              <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg mb-3">
+                                <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
+                                  <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                  </svg>
+                                  <span className="font-medium">Complex Errors Detected</span>
+                                </p>
+                                <p className="text-xs text-purple-700 dark:text-purple-300">
+                                  Your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to <span className="font-semibold">Smart (AI)</span> mode for advanced error correction with bracket matching and context-aware repairs.
+                                </p>
+                              </div>
                               <button
-                                onClick={() => {
-                                  console.log('🟣 Fix Complex Errors with AI clicked - switching to Smart mode and auto-correcting');
-                                  setConversionMode('smart');
-                                  setSwitchedToSmartMode(true);
-                                  // Automatically trigger AI correction
-                                  setTimeout(() => {
-                                    handleAutoCorrect();
-                                  }, 100); // Small delay to ensure mode switch completes
-                                }}
-                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
+                                disabled
+                                className="w-full px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
                               >
-                                Fix Complex Errors with AI
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                Fix Simple Errors (Unavailable)
                               </button>
                             </div>
-                          </>
-                        ) : (
-                          /* No complex errors - show friendly message */
-                          <div className="text-center py-6">
-                            <svg className="w-12 h-12 text-purple-300 dark:text-purple-700 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          )}
+                        </>
+                      ) : (
+                        /* SMART (AI) MODE */
+                        <div className="mt-3">
+                          <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                            AI-powered error correction can handle all types of errors including bracket mismatches, structural issues, and complex syntax problems.
+                          </p>
+                          <button
+                            onClick={handleAutoCorrect}
+                            className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                          >
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
                             </svg>
-                            <p className="text-sm text-purple-600 dark:text-purple-400 font-medium mb-2">
-                              No Complex Errors Detected
-                            </p>
-                            <p className="text-xs text-purple-500 dark:text-purple-500">
-                              All errors can be auto-fixed
-                            </p>
-                            <button
-                              disabled
-                              className="w-full mt-3 px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-500 rounded-lg text-sm font-medium cursor-not-allowed"
-                            >
-                              Fix Complex Errors with AI
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                            Fix Complex Errors with AI
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Fix Summary - shown after auto-fix is applied */}
                     {showFixSummary && appliedFixes.length > 0 && (
-                      <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                      <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg mb-4">
                         <h4 className="text-sm font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
                           <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -877,9 +977,36 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                       </div>
                     )}
                   </>
-                ) : (
-                  <p className="text-red-700 dark:text-red-300">{error}</p>
-                )}
+                ) : error ? (
+                  /* Show error message (for non-JSON content or other errors) */
+                  <div className="border-2 border-orange-300 dark:border-orange-700 rounded-lg p-4 bg-orange-50/50 dark:bg-orange-900/10">
+                    <div className="flex items-start gap-3">
+                      <svg className="w-6 h-6 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      <div className="flex-1">
+                        <h4 className="text-sm font-bold text-orange-800 dark:text-orange-300 mb-2">
+                          Invalid Input
+                        </h4>
+                        <p className="text-sm text-orange-700 dark:text-orange-200">
+                          {error}
+                        </p>
+                        <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded border border-orange-200 dark:border-orange-800">
+                          <p className="text-xs text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                            Expected JSON format example:
+                          </p>
+                          <pre className="text-xs text-gray-600 dark:text-gray-400 font-mono">
+{`{
+  "name": "John Doe",
+  "age": 30,
+  "email": "john@example.com"
+}`}
+                          </pre>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             ) : xmlOutput ? (
               <textarea
@@ -901,40 +1028,6 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                 </p>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Feature Comparison */}
-        <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">
-            Conversion Mode Comparison
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border-2 border-blue-300 dark:border-blue-700 rounded-lg bg-blue-50 dark:bg-blue-900/20">
-              <h4 className="font-bold text-blue-800 dark:text-blue-300 mb-2 flex items-center gap-2">
-                <LightningIcon className="h-5 w-5" />
-                Fast Mode (Code-Based)
-              </h4>
-              <ul className="text-sm text-blue-700 dark:text-blue-200 space-y-1">
-                <li>✓ Instant conversion (no network delay)</li>
-                <li>✓ Works offline</li>
-                <li>✓ No API costs</li>
-                <li>✓ Deterministic output</li>
-                <li>✓ Handles standard JSON structures</li>
-              </ul>
-            </div>
-            <div className="p-4 border-2 border-purple-300 dark:border-purple-700 rounded-lg bg-purple-50 dark:bg-purple-900/20">
-              <h4 className="font-bold text-purple-800 dark:text-purple-300 mb-2 flex items-center gap-2">
-                🤖 Smart Mode (AI-Powered)
-              </h4>
-              <ul className="text-sm text-purple-700 dark:text-purple-200 space-y-1">
-                <li>✓ Better handling of complex structures</li>
-                <li>✓ More human-readable output</li>
-                <li>✓ Intelligent attribute vs element decisions</li>
-                <li>✓ Better naming conventions</li>
-                <li>✓ Requires internet connection</li>
-              </ul>
-            </div>
           </div>
         </div>
       </div>

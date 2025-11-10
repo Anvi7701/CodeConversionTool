@@ -107,24 +107,36 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       // Update the input with fixed JSON
       setInputJson(result.fixed);
       setAppliedFixes(result.changes);
-      setShowFixSummary(true);
       
       // Re-validate to check for remaining errors
       const remainingErrors = validateJsonSyntax(result.fixed);
       setErrorLines(remainingErrors);
       
-      // If there are remaining errors, set error state to show error panel
+      // If there are remaining errors, show them
       if (remainingErrors.length > 0) {
         setOutputError(`Remaining errors after auto-fix: ${remainingErrors.length} error${remainingErrors.length > 1 ? 's' : ''}`);
+        setOutputJava(null);
+        setShowFixSummary(true);
+        setHasConverted(false);
+        setInputChanged(false);
       } else {
-        // All errors fixed! Show success message
-        setOutputError('SUCCESS_ALL_FIXED');
+        // All errors fixed! Automatically convert to Java and show both corrected JSON and Java
+        setOutputError(null);
+        setShowFixSummary(false);
+        
+        // Convert the fixed JSON to Java immediately
+        setIsLoading(true);
+        try {
+          const javaCode = convertJsonToJavaCode(result.fixed, 'RootObject');
+          setOutputJava(javaCode);
+          setHasConverted(true);
+          setInputChanged(false);
+        } catch (err: any) {
+          setOutputError(err.message || 'Failed to convert JSON to Java');
+        } finally {
+          setIsLoading(false);
+        }
       }
-      
-      // Clear any previous output
-      setOutputJava(null);
-      setHasConverted(false);
-      setInputChanged(false);
     } else {
       // No fixes could be applied
       setAppliedFixes([]);
@@ -175,16 +187,40 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
 
   // Check if error is complex (not fixable by simple auto-fix)
   const isComplexError = (error: ErrorPosition): boolean => {
+    const message = error.message || '';
+    
+    // First check if it's a bracket/structural error (always complex)
+    const complexPatterns = [
+      'Mismatched brackets',
+      'Unclosed',
+      'Unexpected closing bracket',
+      'expected \'}\' but found',
+      'expected \']\' but found',
+      'Missing opening bracket',
+      'Missing closing bracket'
+    ];
+    
+    // If it matches complex patterns, it's definitely complex
+    if (complexPatterns.some(pattern => message.includes(pattern))) {
+      return true;
+    }
+    
+    // Check if error message mentions "Expected" with bracket symbols - this indicates structural issues
+    if (message.includes('Expected') && (message.includes('}') || message.includes(']'))) {
+      return true;
+    }
+    
+    // Check if it's a simple pattern (specific cases only)
     const simplePatterns = [
-      'Missing comma',
+      'Missing comma after property value',
       'Trailing comma',
       'single quote',
-      'Unquoted key',
-      'Expected \',\''
+      'Unquoted key'
     ];
-    return !simplePatterns.some(pattern => 
-      error.message?.includes(pattern)
-    );
+    
+    // If it matches simple patterns, it's simple
+    // Otherwise it's complex
+    return !simplePatterns.some(pattern => message.includes(pattern));
   };
 
   const handleAutoCorrect = async () => {
@@ -200,6 +236,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       const correctedJson = await correctCodeSyntax(inputJson, 'JSON');
       setInputJson(correctedJson);
       setOutputError(null); // Clear error after successful correction
+      setErrorLines([]); // Clear error lines after successful correction
       console.log('AI successfully corrected the JSON syntax');
       
       // Automatically convert the corrected JSON to Java
@@ -218,6 +255,9 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
       } catch (convErr: any) {
         console.error('Auto-conversion error:', convErr);
         setOutputError(convErr.message || 'Failed to convert corrected JSON to Java');
+        // Re-validate to show any remaining errors
+        const remainingErrors = validateJsonSyntax(correctedJson);
+        setErrorLines(remainingErrors);
         // Reset flags on error
         setHasConverted(false);
         setInputChanged(true);
@@ -225,6 +265,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
     } catch (err: any) {
       console.error('Auto-correction failed:', err);
       setOutputError(err.message || 'AI auto-correction failed. Please fix the JSON manually.');
+      // Keep existing error lines to show what went wrong
       // Reset flags on error
       setHasConverted(false);
       setInputChanged(true);
@@ -459,7 +500,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                   setConversionMode('fast');
                   setOutputError(null);
                   setOutputJava(null);
-                  setSwitchedToSmartMode(false); // Clear flag when manually switching modes
+                  setSwitchedToSmartMode(false);
                 }}
                 className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 ${
                   conversionMode === 'fast'
@@ -476,7 +517,7 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
                   setConversionMode('smart');
                   setOutputError(null);
                   setOutputJava(null);
-                  setSwitchedToSmartMode(false); // Clear flag when manually switching modes
+                  setSwitchedToSmartMode(false);
                 }}
                 className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 ${
                   conversionMode === 'smart'
