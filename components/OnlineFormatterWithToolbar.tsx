@@ -762,7 +762,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       />
       
       <div className="w-full flex flex-col gap-6">
-        {/* Language selector and file upload */}
+        {/* Language selector */}
         <div className="flex justify-between items-center bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-4">
           <div className="flex items-center gap-4">
             <label htmlFor="language-select" className="text-sm font-medium">Format:</label>
@@ -777,17 +777,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               ))}
             </select>
           </div>
-          
-          <Tooltip content="Upload a code file to input">
-            <button 
-              onClick={() => fileInputRef.current?.click()} 
-              disabled={isActionDisabled} 
-              className="px-4 py-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 disabled:opacity-50"
-            >
-              <UploadIcon className="h-5 w-5 inline mr-2" />
-              Upload File
-            </button>
-          </Tooltip>
           <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
         </div>
 
@@ -830,6 +819,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-xl font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                 <div className="flex items-center gap-1.5">
+                  <Tooltip content="Upload a code file">
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isActionDisabled}
+                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                      aria-label="Upload File"
+                      title="Upload a code file to input"
+                    >
+                      📁
+                    </button>
+                  </Tooltip>
+                  <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
                   {/* Graph button - only for JSON */}
                   {isJsonLanguage && (
                     <>
