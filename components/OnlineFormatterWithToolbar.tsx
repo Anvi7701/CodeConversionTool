@@ -819,18 +819,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-xl font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                 <div className="flex items-center gap-1.5">
-                  <Tooltip content="Upload a code file">
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isActionDisabled}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
-                      aria-label="Upload File"
-                      title="Upload a code file to input"
-                    >
-                      📁
-                    </button>
-                  </Tooltip>
-                  <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
                   {/* Graph button - only for JSON */}
                   {isJsonLanguage && (
                     <>
@@ -898,12 +886,27 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <span className="text-sm text-slate-500">{inputCode.length} characters</span>
             </div>
 
-            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
+            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
+              {/* Upload icon - positioned at top right inside the textarea box */}
+              <div className="absolute top-2 right-2 z-10">
+                <Tooltip content="Upload a code file">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isActionDisabled}
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                    aria-label="Upload File"
+                    title="Upload a code file to input"
+                  >
+                    📁
+                  </button>
+                </Tooltip>
+              </div>
+              
               <textarea
                 value={inputCode}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                className="w-full h-96 bg-transparent resize-none p-4 border-none focus:outline-none font-mono text-sm"
+                className="w-full h-96 bg-transparent resize-none p-4 pr-16 border-none focus:outline-none font-mono text-sm"
                 spellCheck={false}
               />
             </div>
