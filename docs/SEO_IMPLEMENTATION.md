@@ -19,6 +19,11 @@ Successfully implemented comprehensive SEO optimization with separate routes for
 | `/javascript-formatter` | JavaScript | Free Online JavaScript Formatter & Beautifier - Pretty Print JS Code |
 | `/typescript-formatter` | TypeScript | Free Online TypeScript Formatter & Beautifier - Pretty Print TS Code |
 | `/yaml-formatter` | YAML | Free Online YAML Formatter & Validator - Beautify & Validate YAML Files |
+| `/graphql-formatter` | GraphQL | Free Online GraphQL Formatter & Beautifier - Pretty Print GraphQL Schemas |
+| `/java-formatter` | Java | Free Online Java Code Formatter & Beautifier - Pretty Print Java |
+| `/wsdl-formatter` | WSDL | Free Online WSDL Formatter & Validator - Beautify Web Service Descriptions |
+| `/soap-formatter` | SOAP | Free Online SOAP Formatter & Validator - Beautify SOAP XML Messages |
+| `/angular-formatter` | Angular | Free Online Angular Template Formatter - Beautify Angular HTML |
 
 ### Legacy Route (Still Works)
 - `/online-formatter` - Multi-language formatter with dropdown (kept for backward compatibility)
@@ -136,9 +141,14 @@ Sitemap: https://yoursite.com/sitemap.xml
 - ✅ `components/formatters/JavaScriptFormatterPage.tsx`
 - ✅ `components/formatters/TypeScriptFormatterPage.tsx`
 - ✅ `components/formatters/YamlFormatterPage.tsx`
+- ✅ `components/formatters/GraphQLFormatterPage.tsx`
+- ✅ `components/formatters/JavaFormatterPage.tsx`
+- ✅ `components/formatters/WsdlFormatterPage.tsx`
+- ✅ `components/formatters/SoapFormatterPage.tsx`
+- ✅ `components/formatters/AngularFormatterPage.tsx`
 - ✅ `components/SEO.tsx` (enhanced with structured data)
 - ✅ `components/OnlineFormatterWithToolbar.tsx` (added `initialLanguage` prop)
-- ✅ `App.tsx` (added 7 new routes + navigation links)
+- ✅ `App.tsx` (added 12 new routes + navigation links)
 
 ### Backward Compatibility
 - ✅ `/online-formatter` still works (original route)
