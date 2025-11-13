@@ -3,7 +3,7 @@ import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
+import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon, SaveIcon, PrintIcon, CopyIcon, TrashIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava } from '../utils/codeGenerator';
 import { CodeViewer } from './CodeViewer';
@@ -830,12 +830,57 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <span className="text-sm text-slate-500">{inputCode.length} characters</span>
             </div>
 
-            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0">
+            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
+              {/* Icon Toolbar - positioned at top right inside the textarea box */}
+              <div className="absolute top-2 right-2 z-10 flex items-center gap-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg p-1.5 shadow-sm border border-slate-200 dark:border-slate-600">
+                <Tooltip content="Save to file">
+                  <button
+                    onClick={handleSave}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Save"
+                  >
+                    <SaveIcon className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Print">
+                  <button
+                    onClick={handlePrint}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Print"
+                  >
+                    <PrintIcon className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <Tooltip content="Copy to clipboard">
+                  <button
+                    onClick={handleCopy}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Copy"
+                  >
+                    <CopyIcon className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+                <div className="w-px h-4 bg-slate-300 dark:bg-slate-600"></div>
+                <Tooltip content="Clear input">
+                  <button
+                    onClick={handleClear}
+                    disabled={isActionDisabled}
+                    className="p-2 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    aria-label="Clear"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </Tooltip>
+              </div>
+              
               <textarea
                 value={inputCode}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                className="w-full h-96 bg-transparent resize-none p-4 border-none focus:outline-none font-mono text-sm"
+                className="w-full h-96 bg-transparent resize-none p-4 pr-12 border-none focus:outline-none font-mono text-sm"
                 spellCheck={false}
               />
             </div>
