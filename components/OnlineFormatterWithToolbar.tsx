@@ -836,17 +836,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
                     </>
                   )}
-                  <Tooltip content="Save to file">
-                    <button
-                      onClick={handleSave}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
-                      aria-label="Save"
-                      title="Download JSON (Ctrl+S)"
-                    >
-                      💾
-                    </button>
-                  </Tooltip>
                   <Tooltip content="Print">
                     <button
                       onClick={handlePrint}
@@ -887,8 +876,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
-              {/* Upload icon - positioned at top right inside the textarea box */}
-              <div className="absolute top-2 right-2 z-10">
+              {/* Upload and Download icons - positioned at top right inside the textarea box */}
+              <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -900,13 +889,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     📁
                   </button>
                 </Tooltip>
+                <Tooltip content="Download to file">
+                  <button
+                    onClick={handleSave}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                    aria-label="Download File"
+                    title="Download to file"
+                  >
+                    💾
+                  </button>
+                </Tooltip>
               </div>
               
               <textarea
                 value={inputCode}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                className="w-full h-96 bg-transparent resize-none p-4 pr-16 border-none focus:outline-none font-mono text-sm"
+                className="w-full h-96 bg-transparent resize-none p-4 pr-28 border-none focus:outline-none font-mono text-sm"
                 spellCheck={false}
               />
             </div>
