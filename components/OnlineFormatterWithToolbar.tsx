@@ -946,9 +946,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <span>✓</span>
                 <span>Validate</span>
               </button>
+            </div>
 
-              <div className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-
+            {/* Right side controls - Mode selector and Format selector */}
+            <div className="flex items-center gap-4">
               {/* Mode selector - Fast/Smart(AI) */}
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Mode:</span>
@@ -977,21 +978,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Format selector - moved here from top */}
-            <div className="flex items-center gap-3">
-              <label htmlFor="language-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
-              <select
-                id="language-select"
-                value={activeLanguage}
-                onChange={(e) => handleLanguageChange(e.target.value as Language)}
-                className="px-3 py-1.5 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all"
-              >
-                {Object.keys(languageDetails).map(lang => (
-                  <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
-                ))}
-              </select>
+              <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
+
+              {/* Format selector */}
+              <div className="flex items-center gap-3">
+                <label htmlFor="language-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
+                <select
+                  id="language-select"
+                  value={activeLanguage}
+                  onChange={(e) => handleLanguageChange(e.target.value as Language)}
+                  className="px-3 py-1.5 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all"
+                >
+                  {Object.keys(languageDetails).map(lang => (
+                    <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           </div>
         )}
