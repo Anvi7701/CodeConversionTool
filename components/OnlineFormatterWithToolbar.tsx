@@ -1027,8 +1027,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div className="w-full flex flex-col lg:flex-row gap-6">
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+        <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4 min-h-[600px]">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-semibold">Input</h2>
@@ -1136,7 +1136,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4 min-h-[600px]">
             {/* Output heading - simple for both JSON and non-JSON */}
             <h2 className="text-xl font-semibold">Formatted Output</h2>
 
