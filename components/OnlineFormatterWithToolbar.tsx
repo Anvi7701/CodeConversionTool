@@ -1028,32 +1028,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4 min-h-[600px]">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <h2 className="text-xl font-semibold">Input</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   {/* Graph button - only for JSON */}
                   {isJsonLanguage && (
                     <>
                       <Tooltip content="Visualize as graph">
                         <button
                           onClick={handleShowGraph}
-                          className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl cursor-pointer"
+                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                           aria-label="Graph"
                           title="Visualize as graph"
                         >
                           📊
                         </button>
                       </Tooltip>
-                      <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
                   <Tooltip content="Print">
                     <button
                       onClick={handlePrint}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl cursor-pointer"
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Print"
                       title="Print JSON (Ctrl+P)"
                     >
@@ -1063,18 +1063,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Copy to clipboard">
                     <button
                       onClick={handleCopy}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl cursor-pointer"
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Copy"
                       title="Copy to clipboard (Ctrl+C)"
                     >
                       📋
                     </button>
                   </Tooltip>
-                  <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                   <Tooltip content="Clear input">
                     <button
                       onClick={handleClear}
-                      className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-2xl cursor-pointer"
+                      className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-xl cursor-pointer"
                       aria-label="Clear"
                       title="Clear all content"
                     >
@@ -1083,16 +1083,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                 </div>
               </div>
-              <span className="text-sm text-slate-500">{inputCode.length} characters</span>
+              <span className="text-xs text-slate-500">{inputCode.length} chars</span>
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Upload and Download icons - positioned at top right inside the textarea box */}
-              <div className="absolute top-2 right-2 z-10 flex items-center gap-2">
+              <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-2xl cursor-pointer"
+                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
                     aria-label="Upload File"
                     title="Upload a code file to input"
                   >
@@ -1102,7 +1102,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <Tooltip content="Download to file">
                   <button
                     onClick={handleSave}
-                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-2xl cursor-pointer"
+                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
                     aria-label="Download File"
                     title="Download to file"
                   >
@@ -1136,9 +1136,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4 min-h-[600px]">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
             {/* Output heading - simple for both JSON and non-JSON */}
-            <h2 className="text-xl font-semibold">Formatted Output</h2>
+            <h2 className="text-lg font-semibold">Formatted Output</h2>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
               <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
