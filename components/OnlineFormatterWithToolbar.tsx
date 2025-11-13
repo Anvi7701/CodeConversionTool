@@ -785,23 +785,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       />
       
       <div className="w-full flex flex-col gap-6">
-        {/* Language selector */}
-        <div className="flex justify-between items-center bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-4">
-          <div className="flex items-center gap-4">
-            <label htmlFor="language-select" className="text-sm font-medium">Format:</label>
-            <select
-              id="language-select"
-              value={activeLanguage}
-              onChange={(e) => handleLanguageChange(e.target.value as Language)}
-              className="px-3 py-2 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-brand-primary focus:border-brand-primary"
-            >
-              {Object.keys(languageDetails).map(lang => (
-                <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
-              ))}
-            </select>
-          </div>
-          <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
-        </div>
+        {/* Language selector - removed from here, moved to middle toolbar */}
 
         {/* JSON Toolbar - Hidden, functionality moved to smaller buttons */}
         {/* {isJsonLanguage && (
@@ -829,140 +813,177 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
-          <div className="flex items-center gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
-            {/* Beautify button with dropdown */}
-            <div className="relative dropdown-container">
+          <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
+            <div className="flex items-center gap-2">
+              {/* Beautify button with dropdown */}
+              <div className="relative dropdown-container">
+                <button
+                  onClick={() => setShowBeautifyDropdown(!showBeautifyDropdown)}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  title="Beautify JSON"
+                >
+                  <span>🎨</span>
+                  <span>Beautify</span>
+                  <span className="text-xs">▼</span>
+                </button>
+                {/* Dropdown menu */}
+                {showBeautifyDropdown && (
+                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
+                    <button
+                      onClick={() => {
+                        handleFormat(2);
+                        setShowBeautifyDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      2 Spaces
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleFormat(4);
+                        setShowBeautifyDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      4 Spaces
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleFormat(0);
+                        setShowBeautifyDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      Tab
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Minify button */}
               <button
-                onClick={() => setShowBeautifyDropdown(!showBeautifyDropdown)}
+                onClick={handleMinify}
                 disabled={isActionDisabled || !inputCode.trim()}
-                className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                title="Beautify JSON"
+                className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                title="Minify JSON"
               >
-                <span>🎨</span>
-                <span>Beautify</span>
-                <span className="text-xs">▼</span>
+                <span>📦</span>
+                <span>Minify</span>
               </button>
-              {/* Dropdown menu */}
-              {showBeautifyDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
-                  <button
-                    onClick={() => {
-                      handleFormat(2);
-                      setShowBeautifyDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    2 Spaces
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleFormat(4);
-                      setShowBeautifyDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    4 Spaces
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleFormat(0);
-                      setShowBeautifyDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    Tab
-                  </button>
-                </div>
-              )}
+
+              {/* Sort button with dropdown */}
+              <div className="relative dropdown-container">
+                <button
+                  onClick={() => setShowSortDropdown(!showSortDropdown)}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  title="Sort JSON"
+                >
+                  <span>🔼</span>
+                  <span>Sort</span>
+                  <span className="text-xs">▼</span>
+                </button>
+                {/* Dropdown menu */}
+                {showSortDropdown && (
+                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
+                    <button
+                      onClick={() => {
+                        handleSort('asc', 'keys');
+                        setShowSortDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      Keys (A → Z)
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('desc', 'keys');
+                        setShowSortDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      Keys (Z → A)
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('asc', 'values');
+                        setShowSortDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      Values (A → Z)
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleSort('desc', 'values');
+                        setShowSortDropdown(false);
+                      }}
+                      disabled={isActionDisabled || !inputCode.trim()}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                    >
+                      Values (Z → A)
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
+
+              {/* Validate button */}
+              <button
+                onClick={handleValidate}
+                disabled={isActionDisabled || !inputCode.trim()}
+                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                title="Validate JSON"
+              >
+                <span>✓</span>
+                <span>Validate</span>
+              </button>
             </div>
 
-            {/* Minify button */}
-            <button
-              onClick={handleMinify}
-              disabled={isActionDisabled || !inputCode.trim()}
-              className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-              title="Minify JSON"
-            >
-              <span>📦</span>
-              <span>Minify</span>
-            </button>
-
-            {/* Sort button with dropdown */}
-            <div className="relative dropdown-container">
-              <button
-                onClick={() => setShowSortDropdown(!showSortDropdown)}
-                disabled={isActionDisabled || !inputCode.trim()}
-                className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-                title="Sort JSON"
+            {/* Format selector - moved here from top */}
+            <div className="flex items-center gap-3">
+              <label htmlFor="language-select" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
+              <select
+                id="language-select"
+                value={activeLanguage}
+                onChange={(e) => handleLanguageChange(e.target.value as Language)}
+                className="px-3 py-1.5 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all"
               >
-                <span>🔼</span>
-                <span>Sort</span>
-                <span className="text-xs">▼</span>
-              </button>
-              {/* Dropdown menu */}
-              {showSortDropdown && (
-                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
-                  <button
-                    onClick={() => {
-                      handleSort('asc', 'keys');
-                      setShowSortDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    Keys (A → Z)
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleSort('desc', 'keys');
-                      setShowSortDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    Keys (Z → A)
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleSort('asc', 'values');
-                      setShowSortDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    Values (A → Z)
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleSort('desc', 'values');
-                      setShowSortDropdown(false);
-                    }}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
-                  >
-                    Values (Z → A)
-                  </button>
-                </div>
-              )}
+                {Object.keys(languageDetails).map(lang => (
+                  <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
+                ))}
+              </select>
             </div>
-
-            <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
-
-            {/* Validate button */}
-            <button
-              onClick={handleValidate}
-              disabled={isActionDisabled || !inputCode.trim()}
-              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
-              title="Validate JSON"
-            >
-              <span>✓</span>
-              <span>Validate</span>
-            </button>
           </div>
         )}
+
+        {/* For non-JSON languages, show simpler toolbar with just Format selector */}
+        {!isJsonLanguage && (
+          <div className="flex items-center justify-center gap-3 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
+            <label htmlFor="language-select-simple" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
+            <select
+              id="language-select-simple"
+              value={activeLanguage}
+              onChange={(e) => handleLanguageChange(e.target.value as Language)}
+              className="px-3 py-1.5 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-brand-primary focus:border-brand-primary transition-all"
+            >
+              {Object.keys(languageDetails).map(lang => (
+                <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* Hidden file input */}
+        <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
 
         {/* Copy Success Toast */}
         {copySuccess && (
