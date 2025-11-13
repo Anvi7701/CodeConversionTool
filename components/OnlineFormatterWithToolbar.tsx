@@ -62,8 +62,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
   const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
   
-  // Test mode to simulate errors (activated by Ctrl+Shift+E for 503, Ctrl+Shift+S for 500)
-  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | null>(null);
+  // Test mode to simulate errors (Ctrl+Shift+E=503, Ctrl+Shift+S=500, Ctrl+Shift+R=429)
+  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | '429' | null>(null);
 
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
@@ -84,7 +84,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500)
+  // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'E') {
@@ -100,6 +100,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         setTestErrorMode(prev => prev === '500' ? null : '500');
         if (testErrorMode !== '500') {
           console.log('🧪 Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+        }
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+        event.preventDefault();
+        setTestErrorMode(prev => prev === '429' ? null : '429');
+        if (testErrorMode !== '429') {
+          console.log('🧪 Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
         } else {
           console.log('✅ Test Error Mode DISABLED - Normal AI operation');
         }
@@ -395,6 +403,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               status: "INTERNAL_SERVER_ERROR"
             }
           };
+        } else if (testErrorMode === '429') {
+          setTestErrorMode(null); // Auto-disable after one use
+          throw {
+            error: {
+              code: 429,
+              message: "Resource has been exhausted (e.g. check quota).",
+              status: "RESOURCE_EXHAUSTED"
+            }
+          };
         }
         
         const result = await validateCodeSyntax(trimmedInput, activeLanguage);
@@ -469,6 +486,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 code: 500,
                 message: "Internal Server Error",
                 status: "INTERNAL_SERVER_ERROR"
+              }
+            };
+          } else if (testErrorMode === '429') {
+            setTestErrorMode(null); // Auto-disable after one use
+            throw {
+              error: {
+                code: 429,
+                message: "Resource has been exhausted (e.g. check quota).",
+                status: "RESOURCE_EXHAUSTED"
               }
             };
           }
