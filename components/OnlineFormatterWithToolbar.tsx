@@ -946,6 +946,37 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <span>✓</span>
                 <span>Validate</span>
               </button>
+
+              <div className="w-px h-6 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+
+              {/* Mode selector - Fast/Smart(AI) */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Mode:</span>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setFormatterMode('fast')}
+                    className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-1.5 ${
+                      formatterMode === 'fast'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    <LightningIcon className="h-3.5 w-3.5" />
+                    <span>Fast</span>
+                  </button>
+                  <button
+                    onClick={() => setFormatterMode('smart')}
+                    className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-1.5 ${
+                      formatterMode === 'smart'
+                        ? 'bg-purple-500 text-white shadow-sm'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    <span>🤖</span>
+                    <span>Smart (AI)</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Format selector - moved here from top */}
@@ -1103,39 +1134,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
 
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-            {/* Fast/Smart Mode Selector - Only for JSON */}
-            {isJsonLanguage ? (
-              <div className="flex items-center gap-3">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Validation Mode:
-                </span>
-                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg border-2 border-slate-300 dark:border-slate-600">
-                  <button
-                    onClick={() => setFormatterMode('fast')}
-                    className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[100px] ${
-                      formatterMode === 'fast'
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    }`}
-                  >
-                    <LightningIcon className="h-4 w-4" />
-                    Fast
-                  </button>
-                  <button
-                    onClick={() => setFormatterMode('smart')}
-                    className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[130px] ${
-                      formatterMode === 'smart'
-                        ? 'bg-purple-500 text-white shadow-sm'
-                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                    }`}
-                  >
-                    🤖 Smart (AI)
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <h2 className="text-xl font-semibold">Formatted Output</h2>
-            )}
+            {/* Output heading - simple for both JSON and non-JSON */}
+            <h2 className="text-xl font-semibold">Formatted Output</h2>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
               <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
