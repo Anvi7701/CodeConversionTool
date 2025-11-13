@@ -36,10 +36,14 @@ const languageDetails: { [key in Language]: { label: string; icon: React.ReactNo
   graphql: { label: 'GraphQL', icon: <GraphQLIcon className="h-5 w-5" />, extensions: ['.graphql', '.gql', '.txt'] },
 };
 
-export const OnlineFormatterWithToolbar: React.FC = () => {
+interface OnlineFormatterWithToolbarProps {
+  initialLanguage?: Language;
+}
+
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json' }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
-  const [activeLanguage, setActiveLanguage] = useState<Language>('json');
+  const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
   const [outputError, setOutputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);

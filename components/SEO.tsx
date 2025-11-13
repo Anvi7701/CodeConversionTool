@@ -9,6 +9,7 @@ interface SEOProps {
   ogImage?: string;
   ogType?: string;
   ogUrl?: string;
+  structuredData?: object;
 }
 
 const SEO: React.FC<SEOProps> = ({
@@ -18,7 +19,8 @@ const SEO: React.FC<SEOProps> = ({
   canonical,
   ogImage,
   ogType = 'website',
-  ogUrl
+  ogUrl,
+  structuredData
 }) => {
   return (
     <Helmet>
@@ -41,6 +43,13 @@ const SEO: React.FC<SEOProps> = ({
   <meta name="twitter:title" content={title} />
   <meta name="twitter:description" content={description} />
   {ogImage && <meta name="twitter:image" content={ogImage} />}
+  
+  {/* Structured Data (JSON-LD) */}
+  {structuredData && (
+    <script type="application/ld+json">
+      {JSON.stringify(structuredData)}
+    </script>
+  )}
     </Helmet>
   );
 };

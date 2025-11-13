@@ -18,6 +18,15 @@ const OnlineFormatter = lazy(() => import('./components/OnlineFormatterWithToolb
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlConverter'));
 
+// SEO-optimized formatter pages
+const JsonFormatterPage = lazy(() => import('./components/formatters/JsonFormatterPage.tsx').then(m => ({ default: m.JsonFormatterPage })));
+const XmlFormatterPage = lazy(() => import('./components/formatters/XmlFormatterPage.tsx').then(m => ({ default: m.XmlFormatterPage })));
+const HtmlFormatterPage = lazy(() => import('./components/formatters/HtmlFormatterPage.tsx').then(m => ({ default: m.HtmlFormatterPage })));
+const CssFormatterPage = lazy(() => import('./components/formatters/CssFormatterPage.tsx').then(m => ({ default: m.CssFormatterPage })));
+const JavaScriptFormatterPage = lazy(() => import('./components/formatters/JavaScriptFormatterPage.tsx').then(m => ({ default: m.JavaScriptFormatterPage })));
+const TypeScriptFormatterPage = lazy(() => import('./components/formatters/TypeScriptFormatterPage.tsx').then(m => ({ default: m.TypeScriptFormatterPage })));
+const YamlFormatterPage = lazy(() => import('./components/formatters/YamlFormatterPage.tsx').then(m => ({ default: m.YamlFormatterPage })));
+
 const App: React.FC = () => {
   const location = useLocation();
 
@@ -64,6 +73,10 @@ const App: React.FC = () => {
             <Link to="/data-to-class" onClick={(e) => handleNavLinkClick(e, '/data-to-class')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Data To Class</Link>
             <span className="text-slate-400">|</span>
             <Link to="/online-formatter" onClick={(e) => handleNavLinkClick(e, '/online-formatter')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Online Formatter</Link>
+            <span className="text-slate-400">|</span>
+            <Link to="/json-formatter" onClick={(e) => handleNavLinkClick(e, '/json-formatter')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Formatter</Link>
+            <span className="text-slate-400">|</span>
+            <Link to="/xml-formatter" onClick={(e) => handleNavLinkClick(e, '/xml-formatter')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">XML Formatter</Link>
           </div>
         </div>
       </nav>
@@ -84,6 +97,15 @@ const App: React.FC = () => {
             <Route path="/online-formatter" element={<OnlineFormatter />} />
             <Route path="/json-to-java" element={<JsonToJavaConverter />} />
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
+            
+            {/* SEO-optimized formatter routes */}
+            <Route path="/json-formatter" element={<JsonFormatterPage />} />
+            <Route path="/xml-formatter" element={<XmlFormatterPage />} />
+            <Route path="/html-formatter" element={<HtmlFormatterPage />} />
+            <Route path="/css-formatter" element={<CssFormatterPage />} />
+            <Route path="/javascript-formatter" element={<JavaScriptFormatterPage />} />
+            <Route path="/typescript-formatter" element={<TypeScriptFormatterPage />} />
+            <Route path="/yaml-formatter" element={<YamlFormatterPage />} />
           </Routes>
         </Suspense>
       </div>
