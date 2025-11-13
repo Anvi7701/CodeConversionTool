@@ -3,7 +3,7 @@ import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon } from './icons';
+import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava } from '../utils/codeGenerator';
 import { CodeViewer } from './CodeViewer';
@@ -16,10 +16,13 @@ import { ValidationLoading } from './ValidationLoading';
 import { JsonToolbar } from './JsonToolbar';
 import { GraphViewer } from './GraphViewer';
 import { convertJsonToGraphData } from '../utils/graphUtils';
+import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
+import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
 type ValidationResult = { isValid: boolean; reason: string; isFixableSyntaxError: boolean; suggestedLanguage?: string };
+type FormatterMode = 'fast' | 'smart';
 
 const languageDetails: { [key in Language]: { label: string; icon: React.ReactNode; extensions: string[] } } = {
   json: { label: 'JSON', icon: <CodeBracketIcon className="h-5 w-5" />, extensions: ['.json', '.txt'] },
@@ -54,6 +57,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [copySuccess, setCopySuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fast/Smart mode for JSON formatter
+  const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
+  const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
+  const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
+  const [showFixSummary, setShowFixSummary] = useState(false);
+
   // History for undo/redo (only for JSON)
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -70,6 +79,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setValidationError(null);
     setSuccessMessage(null);
     setIsValidated(false);
+    setErrorLines([]);
+    setAppliedFixes([]);
+    setShowFixSummary(false);
   };
   
   const handleLanguageChange = (lang: Language) => {
@@ -84,6 +96,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setValidationError(null);
     setSuccessMessage(null);
     setIsValidated(false);
+    setErrorLines([]);
+    setAppliedFixes([]);
+    setShowFixSummary(false);
   };
 
   // Add to history
@@ -93,6 +108,44 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
     }
+  };
+
+  // Check if error is complex (not fixable by simple auto-fix) - only for JSON
+  const isComplexError = (error: ErrorPosition): boolean => {
+    const message = error.message || '';
+    
+    // First check if it's a bracket/structural error (always complex)
+    const complexPatterns = [
+      'Mismatched brackets',
+      'Unclosed',
+      'Unexpected closing bracket',
+      'expected \'}\' but found',
+      'expected \']\' but found',
+      'Missing opening bracket',
+      'Missing closing bracket'
+    ];
+    
+    // If it matches complex patterns, it's definitely complex
+    if (complexPatterns.some(pattern => message.includes(pattern))) {
+      return true;
+    }
+    
+    // Check if error message mentions "Expected" with bracket symbols - this indicates structural issues
+    if (message.includes('Expected') && (message.includes('}') || message.includes(']'))) {
+      return true;
+    }
+    
+    // Check if it's a simple pattern (specific cases only)
+    const simplePatterns = [
+      'Missing comma after property value',
+      'Trailing comma',
+      'single quote',
+      'Unquoted key'
+    ];
+    
+    // If it matches simple patterns, it's simple
+    // Otherwise it's complex
+    return !simplePatterns.some(pattern => message.includes(pattern));
   };
   
   const processFile = (file: File) => {
@@ -130,6 +183,46 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (e.target) e.target.value = '';
   };
 
+  // Handle automatic fixing of simple JSON errors - only for JSON in Fast mode
+  const handleFixSimpleErrors = async () => {
+    if (activeLanguage !== 'json') return;
+    
+    const result = fixSimpleJsonErrors(inputCode);
+    
+    if (result.wasFixed) {
+      // Update the input with fixed JSON
+      setInputCode(result.fixed);
+      setAppliedFixes(result.changes);
+      addToHistory(result.fixed);
+      
+      // Re-validate to check for remaining errors
+      const remainingErrors = validateJsonSyntax(result.fixed);
+      setErrorLines(remainingErrors);
+      
+      // If there are remaining errors, show them
+      if (remainingErrors.length > 0) {
+        setValidationError({
+          isValid: false,
+          reason: `Remaining errors after auto-fix: ${remainingErrors.length} error${remainingErrors.length > 1 ? 's' : ''}`,
+          isFixableSyntaxError: true,
+          suggestedLanguage: undefined
+        });
+        setShowFixSummary(true);
+        setIsValidated(false);
+      } else {
+        // All errors fixed! Mark as validated and ready to format
+        setValidationError(null);
+        setSuccessMessage(`✅ All syntax errors have been fixed! Applied ${result.changes.length} fix${result.changes.length > 1 ? 'es' : ''}. You can now format your JSON.`);
+        setShowFixSummary(true);
+        setIsValidated(true);
+      }
+    } else {
+      // No fixes could be applied
+      setAppliedFixes([]);
+      setShowFixSummary(true);
+    }
+  };
+
   const handleValidate = async () => {
     const trimmedInput = inputCode.trim();
     if (!trimmedInput) {
@@ -141,6 +234,78 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     resetState(true);
 
     try {
+      // For JSON, use enhanced validation with error detection
+      if (activeLanguage === 'json') {
+        try {
+          JSON.parse(trimmedInput);
+          // Valid JSON
+          setErrorLines([]);
+          setSuccessMessage("✅ JSON is valid! You can now format the code.");
+          setIsValidated(true);
+          setIsValidating(false);
+          return;
+        } catch (err: any) {
+          // JSON has syntax error - validate and find all errors
+          const allErrors = validateJsonSyntax(trimmedInput);
+          setErrorLines(allErrors);
+          
+          if (formatterMode === 'smart') {
+            // Smart mode: Always offer AI-powered correction
+            let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${err.message}`;
+
+            if (allErrors.length > 0) {
+              errorAnalysis += `\n\n**Error Locations:**\n`;
+              allErrors.forEach(error => {
+                errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+              });
+            }
+
+            errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+            
+            setValidationError({
+              isValid: false,
+              reason: errorAnalysis,
+              isFixableSyntaxError: true,
+              suggestedLanguage: undefined
+            });
+          } else {
+            // Fast mode: Check if errors are simple or complex
+            const hasComplexErrors = allErrors.some(isComplexError);
+            
+            if (hasComplexErrors) {
+              // Has complex errors - suggest Smart mode
+              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
+              allErrors.forEach(error => {
+                fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+              });
+              
+              setValidationError({
+                isValid: false,
+                reason: fastError,
+                isFixableSyntaxError: true,
+                suggestedLanguage: undefined
+              });
+            } else {
+              // Only simple errors - can be fixed
+              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
+              allErrors.forEach(error => {
+                fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+              });
+              
+              setValidationError({
+                isValid: false,
+                reason: fastError,
+                isFixableSyntaxError: true,
+                suggestedLanguage: undefined
+              });
+            }
+          }
+          setIsValidating(false);
+          return;
+        }
+      }
+
+      // For other languages, use existing validation logic
       const localResult = validateSyntaxLocally(trimmedInput, activeLanguage);
       if (localResult) {
         if (localResult.isValid) {
@@ -177,12 +342,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setIsCorrecting(true);
     setValidationError(null);
     setOutputError(null);
+    setErrorLines([]);
+    
     try {
         const correctedCode = await correctCodeSyntax(inputCode, activeLanguage);
         setInputCode(correctedCode);
         addToHistory(correctedCode);
         setIsValidated(true);
-        setSuccessMessage("AI successfully corrected the syntax. You can now format the code.");
+        setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
+        setShowFixSummary(false);
     } catch (err: any) {
         setOutputError(err.message || "AI auto-correction failed.");
         setIsValidated(false);
@@ -625,26 +793,65 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* JSON Toolbar - Only show for JSON */}
         {isJsonLanguage && (
-          <JsonToolbar
-            onFormat={handleFormat}
-            onMinify={handleMinify}
-            onSort={handleSort}
-            onRepair={handleRepair}
-            onUndo={canUndo ? handleUndo : undefined}
-            onRedo={canRedo ? handleRedo : undefined}
-            onViewGraph={handleShowGraph}
-            onValidate={handleValidate}
-            onClear={handleClear}
-            onCopy={handleCopy}
-            onSave={handleSave}
-            onPrint={handlePrint}
-            canUndo={canUndo}
-            canRedo={canRedo}
-            hasErrors={!!validationError && !validationError.isValid}
-            errorCount={validationError ? 1 : 0}
-            disabled={isActionDisabled}
-            language={activeLanguage}
-          />
+          <>
+            {/* Fast/Smart Mode Selector for JSON */}
+            <div className="bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Validation Mode:
+                  </span>
+                  <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg border-2 border-slate-300 dark:border-slate-600">
+                    <button
+                      onClick={() => setFormatterMode('fast')}
+                      className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 text-sm ${
+                        formatterMode === 'fast'
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      <LightningIcon className="h-4 w-4" />
+                      Fast
+                    </button>
+                    <button
+                      onClick={() => setFormatterMode('smart')}
+                      className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center gap-2 text-sm ${
+                        formatterMode === 'smart'
+                          ? 'bg-purple-500 text-white shadow-sm'
+                          : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                      }`}
+                    >
+                      🤖 Smart (AI)
+                    </button>
+                  </div>
+                </div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  {formatterMode === 'fast' ? 'Fast: Auto-fix simple errors' : 'Smart: AI-powered complex error correction'}
+                </div>
+              </div>
+            </div>
+
+            <JsonToolbar
+              onFormat={handleFormat}
+              onMinify={handleMinify}
+              onSort={handleSort}
+              onRepair={handleRepair}
+              onUndo={canUndo ? handleUndo : undefined}
+              onRedo={canRedo ? handleRedo : undefined}
+              onViewGraph={handleShowGraph}
+              onValidate={handleValidate}
+              onClear={handleClear}
+              onCopy={handleCopy}
+              onSave={handleSave}
+              onPrint={handlePrint}
+              canUndo={canUndo}
+              canRedo={canRedo}
+              hasErrors={!!validationError && !validationError.isValid}
+              errorCount={validationError ? 1 : 0}
+              disabled={isActionDisabled}
+              language={activeLanguage}
+            />
+          </>
         )}
 
         {/* Copy Success Toast */}
@@ -704,13 +911,161 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <p>{outputError}</p>
                   </div>
                 ) : validationError ? (
-                  <ErrorAnalysisDisplay
-                    title={validationError.reason.includes("Formatting failed") ? "Formatting Failed" : "Validation Failed"}
-                    analysisText={validationError.reason}
-                    showAutoCorrectButton={!!validationError.isFixableSyntaxError}
-                    onAutoCorrect={handleAutoCorrect}
-                    isCorrecting={isCorrecting}
-                  />
+                  <div className="h-full overflow-auto p-4">
+                    {/* For JSON with detailed error display */}
+                    {activeLanguage === 'json' && errorLines.length > 0 ? (
+                      <div className="space-y-4">
+                        <div className="flex items-start gap-3 mb-4">
+                          <svg className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                          </svg>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+                              {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
+                            </h3>
+                            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                              {validationError.reason.split('\n')[0]}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Fix Summary - shown after auto-fix is applied */}
+                        {showFixSummary && appliedFixes.length > 0 && (
+                          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
+                            <h4 className="text-sm font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              ✅ Automatically Fixed {appliedFixes.length} Issue{appliedFixes.length > 1 ? 's' : ''}
+                            </h4>
+                            <p className="text-sm text-green-700 dark:text-green-300 mb-2">
+                              {getFixSummary(appliedFixes)}
+                            </p>
+                            <div className="text-xs text-green-600 dark:text-green-400 space-y-1">
+                              {appliedFixes.map((fix, idx) => (
+                                <div key={idx}>• Line {fix.line}: {fix.description}</div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Error List */}
+                        <div className="border-2 border-red-300 dark:border-red-700 rounded-lg p-4 bg-red-50/50 dark:bg-red-900/10 mb-4">
+                          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                            {errorLines.map((error, idx) => (
+                              <div 
+                                key={idx} 
+                                className={`p-2 bg-white dark:bg-slate-800 rounded border-l-4 ${
+                                  isComplexError(error) 
+                                    ? 'border-purple-500' 
+                                    : 'border-blue-500'
+                                } text-xs`}
+                              >
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className={`font-semibold ${
+                                    isComplexError(error)
+                                      ? 'text-purple-700 dark:text-purple-300'
+                                      : 'text-blue-700 dark:text-blue-300'
+                                  }`}>
+                                    Line {error.line}, Column {error.column}
+                                  </span>
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+                                    isComplexError(error)
+                                      ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
+                                      : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
+                                  }`}>
+                                    {isComplexError(error) ? 'Complex' : 'Simple'}
+                                  </span>
+                                </div>
+                                <p className={`${
+                                  isComplexError(error)
+                                    ? 'text-purple-600 dark:text-purple-400'
+                                    : 'text-blue-600 dark:text-blue-400'
+                                } font-mono`}>
+                                  {error.message || 'Syntax error detected'}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Action Buttons based on Mode and Error Type */}
+                          {formatterMode === 'fast' ? (
+                            /* FAST MODE */
+                            <>
+                              {/* Case 1: Only Simple Errors - Enable "Fix Simple Errors" */}
+                              {errorLines.every(e => !isComplexError(e)) ? (
+                                <div className="mt-3">
+                                  <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
+                                    ✓ All errors can be automatically fixed! Click below to fix common errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate).
+                                  </p>
+                                  <button
+                                    onClick={handleFixSimpleErrors}
+                                    disabled={isActionDisabled}
+                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Fix Simple Errors
+                                  </button>
+                                </div>
+                              ) : (
+                                /* Case 2 & 3: Has Complex Errors - Disabled "Fix Simple Errors" with advice */
+                                <div className="mt-3">
+                                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg mb-3">
+                                    <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
+                                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                      </svg>
+                                      <span className="font-medium">Complex Errors Detected</span>
+                                    </p>
+                                    <p className="text-xs text-purple-700 dark:text-purple-300">
+                                      Your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to <span className="font-semibold">Smart (AI)</span> mode for advanced error correction with bracket matching and context-aware repairs.
+                                    </p>
+                                  </div>
+                                  <button
+                                    disabled
+                                    className="w-full px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                                  >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                    </svg>
+                                    Fix Simple Errors (Unavailable)
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            /* SMART (AI) MODE */
+                            <div className="mt-3">
+                              <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
+                                AI-powered error correction can handle all types of errors including bracket mismatches, structural issues, and complex syntax problems.
+                              </p>
+                              <button
+                                onClick={handleAutoCorrect}
+                                disabled={isActionDisabled || isCorrecting}
+                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
+                                </svg>
+                                {isCorrecting ? 'Fixing...' : 'Fix Complex Errors with AI'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      /* For other languages or general errors */
+                      <ErrorAnalysisDisplay
+                        title={validationError.reason.includes("Formatting failed") ? "Formatting Failed" : "Validation Failed"}
+                        analysisText={validationError.reason}
+                        showAutoCorrectButton={!!validationError.isFixableSyntaxError && activeLanguage !== 'json'}
+                        onAutoCorrect={handleAutoCorrect}
+                        isCorrecting={isCorrecting}
+                      />
+                    )}
+                  </div>
                 ) : successMessage ? (
                   <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
                     <CheckIcon className="h-10 w-10 mb-4" />
