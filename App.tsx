@@ -26,6 +26,11 @@ const CssFormatterPage = lazy(() => import('./components/formatters/CssFormatter
 const JavaScriptFormatterPage = lazy(() => import('./components/formatters/JavaScriptFormatterPage.tsx').then(m => ({ default: m.JavaScriptFormatterPage })));
 const TypeScriptFormatterPage = lazy(() => import('./components/formatters/TypeScriptFormatterPage.tsx').then(m => ({ default: m.TypeScriptFormatterPage })));
 const YamlFormatterPage = lazy(() => import('./components/formatters/YamlFormatterPage.tsx').then(m => ({ default: m.YamlFormatterPage })));
+const GraphQLFormatterPage = lazy(() => import('./components/formatters/GraphQLFormatterPage.tsx').then(m => ({ default: m.GraphQLFormatterPage })));
+const JavaFormatterPage = lazy(() => import('./components/formatters/JavaFormatterPage.tsx').then(m => ({ default: m.JavaFormatterPage })));
+const WsdlFormatterPage = lazy(() => import('./components/formatters/WsdlFormatterPage.tsx').then(m => ({ default: m.WsdlFormatterPage })));
+const SoapFormatterPage = lazy(() => import('./components/formatters/SoapFormatterPage.tsx').then(m => ({ default: m.SoapFormatterPage })));
+const AngularFormatterPage = lazy(() => import('./components/formatters/AngularFormatterPage.tsx').then(m => ({ default: m.AngularFormatterPage })));
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -106,6 +111,11 @@ const App: React.FC = () => {
             <Route path="/javascript-formatter" element={<JavaScriptFormatterPage />} />
             <Route path="/typescript-formatter" element={<TypeScriptFormatterPage />} />
             <Route path="/yaml-formatter" element={<YamlFormatterPage />} />
+            <Route path="/graphql-formatter" element={<GraphQLFormatterPage />} />
+            <Route path="/java-formatter" element={<JavaFormatterPage />} />
+            <Route path="/wsdl-formatter" element={<WsdlFormatterPage />} />
+            <Route path="/soap-formatter" element={<SoapFormatterPage />} />
+            <Route path="/angular-formatter" element={<AngularFormatterPage />} />
           </Routes>
         </Suspense>
       </div>
