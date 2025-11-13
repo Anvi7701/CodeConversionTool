@@ -62,8 +62,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
   const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
   
-  // Test mode to simulate errors (activated by Ctrl+Shift+E)
-  const [testErrorMode, setTestErrorMode] = useState(false);
+  // Test mode to simulate errors (activated by Ctrl+Shift+E for 503, Ctrl+Shift+S for 500)
+  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | null>(null);
 
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
@@ -84,14 +84,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Test mode keyboard shortcut (Ctrl+Shift+E)
+  // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'E') {
         event.preventDefault();
-        setTestErrorMode(prev => !prev);
-        if (!testErrorMode) {
-          console.log('🧪 Test Error Mode ENABLED - Next AI operation will simulate error');
+        setTestErrorMode(prev => prev === '503' ? null : '503');
+        if (testErrorMode !== '503') {
+          console.log('🧪 Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+        }
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+        event.preventDefault();
+        setTestErrorMode(prev => prev === '500' ? null : '500');
+        if (testErrorMode !== '500') {
+          console.log('🧪 Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
         } else {
           console.log('✅ Test Error Mode DISABLED - Normal AI operation');
         }
@@ -368,14 +376,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
       // Store AI validation request for retry
       const executeValidation = async () => {
-        // Test mode: Simulate AI error
-        if (testErrorMode) {
-          setTestErrorMode(false); // Auto-disable after one use
+        // Test mode: Simulate AI errors
+        if (testErrorMode === '503') {
+          setTestErrorMode(null); // Auto-disable after one use
           throw {
             error: {
               code: 503,
               message: "The model is overloaded. Please try again later.",
               status: "UNAVAILABLE"
+            }
+          };
+        } else if (testErrorMode === '500') {
+          setTestErrorMode(null); // Auto-disable after one use
+          throw {
+            error: {
+              code: 500,
+              message: "Internal Server Error",
+              status: "INTERNAL_SERVER_ERROR"
             }
           };
         }
@@ -435,14 +452,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setAiError(null);
       
       try {
-          // Test mode: Simulate AI error
-          if (testErrorMode) {
-            setTestErrorMode(false); // Auto-disable after one use
+          // Test mode: Simulate AI errors
+          if (testErrorMode === '503') {
+            setTestErrorMode(null); // Auto-disable after one use
             throw {
               error: {
                 code: 503,
                 message: "The model is overloaded. Please try again later.",
                 status: "UNAVAILABLE"
+              }
+            };
+          } else if (testErrorMode === '500') {
+            setTestErrorMode(null); // Auto-disable after one use
+            throw {
+              error: {
+                code: 500,
+                message: "Internal Server Error",
+                status: "INTERNAL_SERVER_ERROR"
               }
             };
           }
@@ -1082,7 +1108,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Test mode indicator */}
                 {testErrorMode && (
                   <span className="ml-2 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs font-medium rounded border border-red-300 dark:border-red-700 animate-pulse">
-                    🧪 Test Error Mode
+                    🧪 Test {testErrorMode} Error
                   </span>
                 )}
               </div>
