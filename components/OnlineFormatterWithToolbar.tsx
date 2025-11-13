@@ -18,6 +18,7 @@ import { GraphViewer } from './GraphViewer';
 import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
+import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -56,6 +57,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [isValidated, setIsValidated] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // AI Error state
+  const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
+  const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
 
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
@@ -102,6 +107,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setErrorLines([]);
     setAppliedFixes([]);
     setShowFixSummary(false);
+    setAiError(null);
+    setLastAiRequest(null);
   };
   
   const handleLanguageChange = (lang: Language) => {
@@ -338,20 +345,46 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         return;
       }
 
-      const result = await validateCodeSyntax(trimmedInput, activeLanguage);
-      if (result.isValid) {
-        setSuccessMessage("Validation successful! You can now format the code.");
-        setIsValidated(true);
-      } else {
-        setValidationError(result);
-      }
+      // Store AI validation request for retry
+      const executeValidation = async () => {
+        const result = await validateCodeSyntax(trimmedInput, activeLanguage);
+        if (result.isValid) {
+          setSuccessMessage("Validation successful! You can now format the code.");
+          setIsValidated(true);
+          setLastAiRequest(null);
+        } else {
+          setValidationError(result);
+          setLastAiRequest(null);
+        }
+      };
+
+      setLastAiRequest(() => async () => {
+        setIsValidating(true);
+        setAiError(null);
+        try {
+          await executeValidation();
+        } catch (err: any) {
+          const parsedError = parseAIError(err);
+          setAiError(parsedError);
+        } finally {
+          setIsValidating(false);
+        }
+      });
+
+      await executeValidation();
     } catch (err: any) {
-        setValidationError({
-            isValid: false,
-            reason: `The validator encountered an issue. Please check the syntax of your ${activeLanguage} code.\n\nDetails: ${err.message}`,
-            isFixableSyntaxError: true,
-            suggestedLanguage: undefined
-        });
+        // Check if this is an AI error (from validateCodeSyntax)
+        if (err.message && (err.message.includes('API') || err.message.includes('AI') || err.message.includes('timed out') || err.message.includes('rate limit') || err.message.includes('Server Error'))) {
+          const parsedError = parseAIError(err);
+          setAiError(parsedError);
+        } else {
+          setValidationError({
+              isValid: false,
+              reason: `The validator encountered an issue. Please check the syntax of your ${activeLanguage} code.\n\nDetails: ${err.message}`,
+              isFixableSyntaxError: true,
+              suggestedLanguage: undefined
+          });
+        }
     } finally {
       setIsValidating(false);
     }
@@ -359,24 +392,35 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   const handleAutoCorrect = async () => {
     if (!inputCode) return;
-    setIsCorrecting(true);
-    setValidationError(null);
-    setOutputError(null);
-    setErrorLines([]);
     
-    try {
-        const correctedCode = await correctCodeSyntax(inputCode, activeLanguage);
-        setInputCode(correctedCode);
-        addToHistory(correctedCode);
-        setIsValidated(true);
-        setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
-        setShowFixSummary(false);
-    } catch (err: any) {
-        setOutputError(err.message || "AI auto-correction failed.");
-        setIsValidated(false);
-    } finally {
-        setIsCorrecting(false);
-    }
+    // Store the request for retry functionality
+    const executeCorrection = async () => {
+      setIsCorrecting(true);
+      setValidationError(null);
+      setOutputError(null);
+      setErrorLines([]);
+      setAiError(null);
+      
+      try {
+          const correctedCode = await correctCodeSyntax(inputCode, activeLanguage);
+          setInputCode(correctedCode);
+          addToHistory(correctedCode);
+          setIsValidated(true);
+          setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
+          setShowFixSummary(false);
+          setLastAiRequest(null);
+      } catch (err: any) {
+          // Parse and display user-friendly AI error
+          const parsedError = parseAIError(err);
+          setAiError(parsedError);
+          setIsValidated(false);
+      } finally {
+          setIsCorrecting(false);
+      }
+    };
+    
+    setLastAiRequest(() => executeCorrection);
+    await executeCorrection();
   };
 
   const handleFormat = async (indentSize: number = 2) => {
@@ -634,6 +678,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       `);
       printWindow.document.close();
     }
+  };
+
+  // AI Error handlers
+  const handleRetryAiRequest = async () => {
+    if (lastAiRequest) {
+      await lastAiRequest();
+    }
+  };
+
+  const handleSwitchToFastMode = () => {
+    setFormatterMode('fast');
+    setAiError(null);
+    setLastAiRequest(null);
   };
 
   const isActionDisabled = isLoading || isValidating || isCorrecting;
@@ -1148,6 +1205,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <ValidationLoading />
                 ) : isCorrecting ? (
                   <AutoCorrectionLoading />
+                ) : aiError ? (
+                  <div className="h-full overflow-auto p-4 flex items-center justify-center">
+                    <AIErrorDisplay 
+                      error={aiError}
+                      onRetry={lastAiRequest ? handleRetryAiRequest : undefined}
+                      onSwitchToFastMode={formatterMode === 'smart' ? handleSwitchToFastMode : undefined}
+                    />
+                  </div>
                 ) : outputError ? (
                   <div className="h-full flex flex-col items-center justify-center text-red-700 dark:text-red-300 p-4 text-center">
                     <p>{outputError}</p>
