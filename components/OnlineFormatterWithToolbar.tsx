@@ -1115,7 +1115,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 value={inputCode}
                 onChange={(e) => handleInputChange(e.target.value)}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                className="w-full h-96 bg-transparent resize-none p-4 pr-28 border-none focus:outline-none font-mono text-sm"
+                className="w-full flex-grow bg-transparent resize-none p-4 pr-28 border-none focus:outline-none font-mono text-sm"
                 spellCheck={false}
               />
             </div>
