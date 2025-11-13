@@ -61,6 +61,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // AI Error state
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
   const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
+  
+  // Test mode to simulate errors (activated by Ctrl+Shift+E)
+  const [testErrorMode, setTestErrorMode] = useState(false);
 
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
@@ -80,6 +83,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Dropdown states
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Test mode keyboard shortcut (Ctrl+Shift+E)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+        event.preventDefault();
+        setTestErrorMode(prev => !prev);
+        if (!testErrorMode) {
+          console.log('🧪 Test Error Mode ENABLED - Next AI operation will simulate error');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [testErrorMode]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -347,6 +368,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
       // Store AI validation request for retry
       const executeValidation = async () => {
+        // Test mode: Simulate AI error
+        if (testErrorMode) {
+          setTestErrorMode(false); // Auto-disable after one use
+          throw {
+            error: {
+              code: 503,
+              message: "The model is overloaded. Please try again later.",
+              status: "UNAVAILABLE"
+            }
+          };
+        }
+        
         const result = await validateCodeSyntax(trimmedInput, activeLanguage);
         if (result.isValid) {
           setSuccessMessage("Validation successful! You can now format the code.");
@@ -402,6 +435,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setAiError(null);
       
       try {
+          // Test mode: Simulate AI error
+          if (testErrorMode) {
+            setTestErrorMode(false); // Auto-disable after one use
+            throw {
+              error: {
+                code: 503,
+                message: "The model is overloaded. Please try again later.",
+                status: "UNAVAILABLE"
+              }
+            };
+          }
+          
           const correctedCode = await correctCodeSyntax(inputCode, activeLanguage);
           setInputCode(correctedCode);
           addToHistory(correctedCode);
@@ -1034,6 +1079,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span>Smart (AI)</span>
                   </button>
                 </div>
+                {/* Test mode indicator */}
+                {testErrorMode && (
+                  <span className="ml-2 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs font-medium rounded border border-red-300 dark:border-red-700 animate-pulse">
+                    🧪 Test Error Mode
+                  </span>
+                )}
               </div>
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
