@@ -59,7 +59,7 @@ const App: React.FC = () => {
       <nav className="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-700 py-4 px-4 mb-6">
         <div className="max-w-7xl mx-auto">
           {/* Main Tools Section */}
-          <div className="mb-3">
+          <div>
             <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">AI-Powered Tools</h2>
             <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
               <Link to="/" onClick={(e) => handleNavLinkClick(e, '/')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Explainer</Link>
@@ -79,36 +79,6 @@ const App: React.FC = () => {
               <Link to="/xml-inspector" onClick={(e) => handleNavLinkClick(e, '/xml-inspector')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">XML Inspector</Link>
               <span className="text-slate-400">|</span>
               <Link to="/data-to-class" onClick={(e) => handleNavLinkClick(e, '/data-to-class')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Data To Class</Link>
-            </div>
-          </div>
-
-          {/* Formatters Section */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-700">
-            <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Online Code Formatters & Beautifiers</h2>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-              <Link to="/json-formatter" onClick={(e) => handleNavLinkClick(e, '/json-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">JSON Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/xml-formatter" onClick={(e) => handleNavLinkClick(e, '/xml-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">XML Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/html-formatter" onClick={(e) => handleNavLinkClick(e, '/html-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">HTML Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/css-formatter" onClick={(e) => handleNavLinkClick(e, '/css-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">CSS Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/javascript-formatter" onClick={(e) => handleNavLinkClick(e, '/javascript-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">JavaScript Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/typescript-formatter" onClick={(e) => handleNavLinkClick(e, '/typescript-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">TypeScript Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/yaml-formatter" onClick={(e) => handleNavLinkClick(e, '/yaml-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">YAML Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/graphql-formatter" onClick={(e) => handleNavLinkClick(e, '/graphql-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">GraphQL Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/java-formatter" onClick={(e) => handleNavLinkClick(e, '/java-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">Java Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/wsdl-formatter" onClick={(e) => handleNavLinkClick(e, '/wsdl-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">WSDL Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/soap-formatter" onClick={(e) => handleNavLinkClick(e, '/soap-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">SOAP Formatter</Link>
-              <span className="text-slate-400">•</span>
-              <Link to="/angular-formatter" onClick={(e) => handleNavLinkClick(e, '/angular-formatter')} className="text-emerald-600 dark:text-emerald-400 hover:underline whitespace-nowrap font-medium">Angular Formatter</Link>
             </div>
           </div>
         </div>

@@ -168,6 +168,99 @@ export const Footer: React.FC = () => {
 
         </div>
 
+        {/* Code Formatters & Beautifiers Section */}
+        <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-700">
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6 text-center">
+            Online Code Formatters & Beautifiers
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+            <Link 
+              to="/json-formatter" 
+              onClick={(e) => handleLinkClick(e, '/json-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              JSON Formatter
+            </Link>
+            <Link 
+              to="/xml-formatter" 
+              onClick={(e) => handleLinkClick(e, '/xml-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              XML Formatter
+            </Link>
+            <Link 
+              to="/html-formatter" 
+              onClick={(e) => handleLinkClick(e, '/html-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              HTML Formatter
+            </Link>
+            <Link 
+              to="/css-formatter" 
+              onClick={(e) => handleLinkClick(e, '/css-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              CSS Formatter
+            </Link>
+            <Link 
+              to="/javascript-formatter" 
+              onClick={(e) => handleLinkClick(e, '/javascript-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              JavaScript Formatter
+            </Link>
+            <Link 
+              to="/typescript-formatter" 
+              onClick={(e) => handleLinkClick(e, '/typescript-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              TypeScript Formatter
+            </Link>
+            <Link 
+              to="/yaml-formatter" 
+              onClick={(e) => handleLinkClick(e, '/yaml-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              YAML Formatter
+            </Link>
+            <Link 
+              to="/graphql-formatter" 
+              onClick={(e) => handleLinkClick(e, '/graphql-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              GraphQL Formatter
+            </Link>
+            <Link 
+              to="/java-formatter" 
+              onClick={(e) => handleLinkClick(e, '/java-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              Java Formatter
+            </Link>
+            <Link 
+              to="/wsdl-formatter" 
+              onClick={(e) => handleLinkClick(e, '/wsdl-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              WSDL Formatter
+            </Link>
+            <Link 
+              to="/soap-formatter" 
+              onClick={(e) => handleLinkClick(e, '/soap-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              SOAP Formatter
+            </Link>
+            <Link 
+              to="/angular-formatter" 
+              onClick={(e) => handleLinkClick(e, '/angular-formatter')}
+              className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-center"
+            >
+              Angular Formatter
+            </Link>
+          </div>
+        </div>
+
         {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 text-center">
           <p className="text-sm text-slate-600 dark:text-slate-400">

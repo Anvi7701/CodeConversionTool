@@ -783,8 +783,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           <input ref={fileInputRef} type="file" accept={languageDetails[activeLanguage].extensions.join(',')} className="hidden" onChange={handleFileChange} />
         </div>
 
-        {/* JSON Toolbar - Only show for JSON */}
-        {isJsonLanguage && (
+        {/* JSON Toolbar - Hidden, functionality moved to smaller buttons */}
+        {/* {isJsonLanguage && (
           <JsonToolbar
             onFormat={handleFormat}
             onMinify={handleMinify}
@@ -805,6 +805,118 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             disabled={isActionDisabled}
             language={activeLanguage}
           />
+        )} */}
+
+        {/* Compact toolbar with smaller buttons and dropdowns */}
+        {isJsonLanguage && (
+          <div className="flex items-center gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
+            {/* Beautify button with dropdown */}
+            <div className="relative group">
+              <button
+                onClick={() => handleFormat(2)}
+                disabled={isActionDisabled || !inputCode.trim()}
+                className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                title="Beautify JSON"
+              >
+                <span>🎨</span>
+                <span>Beautify</span>
+                <span className="text-xs">▼</span>
+              </button>
+              {/* Dropdown menu */}
+              <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
+                <button
+                  onClick={() => handleFormat(2)}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  2 Spaces
+                </button>
+                <button
+                  onClick={() => handleFormat(4)}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  4 Spaces
+                </button>
+                <button
+                  onClick={() => handleFormat(0)}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Tab
+                </button>
+              </div>
+            </div>
+
+            {/* Minify button */}
+            <button
+              onClick={handleMinify}
+              disabled={isActionDisabled || !inputCode.trim()}
+              className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+              title="Minify JSON"
+            >
+              <span>📦</span>
+              <span>Minify</span>
+            </button>
+
+            {/* Sort button with dropdown */}
+            <div className="relative group">
+              <button
+                onClick={() => handleSort('asc', 'keys')}
+                disabled={isActionDisabled || !inputCode.trim()}
+                className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                title="Sort JSON"
+              >
+                <span>🔼</span>
+                <span>Sort</span>
+                <span className="text-xs">▼</span>
+              </button>
+              {/* Dropdown menu */}
+              <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
+                <button
+                  onClick={() => handleSort('asc', 'keys')}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Keys (A → Z)
+                </button>
+                <button
+                  onClick={() => handleSort('desc', 'keys')}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Keys (Z → A)
+                </button>
+                <button
+                  onClick={() => handleSort('asc', 'values')}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Values (A → Z)
+                </button>
+                <button
+                  onClick={() => handleSort('desc', 'values')}
+                  disabled={isActionDisabled || !inputCode.trim()}
+                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Values (Z → A)
+                </button>
+              </div>
+            </div>
+
+            <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
+
+            {/* Validate button */}
+            <button
+              onClick={handleValidate}
+              disabled={isActionDisabled || !inputCode.trim()}
+              className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+              title="Validate JSON"
+            >
+              <span>✓</span>
+              <span>Validate</span>
+            </button>
+          </div>
         )}
 
         {/* Copy Success Toast */}
