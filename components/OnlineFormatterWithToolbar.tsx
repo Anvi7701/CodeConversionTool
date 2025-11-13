@@ -557,6 +557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   const handleCopy = async () => {
+    if (!inputCode.trim()) return; // Don't copy if no input
     try {
       const textToCopy = outputCode || inputCode;
       await navigator.clipboard.writeText(textToCopy);
@@ -568,12 +569,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   const handleClear = () => {
+    if (!inputCode.trim()) return; // Don't clear if already empty
     resetState();
     setHistory([]);
     setHistoryIndex(-1);
   };
 
   const handleSave = () => {
+    if (!inputCode.trim()) return; // Don't save if no input
     const content = outputCode || inputCode;
     if (!content) return;
 
@@ -825,8 +828,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Visualize as graph">
                         <button
                           onClick={handleShowGraph}
-                          disabled={isActionDisabled || !parsedJson}
-                          className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                          className={`p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl ${
+                            !parsedJson ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                          }`}
                           aria-label="Graph"
                           title="Visualize as graph"
                         >
@@ -839,8 +843,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Print">
                     <button
                       onClick={handlePrint}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                      className={`p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl ${
+                        !inputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                      }`}
                       aria-label="Print"
                       title="Print JSON (Ctrl+P)"
                     >
@@ -850,8 +855,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Copy to clipboard">
                     <button
                       onClick={handleCopy}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                      className={`p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-2xl ${
+                        !inputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                      }`}
                       aria-label="Copy"
                       title="Copy to clipboard (Ctrl+C)"
                     >
@@ -862,8 +868,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Clear input">
                     <button
                       onClick={handleClear}
-                      disabled={isActionDisabled}
-                      className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                      className={`p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-2xl ${
+                        !inputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                      }`}
                       aria-label="Clear"
                       title="Clear all content"
                     >
@@ -881,8 +888,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={isActionDisabled}
-                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-2xl cursor-pointer"
                     aria-label="Upload File"
                     title="Upload a code file to input"
                   >
@@ -892,8 +898,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <Tooltip content="Download to file">
                   <button
                     onClick={handleSave}
-                    disabled={isActionDisabled || !inputCode.trim()}
-                    className="p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                    className={`p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-2xl ${
+                      !inputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
                     aria-label="Download File"
                     title="Download to file"
                   >
