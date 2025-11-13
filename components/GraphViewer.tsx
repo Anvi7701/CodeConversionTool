@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, FC, useState } from 'react';
 import * as d3 from 'd3';
 import { GraphData, GraphNode, Selection } from '../types';
-import { DownloadIcon } from './icons';
+import { DownloadIcon, SaveIcon, CopyIcon } from './icons';
 import { Tooltip } from './Tooltip';
 import type { Theme } from './ThemeToggle';
 
@@ -54,7 +54,6 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
     const isDarkMode =
         theme === 'dark' ||
         (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
 
     const getNodeAppearance = (node: GraphNode) => {
         const isSelected = selectedNodePath === node.id;
@@ -359,18 +358,136 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
         }
     };
 
+    const saveGraph = async () => {
+        try {
+            const svgData = await getStyledSvgString();
+            const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            
+            // Use File System Access API if available (modern browsers)
+            if ('showSaveFilePicker' in window) {
+                const handle = await (window as any).showSaveFilePicker({
+                    suggestedName: 'graph.svg',
+                    types: [{
+                        description: 'SVG Image',
+                        accept: { 'image/svg+xml': ['.svg'] }
+                    }]
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+            } else {
+                // Fallback to download
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'graph.svg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+        } catch (e) {
+            console.error("Failed to save graph:", e);
+        }
+    };
+
+    const copyGraphToClipboard = async () => {
+        try {
+            const svgData = await getStyledSvgString();
+            
+            // Try to copy as image first (PNG)
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const svgUrl = URL.createObjectURL(svgBlob);
+            
+            const img = new Image();
+            img.onload = async () => {
+                const canvas = document.createElement('canvas');
+                const svgElement = new DOMParser().parseFromString(svgData, 'image/svg+xml').querySelector('svg');
+                const svgWidth = parseFloat(svgElement?.getAttribute('width') || '1200');
+                const svgHeight = parseFloat(svgElement?.getAttribute('height') || '800');
+                
+                canvas.width = svgWidth;
+                canvas.height = svgHeight;
+                const ctx = canvas.getContext('2d');
+                
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0);
+                    
+                    canvas.toBlob(async (blob) => {
+                        if (blob) {
+                            try {
+                                await navigator.clipboard.write([
+                                    new ClipboardItem({ 'image/png': blob })
+                                ]);
+                                console.log('Graph copied to clipboard as image');
+                            } catch (clipboardError) {
+                                console.error("Failed to copy to clipboard:", clipboardError);
+                            }
+                        }
+                        URL.revokeObjectURL(svgUrl);
+                    }, 'image/png');
+                }
+            };
+            img.onerror = () => {
+                URL.revokeObjectURL(svgUrl);
+            };
+            img.src = svgUrl;
+        } catch (e) {
+            console.error("Failed to copy graph:", e);
+        }
+    };
+
     return (
-        <div className="w-full h-full relative" style={{ minHeight: '400px' }}>
+        <div 
+            className="w-full h-full relative" 
+            style={{ minHeight: '400px' }}
+            onClick={() => setIsDownloadOpen(false)}
+        >
             <svg ref={svgRef} width="100%" height="100%" className="bg-slate-50 dark:bg-dark-bg/50 select-none"></svg>
-             <div className="absolute top-2 right-2">
-                <div className="relative">
+             <div className="absolute top-2 right-2 flex gap-2" style={{ zIndex: 100000 }}>
+                <Tooltip content="Save to System">
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            saveGraph();
+                        }} 
+                        className="control-button save-button"
+                        style={{ position: 'relative', zIndex: 100001 }}
+                    >
+                        <SaveIcon className="w-5 h-5" />
+                    </button>
+                </Tooltip>
+                <Tooltip content="Copy Graph">
+                    <button 
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            copyGraphToClipboard();
+                        }} 
+                        className="control-button copy-button"
+                        style={{ position: 'relative', zIndex: 100001 }}
+                    >
+                        <CopyIcon className="w-5 h-5" />
+                    </button>
+                </Tooltip>
+                <div className="relative" style={{ zIndex: 100001 }}>
                     <Tooltip content="Download Graph">
-                        <button onClick={() => setIsDownloadOpen(p => !p)} className="control-button">
+                        <button 
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsDownloadOpen(p => !p);
+                            }} 
+                            className="control-button download-button"
+                            style={{ position: 'relative', zIndex: 100001 }}
+                        >
                             <DownloadIcon className="w-5 h-5" />
                         </button>
                     </Tooltip>
                     {isDownloadOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 z-10">
+                        <div 
+                            className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700"
+                            style={{ zIndex: 100002 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <button onClick={downloadSVG} className="download-option">Download as SVG</button>
                             <button onClick={downloadPNG} className="download-option">Download as PNG</button>
                         </div>
@@ -393,16 +510,62 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
                     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
                     transition: all 0.2s;
                     color: #475569;
+                    cursor: pointer;
                 }
                 .dark .control-button {
                     background-color: #1e293b;
                     border-color: #334155;
                     color: #cbd5e1;
                 }
-                .control-button:hover {
-                    border-color: #0d9488;
-                    color: #0d9488;
+                
+                /* Save Button - Green */
+                .save-button {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    border-color: #059669;
+                    color: white;
                 }
+                .dark .save-button {
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    border-color: #047857;
+                }
+                .save-button:hover {
+                    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3), 0 2px 4px -1px rgba(16, 185, 129, 0.2);
+                }
+                
+                /* Copy Button - Blue */
+                .copy-button {
+                    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                    border-color: #2563eb;
+                    color: white;
+                }
+                .dark .copy-button {
+                    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                    border-color: #1d4ed8;
+                }
+                .copy-button:hover {
+                    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3), 0 2px 4px -1px rgba(59, 130, 246, 0.2);
+                }
+                
+                /* Download Button - Purple */
+                .download-button {
+                    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+                    border-color: #9333ea;
+                    color: white;
+                }
+                .dark .download-button {
+                    background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
+                    border-color: #7e22ce;
+                }
+                .download-button:hover {
+                    background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 6px -1px rgba(168, 85, 247, 0.3), 0 2px 4px -1px rgba(168, 85, 247, 0.2);
+                }
+                
                 .download-option {
                     display: block;
                     width: 100%;
