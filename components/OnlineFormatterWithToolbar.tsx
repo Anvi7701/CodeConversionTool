@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
@@ -71,6 +71,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showGraph, setShowGraph] = useState(false);
   const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
   const [selectedNodePath, setSelectedNodePath] = useState<string>('');
+  
+  // Dropdown states
+  const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.dropdown-container')) {
+        setShowBeautifyDropdown(false);
+        setShowSortDropdown(false);
+      }
+    };
+
+    if (showBeautifyDropdown || showSortDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showBeautifyDropdown, showSortDropdown]);
 
   const resetState = (keepInput = false) => {
     if (!keepInput) setInputCode('');
@@ -811,9 +831,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {isJsonLanguage && (
           <div className="flex items-center gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
             {/* Beautify button with dropdown */}
-            <div className="relative group">
+            <div className="relative dropdown-container">
               <button
-                onClick={() => handleFormat(2)}
+                onClick={() => setShowBeautifyDropdown(!showBeautifyDropdown)}
                 disabled={isActionDisabled || !inputCode.trim()}
                 className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
                 title="Beautify JSON"
@@ -823,29 +843,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <span className="text-xs">▼</span>
               </button>
               {/* Dropdown menu */}
-              <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
-                <button
-                  onClick={() => handleFormat(2)}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  2 Spaces
-                </button>
-                <button
-                  onClick={() => handleFormat(4)}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  4 Spaces
-                </button>
-                <button
-                  onClick={() => handleFormat(0)}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Tab
-                </button>
-              </div>
+              {showBeautifyDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
+                  <button
+                    onClick={() => {
+                      handleFormat(2);
+                      setShowBeautifyDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    2 Spaces
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleFormat(4);
+                      setShowBeautifyDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    4 Spaces
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleFormat(0);
+                      setShowBeautifyDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    Tab
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Minify button */}
@@ -860,9 +891,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             </button>
 
             {/* Sort button with dropdown */}
-            <div className="relative group">
+            <div className="relative dropdown-container">
               <button
-                onClick={() => handleSort('asc', 'keys')}
+                onClick={() => setShowSortDropdown(!showSortDropdown)}
                 disabled={isActionDisabled || !inputCode.trim()}
                 className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
                 title="Sort JSON"
@@ -872,36 +903,50 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <span className="text-xs">▼</span>
               </button>
               {/* Dropdown menu */}
-              <div className="hidden group-hover:block absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
-                <button
-                  onClick={() => handleSort('asc', 'keys')}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Keys (A → Z)
-                </button>
-                <button
-                  onClick={() => handleSort('desc', 'keys')}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Keys (Z → A)
-                </button>
-                <button
-                  onClick={() => handleSort('asc', 'values')}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Values (A → Z)
-                </button>
-                <button
-                  onClick={() => handleSort('desc', 'values')}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Values (Z → A)
-                </button>
-              </div>
+              {showSortDropdown && (
+                <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
+                  <button
+                    onClick={() => {
+                      handleSort('asc', 'keys');
+                      setShowSortDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    Keys (A → Z)
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSort('desc', 'keys');
+                      setShowSortDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    Keys (Z → A)
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSort('asc', 'values');
+                      setShowSortDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    Values (A → Z)
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSort('desc', 'values');
+                      setShowSortDropdown(false);
+                    }}
+                    disabled={isActionDisabled || !inputCode.trim()}
+                    className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                  >
+                    Values (Z → A)
+                  </button>
+                </div>
+              )}
             </div>
 
             <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
