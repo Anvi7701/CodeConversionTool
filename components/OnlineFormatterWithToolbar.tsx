@@ -830,6 +830,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-xl font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                 <div className="flex items-center gap-1.5">
+                  {/* Graph button - only for JSON */}
+                  {isJsonLanguage && (
+                    <>
+                      <Tooltip content="Visualize as graph">
+                        <button
+                          onClick={handleShowGraph}
+                          disabled={isActionDisabled || !parsedJson}
+                          className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all text-2xl"
+                          aria-label="Graph"
+                          title="Visualize as graph"
+                        >
+                          📊
+                        </button>
+                      </Tooltip>
+                      <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                    </>
+                  )}
                   <Tooltip content="Save to file">
                     <button
                       onClick={handleSave}
