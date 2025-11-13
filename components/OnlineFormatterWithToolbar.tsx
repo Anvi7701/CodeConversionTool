@@ -859,37 +859,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
             {/* Fast/Smart Mode Selector - Only for JSON */}
             {isJsonLanguage ? (
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                    Validation Mode:
-                  </span>
-                  <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg border-2 border-slate-300 dark:border-slate-600">
-                    <button
-                      onClick={() => setFormatterMode('fast')}
-                      className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[100px] ${
-                        formatterMode === 'fast'
-                          ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
-                    >
-                      <LightningIcon className="h-4 w-4" />
-                      Fast
-                    </button>
-                    <button
-                      onClick={() => setFormatterMode('smart')}
-                      className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[130px] ${
-                        formatterMode === 'smart'
-                          ? 'bg-purple-500 text-white shadow-sm'
-                          : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
-                      }`}
-                    >
-                      🤖 Smart (AI)
-                    </button>
-                  </div>
-                </div>
-                <div className="text-xs text-slate-500 dark:text-slate-400">
-                  {formatterMode === 'fast' ? 'Auto-fix simple errors' : 'AI-powered complex error correction'}
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Validation Mode:
+                </span>
+                <div className="flex gap-2 p-1 bg-slate-100 dark:bg-slate-700 rounded-lg border-2 border-slate-300 dark:border-slate-600">
+                  <button
+                    onClick={() => setFormatterMode('fast')}
+                    className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[100px] ${
+                      formatterMode === 'fast'
+                        ? 'bg-blue-500 text-white shadow-sm'
+                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    <LightningIcon className="h-4 w-4" />
+                    Fast
+                  </button>
+                  <button
+                    onClick={() => setFormatterMode('smart')}
+                    className={`px-4 py-2 rounded-md transition-all font-semibold flex items-center justify-center gap-2 text-sm min-w-[130px] ${
+                      formatterMode === 'smart'
+                        ? 'bg-purple-500 text-white shadow-sm'
+                        : 'bg-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
+                    }`}
+                  >
+                    🤖 Smart (AI)
+                  </button>
                 </div>
               </div>
             ) : (
