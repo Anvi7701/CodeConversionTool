@@ -262,53 +262,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         {onGenerateSample && <div className="toolbar-separator" />}
 
-        <div className="toolbar-group visualize-group">
-          {/* JSON Graph */}
-          {onViewGraph && (
-            <button
-              className="toolbar-btn"
-              onClick={onViewGraph}
-              disabled={disabled}
-              title="Visualize as graph"
-            >
-              <span className="icon">📊</span>
-              <span className="label">Graph</span>
-            </button>
-          )}
-        </div>
-
-        {onViewGraph && <div className="toolbar-separator" />}
-
-        <div className="toolbar-group export-group">
-          {/* Save */}
-          {onSave && (
-            <button
-              className="toolbar-btn"
-              onClick={onSave}
-              disabled={disabled}
-              title="Download JSON (Ctrl+S)"
-            >
-              <span className="icon">💾</span>
-              <span className="label">Save</span>
-            </button>
-          )}
-
-          {/* Print */}
-          {onPrint && (
-            <button
-              className="toolbar-btn"
-              onClick={onPrint}
-              disabled={disabled}
-              title="Print JSON (Ctrl+P)"
-            >
-              <span className="icon">🖨️</span>
-              <span className="label">Print</span>
-            </button>
-          )}
-        </div>
-
-        {(onSave || onPrint) && <div className="toolbar-separator" />}
-
         <div className="toolbar-group validate-group">
           {/* Validate */}
           <button
@@ -319,32 +272,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           >
             <span className="icon">✓</span>
             <span className="label">Validate</span>
-          </button>
-        </div>
-
-        <div className="toolbar-separator" />
-
-        <div className="toolbar-group actions-group">
-          {/* Clear */}
-          <button
-            className="toolbar-btn danger"
-            onClick={onClear}
-            disabled={disabled}
-            title="Clear all content"
-          >
-            <span className="icon">🗑️</span>
-            <span className="label">Clear</span>
-          </button>
-
-          {/* Copy */}
-          <button
-            className="toolbar-btn"
-            onClick={onCopy}
-            disabled={disabled}
-            title="Copy to clipboard (Ctrl+C)"
-          >
-            <span className="icon">📋</span>
-            <span className="label">Copy</span>
           </button>
         </div>
 
