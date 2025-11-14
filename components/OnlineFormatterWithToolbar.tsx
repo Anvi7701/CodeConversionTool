@@ -1731,7 +1731,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <p>{successMessage}</p>
                   </div>
                 ) : outputCode ? (
-                  <>
+                  <div className="h-full w-full">
                     {/* Render different views based on viewFormat for JSON */}
                     {activeLanguage === 'json' && viewFormat !== 'code' ? (
                       (() => {
@@ -1756,7 +1756,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     ) : (
                       <CodeViewer code={outputCode} language={activeLanguage} />
                     )}
-                  </>
+                  </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
                     <FormatIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
