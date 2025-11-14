@@ -1070,9 +1070,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Beautify button with dropdown */}
               <div className="relative dropdown-container">
                 <button
-                  onClick={() => setShowBeautifyDropdown(!showBeautifyDropdown)}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    setShowBeautifyDropdown(!showBeautifyDropdown);
+                  }}
+                  className={`px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1.5 ${
+                    isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
                   title="Beautify JSON"
                 >
                   <span>🎨</span>
@@ -1084,31 +1088,31 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleFormat(2);
                         setShowBeautifyDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
                     >
                       2 Spaces
                     </button>
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleFormat(4);
                         setShowBeautifyDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
                     >
                       4 Spaces
                     </button>
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleFormat(0);
                         setShowBeautifyDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
                     >
                       Tab
                     </button>
@@ -1118,9 +1122,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
               {/* Minify button */}
               <button
-                onClick={handleMinify}
-                disabled={isActionDisabled || !inputCode.trim()}
-                className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                onClick={() => {
+                  if (isActionDisabled || !inputCode.trim()) return;
+                  handleMinify();
+                }}
+                className={`px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center gap-1.5 ${
+                  isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
                 title="Minify JSON"
               >
                 <span>📦</span>
@@ -1130,9 +1138,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Sort button with dropdown */}
               <div className="relative dropdown-container">
                 <button
-                  onClick={() => setShowSortDropdown(!showSortDropdown)}
-                  disabled={isActionDisabled || !inputCode.trim()}
-                  className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    setShowSortDropdown(!showSortDropdown);
+                  }}
+                  className={`px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 ${
+                    isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  }`}
                   title="Sort JSON"
                 >
                   <span>🔼</span>
@@ -1144,41 +1156,41 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleSort('asc', 'keys');
                         setShowSortDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
                     >
                       Keys (A → Z)
                     </button>
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleSort('desc', 'keys');
                         setShowSortDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
                     >
                       Keys (Z → A)
                     </button>
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleSort('asc', 'values');
                         setShowSortDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
                     >
                       Values (A → Z)
                     </button>
                     <button
                       onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleSort('desc', 'values');
                         setShowSortDropdown(false);
                       }}
-                      disabled={isActionDisabled || !inputCode.trim()}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 dark:text-gray-100"
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
                     >
                       Values (Z → A)
                     </button>
@@ -1190,9 +1202,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
               {/* Validate button */}
               <button
-                onClick={handleValidate}
-                disabled={isActionDisabled || !inputCode.trim()}
-                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5"
+                onClick={() => {
+                  if (isActionDisabled || !inputCode.trim()) return;
+                  handleValidate();
+                }}
+                className={`px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 ${
+                  isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
                 title="Validate JSON"
               >
                 <span>✓</span>
