@@ -1210,7 +1210,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     onClick={() => setFormatterMode('fast')}
                     className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-1.5 ${
                       formatterMode === 'fast'
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-md'
+                        ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white shadow-lg font-semibold'
                         : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
                     }`}
                   >
