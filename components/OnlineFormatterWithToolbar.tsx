@@ -128,6 +128,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           event.preventDefault();
           handleRedo();
         }
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'L') {
+        // Compact on Ctrl+Shift+L
+        event.preventDefault();
+        if (activeLanguage === 'json' && inputCode.trim()) {
+          handleCompact();
+        }
       }
     };
 
@@ -636,6 +642,27 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setValidationError({
         isValid: false,
         reason: `Minify failed: ${err.message}`,
+        isFixableSyntaxError: true,
+        suggestedLanguage: undefined
+      });
+    }
+  };
+
+  const handleCompact = () => {
+    const trimmedInput = inputCode.trim();
+    if (!trimmedInput || activeLanguage !== 'json') return;
+
+    try {
+      const jsonObj = JSON.parse(trimmedInput);
+      const compacted = JSON.stringify(jsonObj); // Remove all whitespaces
+      setOutputCode(compacted);
+      addToHistory(compacted);
+      setValidationError(null);
+      setOutputError(null);
+    } catch (err: any) {
+      setValidationError({
+        isValid: false,
+        reason: `Compact failed: ${err.message}`,
         isFixableSyntaxError: true,
         suggestedLanguage: undefined
       });
@@ -1266,6 +1293,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       📋
                     </button>
                   </Tooltip>
+                  {/* Compact button - only for JSON */}
+                  {isJsonLanguage && (
+                    <Tooltip content="Compact JSON data, remove all whitespaces">
+                      <button
+                        onClick={handleCompact}
+                        className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer"
+                        aria-label="Compact"
+                        title="Compact JSON data, remove all whitespaces (Ctrl+Shift+L)"
+                      >
+                        📦
+                      </button>
+                    </Tooltip>
+                  )}
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                   <Tooltip content="Undo last change">
                     <button
