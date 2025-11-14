@@ -1456,7 +1456,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     title="Exit fullscreen (F11 or Esc)"
                   >
                     <span>⮾</span>
-                    <span>Exit fullscreen</span>
+                    <span>Exit</span>
                   </button>
                 </Tooltip>
               )}
