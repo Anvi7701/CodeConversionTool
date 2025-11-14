@@ -1403,7 +1403,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Upload and Download icons - positioned at top right inside the textarea box */}
-              <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+              <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -1472,7 +1472,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Copy icons - positioned at top right inside the output box */}
-              <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
+              <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Download formatted file">
                   <button
                     onClick={handleSave}
