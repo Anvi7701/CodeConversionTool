@@ -1462,7 +1462,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Move to Output"
                       title="Move input data to output"
                     >
-                      📤
+                      ➡️
                     </button>
                   </Tooltip>
                 </div>
