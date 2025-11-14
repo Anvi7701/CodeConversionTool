@@ -1,0 +1,7 @@
+/* Hide elements with fullscreen-hide class when in fullscreen mode */
+:fullscreen .fullscreen-hide,
+:-webkit-full-screen .fullscreen-hide,
+:-moz-full-screen .fullscreen-hide,
+:-ms-fullscreen .fullscreen-hide {
+  display: none !important;
+}

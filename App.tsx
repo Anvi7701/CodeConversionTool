@@ -55,8 +55,8 @@ const App: React.FC = () => {
         <title>AI JSON Tools</title>
       </Helmet>
 
-      {/* Navigation Bar */}
-      <nav className="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-700 py-4 px-4 mb-6">
+      {/* Navigation Bar - Hidden in fullscreen mode */}
+      <nav className="bg-white dark:bg-dark-card border-b border-slate-200 dark:border-slate-700 py-4 px-4 mb-6 fullscreen-hide">
         <div className="max-w-7xl mx-auto">
           {/* Main Tools Section */}
           <div>
