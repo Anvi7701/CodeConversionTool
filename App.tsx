@@ -118,7 +118,7 @@ const App: React.FC = () => {
         </Suspense>
       </div>
 
-      <Footer />
+      <Footer className="fullscreen-hide" />
     </>
   );
 };
