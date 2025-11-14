@@ -85,6 +85,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+  // Fullscreen state
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -205,6 +208,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       return () => clearTimeout(timeoutId);
     }
   }, [inputCode, activeLanguage]);
+
+  // Sync fullscreen state with actual fullscreen status
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
 
   // Add to history
   const addToHistory = (value: string) => {
@@ -840,6 +856,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error('Error attempting to enable fullscreen:', err);
+      });
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
   // AI Error handlers
   const handleRetryAiRequest = async () => {
     if (lastAiRequest) {
@@ -1325,6 +1351,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       title="Redo last change (Ctrl+Y)"
                     >
                       ↪️
+                    </button>
+                  </Tooltip>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                  <Tooltip content={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
+                    <button
+                      onClick={handleToggleFullscreen}
+                      className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                      aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                      title={isFullscreen ? "Exit fullscreen (F11 or Esc)" : "Enter fullscreen (F11)"}
+                    >
+                      {isFullscreen ? '⮾' : '⛶'}
                     </button>
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
