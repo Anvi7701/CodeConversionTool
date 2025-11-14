@@ -94,6 +94,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
 
+  // Expand/Collapse state for Form, Tree, and View
+  const [expandAllTrigger, setExpandAllTrigger] = useState(false);
+  const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
+
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -849,6 +853,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setOutputCode(inputCode);
   };
 
+  // Expand All Fields: expand all nodes in Form, Tree, and View
+  const handleExpandAllFields = () => {
+    setExpandAllTrigger(!expandAllTrigger);
+    setCollapseAllTrigger(false);
+  };
+
+  // Collapse All Fields: collapse all nodes in Form, Tree, and View
+  const handleCollapseAllFields = () => {
+    setCollapseAllTrigger(!collapseAllTrigger);
+    setExpandAllTrigger(false);
+  };
+
   // Download: always downloads to default folder
   const handleDownload = () => {
     if (!inputCode.trim()) return;
@@ -1535,6 +1551,31 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Formatted Output</h2>
               <div className="flex items-center gap-2">
+                {/* Expand/Collapse buttons - visible only for Form, Tree, and View */}
+                {activeLanguage === 'json' && ['form', 'tree', 'view'].includes(viewFormat) && (
+                  <>
+                    <Tooltip content="Expand all fields">
+                      <button
+                        onClick={handleExpandAllFields}
+                        className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-md transition-all cursor-pointer font-medium shadow-md"
+                        aria-label="Expand All"
+                        title="Expand all fields"
+                      >
+                        ⬇️ Expand
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Collapse all fields">
+                      <button
+                        onClick={handleCollapseAllFields}
+                        className="px-3 py-1.5 text-sm bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-all cursor-pointer font-medium shadow-md"
+                        aria-label="Collapse All"
+                        title="Collapse all fields"
+                      >
+                        ⬆️ Collapse
+                      </button>
+                    </Tooltip>
+                  </>
+                )}
                 {/* View Format Dropdown - visible by default for JSON */}
                 {activeLanguage === 'json' && (
                   <div className="relative view-dropdown-container">
@@ -1809,13 +1850,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           const parsedData = JSON.parse(outputCode);
                           switch (viewFormat) {
                             case 'tree':
-                              return <TreeView data={parsedData} />;
+                              return <TreeView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'form':
-                              return <FormView data={parsedData} />;
+                              return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
                               return <TextView code={outputCode} />;
                             case 'view':
-                              return <ConsoleView data={parsedData} />;
+                              return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             default:
                               return <CodeViewer code={outputCode} language={activeLanguage} />;
                           }

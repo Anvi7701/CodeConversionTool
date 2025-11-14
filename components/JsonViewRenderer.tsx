@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Tree View Component
 interface TreeNodeProps {
@@ -7,10 +7,21 @@ interface TreeNodeProps {
   level: number;
   isLast: boolean;
   path: string;
+  expandAll?: boolean;
+  collapseAll?: boolean;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path, expandAll, collapseAll }) => {
   const [isExpanded, setIsExpanded] = useState(level < 2); // Auto-expand first 2 levels
+
+  // Handle expand/collapse all
+  useEffect(() => {
+    if (expandAll) setIsExpanded(true);
+  }, [expandAll]);
+
+  useEffect(() => {
+    if (collapseAll) setIsExpanded(false);
+  }, [collapseAll]);
   const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
   const isArray = Array.isArray(value);
   const isExpandable = isObject || isArray;
@@ -62,6 +73,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path
                   level={level + 1}
                   isLast={index === value.length - 1}
                   path={`${path}.${index}`}
+                  expandAll={expandAll}
+                  collapseAll={collapseAll}
                 />
               ))
             : Object.entries(value).map(([key, val], index, arr) => (
@@ -72,6 +85,8 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path
                   level={level + 1}
                   isLast={index === arr.length - 1}
                   path={`${path}.${key}`}
+                  expandAll={expandAll}
+                  collapseAll={collapseAll}
                 />
               ))}
         </div>
@@ -80,10 +95,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path
   );
 };
 
-export const TreeView: React.FC<{ data: any }> = ({ data }) => {
+export const TreeView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: boolean }> = ({ data, expandAll, collapseAll }) => {
   return (
     <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
-      <TreeNode keyName="root" value={data} level={0} isLast={true} path="root" />
+      <TreeNode keyName="root" value={data} level={0} isLast={true} path="root" expandAll={expandAll} collapseAll={collapseAll} />
     </div>
   );
 };
@@ -94,9 +109,21 @@ interface FormFieldProps {
   value: any;
   level: number;
   path: string;
+  expandAll?: boolean;
+  collapseAll?: boolean;
 }
 
-const FormField: React.FC<FormFieldProps> = ({ keyName, value, level, path }) => {
+const FormField: React.FC<FormFieldProps> = ({ keyName, value, level, path, expandAll, collapseAll }) => {
+  const [isExpanded, setIsExpanded] = useState(level < 1);
+
+  // Handle expand/collapse all
+  useEffect(() => {
+    if (expandAll) setIsExpanded(true);
+  }, [expandAll]);
+
+  useEffect(() => {
+    if (collapseAll) setIsExpanded(false);
+  }, [collapseAll]);
   const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
   const isArray = Array.isArray(value);
 
@@ -111,12 +138,19 @@ const FormField: React.FC<FormFieldProps> = ({ keyName, value, level, path }) =>
   if (isObject) {
     return (
       <div className={`${level > 0 ? 'ml-6 mt-3' : 'mt-2'} p-3 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-800/50`}>
-        <div className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm">{keyName}</div>
-        <div className="space-y-2">
-          {Object.entries(value).map(([key, val]) => (
-            <FormField key={`${path}.${key}`} keyName={key} value={val} level={level + 1} path={`${path}.${key}`} />
-          ))}
+        <div 
+          className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? '▼' : '▶'} {keyName}
         </div>
+        {isExpanded && (
+          <div className="space-y-2">
+            {Object.entries(value).map(([key, val]) => (
+              <FormField key={`${path}.${key}`} keyName={key} value={val} level={level + 1} path={`${path}.${key}`} expandAll={expandAll} collapseAll={collapseAll} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -124,14 +158,19 @@ const FormField: React.FC<FormFieldProps> = ({ keyName, value, level, path }) =>
   if (isArray) {
     return (
       <div className={`${level > 0 ? 'ml-6 mt-3' : 'mt-2'} p-3 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-800/50`}>
-        <div className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm">
-          {keyName} <span className="text-xs text-slate-500">({value.length} items)</span>
+        <div 
+          className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? '▼' : '▶'} {keyName} <span className="text-xs text-slate-500">({value.length} items)</span>
         </div>
-        <div className="space-y-2">
-          {value.map((item, index) => (
-            <FormField key={`${path}.${index}`} keyName={`Item ${index + 1}`} value={item} level={level + 1} path={`${path}.${index}`} />
-          ))}
-        </div>
+        {isExpanded && (
+          <div className="space-y-2">
+            {value.map((item, index) => (
+              <FormField key={`${path}.${index}`} keyName={`Item ${index + 1}`} value={item} level={level + 1} path={`${path}.${index}`} expandAll={expandAll} collapseAll={collapseAll} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -144,20 +183,20 @@ const FormField: React.FC<FormFieldProps> = ({ keyName, value, level, path }) =>
   );
 };
 
-export const FormView: React.FC<{ data: any }> = ({ data }) => {
+export const FormView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: boolean }> = ({ data, expandAll, collapseAll }) => {
   return (
     <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
       {typeof data === 'object' && data !== null ? (
         Array.isArray(data) ? (
           <div className="space-y-2">
             {data.map((item, index) => (
-              <FormField key={index} keyName={`Item ${index + 1}`} value={item} level={0} path={`${index}`} />
+              <FormField key={index} keyName={`Item ${index + 1}`} value={item} level={0} path={`${index}`} expandAll={expandAll} collapseAll={collapseAll} />
             ))}
           </div>
         ) : (
           <div className="space-y-2">
             {Object.entries(data).map(([key, value]) => (
-              <FormField key={key} keyName={key} value={value} level={0} path={key} />
+              <FormField key={key} keyName={key} value={value} level={0} path={key} expandAll={expandAll} collapseAll={collapseAll} />
             ))}
           </div>
         )
@@ -184,10 +223,21 @@ interface ViewNodeProps {
   value: any;
   level: number;
   keyName?: string;
+  expandAll?: boolean;
+  collapseAll?: boolean;
 }
 
-const ViewNode: React.FC<ViewNodeProps> = ({ value, level, keyName }) => {
+const ViewNode: React.FC<ViewNodeProps> = ({ value, level, keyName, expandAll, collapseAll }) => {
   const [isExpanded, setIsExpanded] = useState(level < 1); // Auto-expand first level only
+
+  // Handle expand/collapse all
+  useEffect(() => {
+    if (expandAll) setIsExpanded(true);
+  }, [expandAll]);
+
+  useEffect(() => {
+    if (collapseAll) setIsExpanded(false);
+  }, [collapseAll]);
   const isObject = typeof value === 'object' && value !== null && !Array.isArray(value);
   const isArray = Array.isArray(value);
   const isExpandable = isObject || isArray;
@@ -245,11 +295,11 @@ const ViewNode: React.FC<ViewNodeProps> = ({ value, level, keyName }) => {
             ? value.map((item: any, index: number) => (
                 <div key={index} className="flex items-start gap-2">
                   <span className="text-slate-500 dark:text-slate-500 text-xs">{index}:</span>
-                  <ViewNode value={item} level={level + 1} />
+                  <ViewNode value={item} level={level + 1} expandAll={expandAll} collapseAll={collapseAll} />
                 </div>
               ))
             : Object.entries(value).map(([key, val]) => (
-                <ViewNode key={key} keyName={key} value={val} level={level + 1} />
+                <ViewNode key={key} keyName={key} value={val} level={level + 1} expandAll={expandAll} collapseAll={collapseAll} />
               ))}
           <span className="text-slate-500 dark:text-slate-400">{isArray ? ']' : '}'}</span>
         </div>
@@ -258,10 +308,10 @@ const ViewNode: React.FC<ViewNodeProps> = ({ value, level, keyName }) => {
   );
 };
 
-export const ConsoleView: React.FC<{ data: any }> = ({ data }) => {
+export const ConsoleView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: boolean }> = ({ data, expandAll, collapseAll }) => {
   return (
     <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
-      <ViewNode value={data} level={0} />
+      <ViewNode value={data} level={0} expandAll={expandAll} collapseAll={collapseAll} />
     </div>
   );
 };
