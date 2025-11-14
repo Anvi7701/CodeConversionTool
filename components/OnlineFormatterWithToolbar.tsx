@@ -1074,9 +1074,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (isActionDisabled || !inputCode.trim()) return;
                     setShowBeautifyDropdown(!showBeautifyDropdown);
                   }}
-                  className={`px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1.5 ${
-                    isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
+                  className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                   title="Beautify JSON"
                 >
                   <span>🎨</span>
@@ -1126,9 +1124,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   if (isActionDisabled || !inputCode.trim()) return;
                   handleMinify();
                 }}
-                className={`px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center gap-1.5 ${
-                  isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                }`}
+                className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                 title="Minify JSON"
               >
                 <span>📦</span>
@@ -1142,9 +1138,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (isActionDisabled || !inputCode.trim()) return;
                     setShowSortDropdown(!showSortDropdown);
                   }}
-                  className={`px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 ${
-                    isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                  }`}
+                  className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                   title="Sort JSON"
                 >
                   <span>🔼</span>
@@ -1206,9 +1200,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   if (isActionDisabled || !inputCode.trim()) return;
                   handleValidate();
                 }}
-                className={`px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 ${
-                  isActionDisabled || !inputCode.trim() ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-                }`}
+                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                 title="Validate JSON"
               >
                 <span>✓</span>
