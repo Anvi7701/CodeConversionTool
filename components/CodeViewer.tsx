@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { CopyIcon, CheckIcon, DownloadIcon } from './icons';
 import { Tooltip } from './Tooltip';
 
 interface CodeViewerProps {
@@ -56,21 +55,25 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ code, language }) => {
 
   return (
     <div className="absolute inset-0 flex flex-col">
-      <div className="absolute top-2 right-6 z-10 flex items-center gap-2">
+      <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
         <Tooltip content={`Download ${language} file`}>
             <button
                 onClick={handleDownload}
-                className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-sky-100/70 dark:bg-sky-900/30 hover:bg-sky-200/70 dark:hover:bg-sky-800/40"
+                className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                aria-label="Download"
+                title={`Download ${language} file`}
             >
-                <DownloadIcon className="h-4 w-4" />
+                💾
             </button>
         </Tooltip>
-        <Tooltip content={isCopied ? "Copied!" : "Copy code snippet"}>
+        <Tooltip content={isCopied ? "Copied!" : "Copy to clipboard"}>
             <button
                 onClick={handleCopy}
-                className="p-2 rounded-md transition-colors text-slate-600 dark:text-slate-300 bg-sky-100/70 dark:bg-sky-900/30 hover:bg-sky-200/70 dark:hover:bg-sky-800/40"
+                className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                aria-label="Copy"
+                title="Copy to clipboard"
             >
-                {isCopied ? <CheckIcon className="h-4 w-4 text-green-500" /> : <CopyIcon className="h-4 w-4" />}
+                {isCopied ? '✓' : '📋'}
             </button>
         </Tooltip>
       </div>
