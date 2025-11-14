@@ -1262,12 +1262,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Undo last change">
                     <button
                       onClick={handleUndo}
-                      disabled={historyIndex <= 0}
-                      className={`p-1 rounded-md transition-all text-xl ${
-                        historyIndex > 0
-                          ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer'
-                          : 'opacity-40 cursor-not-allowed'
-                      }`}
+                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
                       aria-label="Undo"
                       title="Undo last change (Ctrl+Z)"
                     >
