@@ -1475,12 +1475,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Formatted Output</h2>
               <div className="flex items-center gap-2">
-                {/* View Format Dropdown - only for JSON when output exists */}
-                {activeLanguage === 'json' && outputCode && (
+                {/* View Format Dropdown - visible by default for JSON */}
+                {activeLanguage === 'json' && (
                   <div className="relative view-dropdown-container">
                     <button
-                      onClick={() => setShowViewDropdown(!showViewDropdown)}
-                      className="px-3 py-1.5 text-sm bg-slate-700 dark:bg-slate-600 text-white rounded-md hover:bg-slate-600 dark:hover:bg-slate-500 transition-all cursor-pointer flex items-center gap-2"
+                      onClick={() => {
+                        console.log('View dropdown clicked, current format:', viewFormat);
+                        setShowViewDropdown(!showViewDropdown);
+                      }}
+                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-all cursor-pointer flex items-center gap-2 font-medium shadow-md"
                       aria-label="Select View Format"
                       title="Select view format"
                     >
