@@ -1363,17 +1363,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                  <Tooltip content={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}>
-                    <button
-                      onClick={handleToggleFullscreen}
-                      className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
-                      title={isFullscreen ? "Exit fullscreen (F11 or Esc)" : "Enter fullscreen (F11)"}
-                    >
-                      {isFullscreen ? '⮾' : '⛶'}
-                    </button>
-                  </Tooltip>
-                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                  {!isFullscreen && (
+                    <>
+                      <Tooltip content="Enter fullscreen">
+                        <button
+                          onClick={handleToggleFullscreen}
+                          className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                          aria-label="Enter Fullscreen"
+                          title="Enter fullscreen (F11)"
+                        >
+                          ⛶
+                        </button>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                    </>
+                  )}
                   <Tooltip content="Clear input">
                     <button
                       onClick={handleClear}
@@ -1440,8 +1444,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
 
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
-            {/* Output heading */}
-            <h2 className="text-lg font-semibold">Formatted Output</h2>
+            {/* Output heading with Exit fullscreen button */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Formatted Output</h2>
+              {isFullscreen && (
+                <Tooltip content="Exit fullscreen">
+                  <button
+                    onClick={handleToggleFullscreen}
+                    className="px-3 py-1.5 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer flex items-center gap-1.5"
+                    aria-label="Exit Fullscreen"
+                    title="Exit fullscreen (F11 or Esc)"
+                  >
+                    <span>⮾</span>
+                    <span>Exit fullscreen</span>
+                  </button>
+                </Tooltip>
+              )}
+            </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Copy icons - positioned at top right inside the output box */}
