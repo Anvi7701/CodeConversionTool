@@ -212,12 +212,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Sync fullscreen state with actual fullscreen status
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      const isInFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isInFullscreen);
+      
+      // Add/remove class on body to control visibility of navigation
+      if (isInFullscreen) {
+        document.body.classList.add('is-fullscreen');
+      } else {
+        document.body.classList.remove('is-fullscreen');
+      }
     };
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.body.classList.remove('is-fullscreen');
     };
   }, []);
 

@@ -1,7 +1,18 @@
 /* Hide elements with fullscreen-hide class when in fullscreen mode */
-:fullscreen .fullscreen-hide,
-:-webkit-full-screen .fullscreen-hide,
-:-moz-full-screen .fullscreen-hide,
-:-ms-fullscreen .fullscreen-hide {
+body.is-fullscreen .fullscreen-hide {
+  display: none !important;
+}
+
+/* Fallback for native fullscreen API */
+html:fullscreen .fullscreen-hide,
+html:-webkit-full-screen .fullscreen-hide,
+html:-moz-full-screen .fullscreen-hide,
+html:-ms-fullscreen .fullscreen-hide {
+  display: none !important;
+}
+
+/* Alternative approach - hide when body's parent (html) is in fullscreen */
+:root:fullscreen ~ body .fullscreen-hide,
+:root:-webkit-full-screen ~ body .fullscreen-hide {
   display: none !important;
 }
