@@ -19,6 +19,7 @@ import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
+import { TreeView, FormView, TextView, ConsoleView } from './JsonViewRenderer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -87,6 +88,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // View format state for JSON output (Code, Form, Text, Tree, View)
+  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view';
+  const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
+  const [showViewDropdown, setShowViewDropdown] = useState(false);
 
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
@@ -229,6 +235,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       document.body.classList.remove('is-fullscreen');
     };
   }, []);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showViewDropdown && !target.closest('.view-dropdown-container')) {
+        setShowViewDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showViewDropdown]);
 
 
   // Add to history
@@ -1452,22 +1471,56 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
 
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
-            {/* Output heading with Exit fullscreen button */}
+            {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">Formatted Output</h2>
-              {isFullscreen && (
-                <Tooltip content="Exit fullscreen">
-                  <button
-                    onClick={handleToggleFullscreen}
-                    className="px-3 py-1.5 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer flex items-center gap-1.5"
-                    aria-label="Exit Fullscreen"
-                    title="Exit fullscreen (F11 or Esc)"
-                  >
-                    <span>⮾</span>
-                    <span>Exit</span>
-                  </button>
-                </Tooltip>
-              )}
+              <div className="flex items-center gap-2">
+                {/* View Format Dropdown - only for JSON */}
+                {activeLanguage === 'json' && outputCode && !isLoading && !isValidating && !isCorrecting && !outputError && !validationError && !aiError && (
+                  <div className="relative view-dropdown-container">
+                    <button
+                      onClick={() => setShowViewDropdown(!showViewDropdown)}
+                      className="px-3 py-1.5 text-sm bg-slate-700 dark:bg-slate-600 text-white rounded-md hover:bg-slate-600 dark:hover:bg-slate-500 transition-all cursor-pointer flex items-center gap-2"
+                      aria-label="Select View Format"
+                      title="Select view format"
+                    >
+                      <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
+                      <span className="text-xs">▼</span>
+                    </button>
+                    {showViewDropdown && (
+                      <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[120px]">
+                        {(['code', 'form', 'text', 'tree', 'view'] as ViewFormat[]).map((format) => (
+                          <button
+                            key={format}
+                            onClick={() => {
+                              setViewFormat(format);
+                              setShowViewDropdown(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
+                              viewFormat === format ? 'bg-slate-100 dark:bg-slate-700 font-semibold' : ''
+                            }`}
+                          >
+                            {format.charAt(0).toUpperCase() + format.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isFullscreen && (
+                  <Tooltip content="Exit fullscreen">
+                    <button
+                      onClick={handleToggleFullscreen}
+                      className="px-3 py-1.5 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer flex items-center gap-1.5"
+                      aria-label="Exit Fullscreen"
+                      title="Exit fullscreen (F11 or Esc)"
+                    >
+                      <span>⮾</span>
+                      <span>Exit</span>
+                    </button>
+                  </Tooltip>
+                )}
+              </div>
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
@@ -1675,7 +1728,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <p>{successMessage}</p>
                   </div>
                 ) : outputCode ? (
-                  <CodeViewer code={outputCode} language={activeLanguage} />
+                  <>
+                    {/* Render different views based on viewFormat for JSON */}
+                    {activeLanguage === 'json' && viewFormat !== 'code' ? (
+                      (() => {
+                        try {
+                          const parsedData = JSON.parse(outputCode);
+                          switch (viewFormat) {
+                            case 'tree':
+                              return <TreeView data={parsedData} />;
+                            case 'form':
+                              return <FormView data={parsedData} />;
+                            case 'text':
+                              return <TextView code={outputCode} />;
+                            case 'view':
+                              return <ConsoleView data={parsedData} />;
+                            default:
+                              return <CodeViewer code={outputCode} language={activeLanguage} />;
+                          }
+                        } catch (error) {
+                          return <CodeViewer code={outputCode} language={activeLanguage} />;
+                        }
+                      })()
+                    ) : (
+                      <CodeViewer code={outputCode} language={activeLanguage} />
+                    )}
+                  </>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
                     <FormatIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
