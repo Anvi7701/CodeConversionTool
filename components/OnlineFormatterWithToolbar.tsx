@@ -1230,7 +1230,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-1.5 ${
                       formatterMode === 'smart'
                         ? 'bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 text-white shadow-lg font-semibold'
-                        : 'bg-gradient-to-r from-purple-400 via-pink-400 to-red-400 text-white hover:from-purple-500 hover:via-pink-500 hover:to-red-500'
+                        : 'bg-gradient-to-r from-purple-300 via-pink-300 to-red-300 text-white hover:from-purple-500 hover:via-pink-500 hover:to-red-500'
                     }`}
                   >
                     <span>🤖</span>
