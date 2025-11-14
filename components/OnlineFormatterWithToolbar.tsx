@@ -74,6 +74,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // History for undo/redo (only for JSON)
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const lastSavedToHistoryRef = useRef<string>('');
 
   // Graph viewer state
   const [showGraph, setShowGraph] = useState(false);
@@ -172,6 +173,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setAppliedFixes([]);
     setShowFixSummary(false);
   };
+  
+  // Add to history with debounce for manual edits
+  useEffect(() => {
+    if (activeLanguage !== 'json' || !inputCode.trim()) return;
+    
+    // Only add to history if the value has actually changed significantly
+    if (inputCode !== lastSavedToHistoryRef.current) {
+      const timeoutId = setTimeout(() => {
+        const currentHistoryValue = history[historyIndex];
+        if (inputCode !== currentHistoryValue) {
+          addToHistory(inputCode);
+          lastSavedToHistoryRef.current = inputCode;
+        }
+      }, 1000); // Debounce for 1 second after user stops typing
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [inputCode, activeLanguage]);
 
   // Add to history
   const addToHistory = (value: string) => {
@@ -179,6 +198,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const newHistory = [...history.slice(0, historyIndex + 1), value];
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
+      lastSavedToHistoryRef.current = value;
     }
   };
 
