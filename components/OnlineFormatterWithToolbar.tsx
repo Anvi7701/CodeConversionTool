@@ -843,11 +843,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHistoryIndex(-1);
   };
 
-  const handleSave = () => {
-    if (!inputCode.trim()) return; // Don't save if no input
+  // Move: copy data from input box to output box
+  const handleMove = () => {
+    if (!inputCode.trim()) return; // Don't move if input is empty
+    setOutputCode(inputCode);
+  };
+
+  // Download: always downloads to default folder
+  const handleDownload = () => {
+    if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
     if (!content) return;
-
     const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -856,6 +862,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     a.download = `formatted.${ext}`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  // Save: open Save As dialog (File System Access API), fallback to download
+  const handleSave = async () => {
+    if (!inputCode.trim()) return;
+    const content = outputCode || inputCode;
+    if (!content) return;
+    const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
+    const fileName = `formatted.${ext}`;
+    // Try File System Access API
+    // @ts-ignore
+    if (window.showSaveFilePicker) {
+      try {
+        // @ts-ignore
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [
+            {
+              description: `${activeLanguage.toUpperCase()} File`,
+              accept: { 'text/plain': [`.${ext}`] },
+            },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        return;
+      } catch (err) {
+        // If user cancels or error, fallback
+        console.warn('Save As dialog failed or was cancelled, falling back to download.', err);
+      }
+    }
+    // Fallback: download
+    handleDownload();
   };
 
   const handlePrint = () => {
@@ -1415,6 +1455,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       🗑️
                     </button>
                   </Tooltip>
+                  <Tooltip content="Move input to output">
+                    <button
+                      onClick={handleMove}
+                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer"
+                      aria-label="Move to Output"
+                      title="Move input data to output"
+                    >
+                      📤
+                    </button>
+                  </Tooltip>
                 </div>
               </div>
               <span className="text-xs text-slate-500">{inputCode.length} chars</span>
@@ -1435,7 +1485,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </Tooltip>
                 <Tooltip content="Download to file">
                   <button
-                    onClick={handleSave}
+                    onClick={handleDownload}
                     className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
                     aria-label="Download File"
                     title="Download to file"
@@ -1541,7 +1591,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Download formatted file">
                   <button
-                    onClick={handleSave}
+                    onClick={handleDownload}
                     className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
                     aria-label="Download"
                     title="Download formatted file"
