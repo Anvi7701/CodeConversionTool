@@ -120,12 +120,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           event.preventDefault();
           handleUndo();
         }
+      } else if (event.ctrlKey && event.key === 'y') {
+        // Redo on Ctrl+Y
+        const target = event.target as HTMLElement;
+        const isInTextarea = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+        if (!isInTextarea && historyIndex < history.length - 1 && activeLanguage === 'json') {
+          event.preventDefault();
+          handleRedo();
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [testErrorMode, historyIndex, activeLanguage]);
+  }, [testErrorMode, historyIndex, history.length, activeLanguage]);
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -1269,6 +1277,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       ↩️
                     </button>
                   </Tooltip>
+                  <Tooltip content="Redo last change">
+                    <button
+                      onClick={handleRedo}
+                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      aria-label="Redo"
+                      title="Redo last change (Ctrl+Y)"
+                    >
+                      ↪️
+                    </button>
+                  </Tooltip>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                   <Tooltip content="Clear input">
                     <button
                       onClick={handleClear}
