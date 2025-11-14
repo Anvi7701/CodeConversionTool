@@ -1394,8 +1394,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
 
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
-            {/* Output heading - simple for both JSON and non-JSON */}
-            <h2 className="text-lg font-semibold">Formatted Output</h2>
+            {/* Output heading with Download and Copy icons */}
+            <div className="flex justify-between items-center">
+              <h2 className="text-lg font-semibold">Formatted Output</h2>
+              <div className="flex items-center gap-1.5">
+                <Tooltip content="Download formatted file">
+                  <button
+                    onClick={handleSave}
+                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    aria-label="Download"
+                    title="Download formatted file"
+                  >
+                    💾
+                  </button>
+                </Tooltip>
+                <Tooltip content="Copy to clipboard">
+                  <button
+                    onClick={handleCopy}
+                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    aria-label="Copy"
+                    title="Copy to clipboard"
+                  >
+                    📋
+                  </button>
+                </Tooltip>
+              </div>
+            </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
               <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">
