@@ -1426,21 +1426,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-blue-600 dark:text-blue-400"
                     aria-label="Upload File"
                     title="Upload a code file to input"
                   >
-                    📁
+                    U
                   </button>
                 </Tooltip>
                 <Tooltip content="Download to file">
                   <button
                     onClick={handleSave}
-                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
                     aria-label="Download File"
                     title="Download to file"
                   >
-                    💾
+                    D
                   </button>
                 </Tooltip>
               </div>
@@ -1532,21 +1532,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <Tooltip content="Download formatted file">
                   <button
                     onClick={handleSave}
-                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
                     aria-label="Download"
                     title="Download formatted file"
                   >
-                    💾
+                    D
                   </button>
                 </Tooltip>
                 <Tooltip content="Copy to clipboard">
                   <button
                     onClick={handleCopy}
-                    className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all text-xl cursor-pointer"
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-purple-600 dark:text-purple-400"
                     aria-label="Copy"
                     title="Copy to clipboard"
                   >
-                    📋
+                    C
                   </button>
                 </Tooltip>
               </div>
