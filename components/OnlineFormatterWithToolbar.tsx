@@ -1421,7 +1421,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
-              {/* Upload and Download icons - positioned at top right inside the textarea box */}
+              {/* Upload, Download and Save icons - positioned at top right inside the textarea box */}
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Upload a code file">
                   <button
@@ -1441,6 +1441,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     title="Download to file"
                   >
                     D
+                  </button>
+                </Tooltip>
+                <Tooltip content="Save to file">
+                  <button
+                    onClick={handleSave}
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-orange-600 dark:text-orange-400"
+                    aria-label="Save File"
+                    title="Save to file"
+                  >
+                    S
                   </button>
                 </Tooltip>
               </div>
@@ -1527,7 +1537,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
-              {/* Download and Copy icons - positioned at top right inside the output box */}
+              {/* Download, Copy and Save icons - positioned at top right inside the output box */}
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Download formatted file">
                   <button
@@ -1547,6 +1557,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     title="Copy to clipboard"
                   >
                     C
+                  </button>
+                </Tooltip>
+                <Tooltip content="Save to file">
+                  <button
+                    onClick={handleSave}
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-orange-600 dark:text-orange-400"
+                    aria-label="Save"
+                    title="Save to file"
+                  >
+                    S
                   </button>
                 </Tooltip>
               </div>
