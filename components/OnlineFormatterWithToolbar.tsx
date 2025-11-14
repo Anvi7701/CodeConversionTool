@@ -1059,13 +1059,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     return ids;
   };
 
-  // Expand all nodes
-  const handleExpandAll = () => {
+  // Expand all nodes in graph
+  const handleGraphExpandAll = () => {
     setGraphCollapsedNodes(new Set());
   };
 
-  // Collapse all nodes
-  const handleCollapseAll = () => {
+  // Collapse all nodes in graph
+  const handleGraphCollapseAll = () => {
     if (parsedJson) {
       const allIds = getAllNodeIds(parsedJson);
       setGraphCollapsedNodes(new Set(allIds));
@@ -1903,7 +1903,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Control Buttons */}
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={handleExpandAll}
+                    onClick={handleGraphExpandAll}
                     className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700 flex items-center gap-2"
                     title="Expand all nodes"
                   >
@@ -1912,7 +1912,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                   
                   <button
-                    onClick={handleCollapseAll}
+                    onClick={handleGraphCollapseAll}
                     className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-700 flex items-center gap-2"
                     title="Collapse all nodes"
                   >
