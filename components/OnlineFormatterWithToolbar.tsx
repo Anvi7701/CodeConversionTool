@@ -1591,7 +1591,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         console.log('View dropdown clicked, current format:', viewFormat);
                         setShowViewDropdown(!showViewDropdown);
                       }}
-                      className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-all cursor-pointer flex items-center gap-2 font-medium shadow-md"
+                      className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                       aria-label="Select View Format"
                       title="Select view format"
                     >
