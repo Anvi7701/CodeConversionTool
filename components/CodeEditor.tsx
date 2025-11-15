@@ -64,7 +64,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   const lineCount = value.split('\n').length;
 
   return (
-    <div className="h-full w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-brand-primary rounded-md">
+    <div className="flex-grow w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-brand-primary rounded-md min-h-0">
       <div
         ref={lineNumbersRef}
         onWheel={handleGutterWheel}
@@ -81,7 +81,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
         onPaste={onPaste ? handlePaste : undefined}
         placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
         spellCheck="false"
-        className="flex-grow p-4 font-mono text-sm bg-transparent dark:text-dark-text resize-none focus:outline-none w-full h-full leading-5"
+        className="flex-grow p-4 font-mono text-sm bg-transparent dark:text-dark-text resize-none focus:outline-none w-full min-h-0 leading-5"
       />
     </div>
   );

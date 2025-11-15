@@ -1383,7 +1383,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px] relative z-10">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 relative z-10 h-[600px]">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50">
                 <h2 className="text-lg font-semibold">Input</h2>
@@ -1514,7 +1514,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <span className="text-xs text-slate-500">{inputCode.length} chars</span>
             </div>
 
-            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
+            <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-hidden">
               {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box */}
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Upload a code file">
@@ -1539,12 +1539,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </Tooltip>
               </div>
               
-              <textarea
+              <CodeEditor
                 value={inputCode}
-                onChange={(e) => handleInputChange(e.target.value)}
+                onChange={handleInputChange}
+                language={activeLanguage}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                className="w-full flex-grow bg-transparent resize-none p-4 pr-28 border-none focus:outline-none font-mono text-sm"
-                spellCheck={false}
               />
             </div>
 
@@ -1564,7 +1563,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
+          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 h-[600px]">
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
