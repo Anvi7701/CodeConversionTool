@@ -1381,7 +1381,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 opacity-100 pointer-events-auto">
                   {/* Graph button - only for JSON */}
                   {isJsonLanguage && (
                     <>
@@ -1481,7 +1481,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <Tooltip content="Move input to output">
                     <button
                       onClick={handleMove}
-                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer"
+                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer opacity-100"
                       aria-label="Move to Output"
                       title="Move input data to output"
                     >
