@@ -880,7 +880,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     URL.revokeObjectURL(url);
   };
 
-  // Save: open Save As dialog (File System Access API), fallback to download
+  // Save: open Save As dialog (File System Access API), no fallback on cancel
   const handleSave = async () => {
     if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
@@ -905,13 +905,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         await writable.write(content);
         await writable.close();
         return;
-      } catch (err) {
-        // If user cancels or error, fallback
-        console.warn('Save As dialog failed or was cancelled, falling back to download.', err);
+      } catch (err: any) {
+        // Check if user cancelled (AbortError) vs actual error
+        if (err.name === 'AbortError') {
+          // User clicked Cancel - do nothing
+          console.log('Save dialog was cancelled by user');
+          return;
+        }
+        // For other errors, log but don't fallback
+        console.warn('Save As dialog error:', err);
+        return;
       }
     }
-    // Fallback: download
-    handleDownload();
+    // If File System Access API is not supported, show alert
+    alert('Save dialog is not supported in your browser. Please use Download instead.');
   };
 
   const handlePrint = () => {
