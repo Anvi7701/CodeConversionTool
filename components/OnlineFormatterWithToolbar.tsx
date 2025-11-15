@@ -1584,21 +1584,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <Tooltip content="Expand all fields">
                       <button
                         onClick={handleExpandAllFields}
-                        className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-2xl cursor-pointer"
+                        className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-xl cursor-pointer"
                         aria-label="Expand All"
                         title="Expand all fields"
                       >
-                        📂
+                        ⬇️
                       </button>
                     </Tooltip>
                     <Tooltip content="Collapse all fields">
                       <button
                         onClick={handleCollapseAllFields}
-                        className="p-1 rounded-md hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all text-2xl cursor-pointer"
+                        className="p-1 rounded-md hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all text-xl cursor-pointer"
                         aria-label="Collapse All"
                         title="Collapse all fields"
                       >
-                        📁
+                        ⬆️
                       </button>
                     </Tooltip>
                   </>
