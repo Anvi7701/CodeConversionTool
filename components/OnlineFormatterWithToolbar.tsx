@@ -1389,30 +1389,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                 <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
-                  {/* Graph button - only for JSON */}
-                  {isJsonLanguage && (
-                    <>
-                      <Tooltip content="Visualize as graph">
-                        <button
-                          onClick={handleShowGraph}
-                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                          aria-label="Graph"
-                          title="Visualize as graph"
-                        >
-                          📊
-                        </button>
-                      </Tooltip>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                    </>
-                  )}
-                  <Tooltip content="Print">
+                  {/* GROUP 2: Save, Download, Copy */}
+                  <Tooltip content="Save to file">
                     <button
-                      onClick={handlePrint}
+                      onClick={handleSave}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Print"
-                      title="Print JSON (Ctrl+P)"
+                      aria-label="Save"
+                      title="Save to file (Ctrl+S)"
                     >
-                      🖨️
+                      S
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Download to file">
+                    <button
+                      onClick={handleDownload}
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                      aria-label="Download"
+                      title="Download to file"
+                    >
+                      D
                     </button>
                   </Tooltip>
                   <Tooltip content="Copy to clipboard">
@@ -1425,20 +1420,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       📋
                     </button>
                   </Tooltip>
-                  {/* Compact button - only for JSON */}
-                  {isJsonLanguage && (
-                    <Tooltip content="Compact JSON data, remove all whitespaces">
-                      <button
-                        onClick={handleCompact}
-                        className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer"
-                        aria-label="Compact"
-                        title="Compact JSON data, remove all whitespaces (Ctrl+Shift+L)"
-                      >
-                        📦
-                      </button>
-                    </Tooltip>
-                  )}
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
+                  {/* GROUP 3: Move */}
+                  <Tooltip content="Move input to output">
+                    <button
+                      type="button"
+                      onClick={handleMove}
+                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer opacity-100 pointer-events-auto relative z-50"
+                      aria-label="Move to Output"
+                      title="Move input data to output"
+                    >
+                      ➡️
+                    </button>
+                  </Tooltip>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
+                  {/* GROUP 4: Undo and Redo */}
                   <Tooltip content="Undo last change">
                     <button
                       onClick={handleUndo}
@@ -1460,49 +1458,64 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                  {!isFullscreen && (
+
+                  {/* GROUP 5: Compact and Graph - only for JSON */}
+                  {isJsonLanguage && (
                     <>
-                      <Tooltip content="Enter fullscreen">
+                      <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
-                          onClick={handleToggleFullscreen}
-                          className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                          aria-label="Enter Fullscreen"
-                          title="Enter fullscreen (F11)"
+                          onClick={handleCompact}
+                          className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer"
+                          aria-label="Compact"
+                          title="Compact JSON data, remove all whitespaces (Ctrl+Shift+L)"
                         >
-                          ⛶
+                          📦
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Visualize as graph">
+                        <button
+                          onClick={handleShowGraph}
+                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                          aria-label="Graph"
+                          title="Visualize as graph"
+                        >
+                          📊
                         </button>
                       </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
-                  <Tooltip content="Clear input">
+
+                  {/* GROUP 6: Print and Fullscreen */}
+                  <Tooltip content="Print">
                     <button
-                      onClick={handleClear}
-                      className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-xl cursor-pointer"
-                      aria-label="Clear"
-                      title="Clear all content"
+                      onClick={handlePrint}
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                      aria-label="Print"
+                      title="Print JSON (Ctrl+P)"
                     >
-                      🗑️
+                      P
                     </button>
                   </Tooltip>
-                  <Tooltip content="Move input to output">
-                    <button
-                      type="button"
-                      onClick={handleMove}
-                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer opacity-100 pointer-events-auto relative z-50"
-                      aria-label="Move to Output"
-                      title="Move input data to output"
-                    >
-                      ➡️
-                    </button>
-                  </Tooltip>
+                  {!isFullscreen && (
+                    <Tooltip content="Enter fullscreen">
+                      <button
+                        onClick={handleToggleFullscreen}
+                        className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                        aria-label="Enter Fullscreen"
+                        title="Enter fullscreen (F11)"
+                      >
+                        ⛶
+                      </button>
+                    </Tooltip>
+                  )}
                 </div>
               </div>
               <span className="text-xs text-slate-500">{inputCode.length} chars</span>
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
-              {/* Upload, Download and Save icons - positioned at top right inside the textarea box */}
+              {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box */}
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Upload a code file">
                   <button
@@ -1514,24 +1527,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     U
                   </button>
                 </Tooltip>
-                <Tooltip content="Download to file">
+                <Tooltip content="Clear input">
                   <button
-                    onClick={handleDownload}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
-                    aria-label="Download File"
-                    title="Download to file"
+                    onClick={handleClear}
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
+                    aria-label="Clear Input"
+                    title="Clear all input content"
                   >
-                    D
-                  </button>
-                </Tooltip>
-                <Tooltip content="Save to file">
-                  <button
-                    onClick={handleSave}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-orange-600 dark:text-orange-400"
-                    aria-label="Save File"
-                    title="Save to file"
-                  >
-                    S
+                    C
                   </button>
                 </Tooltip>
               </div>
