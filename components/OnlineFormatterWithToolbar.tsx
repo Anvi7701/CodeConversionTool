@@ -1308,7 +1308,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`px-3 py-1.5 rounded-md transition-all text-sm flex items-center gap-1.5 ${
                       formatterMode === 'fast'
                         ? 'bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-600 text-white shadow-lg font-semibold opacity-100'
-                        : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 opacity-60'
+                        : 'bg-gradient-to-r from-cyan-300 via-blue-300 to-indigo-300 text-white hover:from-cyan-500 hover:via-blue-500 hover:to-indigo-600 opacity-60'
                     }`}
                   >
                     <LightningIcon className="h-3.5 w-3.5" />
