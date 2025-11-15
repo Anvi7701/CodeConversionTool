@@ -1147,10 +1147,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
-          <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
-            <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20">
+            <div className="flex items-center gap-2 overflow-visible">
               {/* Beautify button with dropdown */}
-              <div className="relative dropdown-container">
+              <div className="relative dropdown-container overflow-visible">
                 <button
                   onClick={() => {
                     if (isActionDisabled || !inputCode.trim()) return;
@@ -1214,7 +1214,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </button>
 
               {/* Sort button with dropdown */}
-              <div className="relative dropdown-container">
+              <div className="relative dropdown-container overflow-visible">
                 <button
                   onClick={() => {
                     if (isActionDisabled || !inputCode.trim()) return;
