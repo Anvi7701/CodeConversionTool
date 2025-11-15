@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+﻿import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
@@ -1397,7 +1397,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Save"
                       title="Save to file (Ctrl+S)"
                     >
-                      S
+                      💾
                     </button>
                   </Tooltip>
                   <Tooltip content="Download to file">
@@ -1407,7 +1407,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Download"
                       title="Download to file"
                     >
-                      D
+                      📥
                     </button>
                   </Tooltip>
                   <Tooltip content="Copy to clipboard">
@@ -1494,7 +1494,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Print"
                       title="Print JSON (Ctrl+P)"
                     >
-                      P
+                      🖨️
                     </button>
                   </Tooltip>
                   {!isFullscreen && (
@@ -1524,7 +1524,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     aria-label="Upload File"
                     title="Upload a code file to input"
                   >
-                    U
+                    📤
                   </button>
                 </Tooltip>
                 <Tooltip content="Clear input">
@@ -1534,7 +1534,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     aria-label="Clear Input"
                     title="Clear all input content"
                   >
-                    C
+                    🧹
                   </button>
                 </Tooltip>
               </div>
@@ -1569,16 +1569,29 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Formatted Output</h2>
-                <Tooltip content="Clear output">
-                  <button
-                    onClick={handleClearOutput}
-                    className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-xl cursor-pointer"
-                    aria-label="Clear Output"
-                    title="Clear all output content"
-                  >
-                    🗑️
-                  </button>
-                </Tooltip>
+                {/* Icon Toolbar - positioned next to "Formatted Output" heading */}
+                <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
+                  <Tooltip content="Save to file">
+                    <button
+                      onClick={handleSave}
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                      aria-label="Save"
+                      title="Save to file (Ctrl+S)"
+                    >
+                      💾
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Copy to clipboard">
+                    <button
+                      onClick={handleCopy}
+                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                      aria-label="Copy"
+                      title="Copy to clipboard (Ctrl+C)"
+                    >
+                      📋
+                    </button>
+                  </Tooltip>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 {/* Expand/Collapse buttons - visible only for Form, Tree, and View */}
@@ -1658,7 +1671,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             </div>
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
-              {/* Download, Copy and Save icons - positioned at top right inside the output box */}
+              {/* Download and Clear icons - positioned at top right inside the output box */}
               <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
                 <Tooltip content="Download formatted file">
                   <button
@@ -1667,27 +1680,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     aria-label="Download"
                     title="Download formatted file"
                   >
-                    D
+                    📥
                   </button>
                 </Tooltip>
-                <Tooltip content="Copy to clipboard">
+                <Tooltip content="Clear output">
                   <button
-                    onClick={handleCopy}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-purple-600 dark:text-purple-400"
-                    aria-label="Copy"
-                    title="Copy to clipboard"
+                    onClick={handleClearOutput}
+                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
+                    aria-label="Clear Output"
+                    title="Clear all output content"
                   >
-                    C
-                  </button>
-                </Tooltip>
-                <Tooltip content="Save to file">
-                  <button
-                    onClick={handleSave}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-orange-600 dark:text-orange-400"
-                    aria-label="Save"
-                    title="Save to file"
-                  >
-                    S
+                    🧹
                   </button>
                 </Tooltip>
               </div>
