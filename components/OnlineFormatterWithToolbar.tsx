@@ -847,6 +847,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHistoryIndex(-1);
   };
 
+  // Clear Output: clear all output data
+  const handleClearOutput = () => {
+    if (!outputCode.trim()) return; // Don't clear if already empty
+    setOutputCode('');
+    setValidationError(null);
+  };
+
   // Move: copy data from input box to output box
   const handleMove = () => {
     if (!inputCode.trim()) return; // Don't move if input is empty
@@ -1557,7 +1564,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 min-h-[600px]">
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Formatted Output</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold">Formatted Output</h2>
+                <Tooltip content="Clear output">
+                  <button
+                    onClick={handleClearOutput}
+                    className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-xl cursor-pointer"
+                    aria-label="Clear Output"
+                    title="Clear all output content"
+                  >
+                    🗑️
+                  </button>
+                </Tooltip>
+              </div>
               <div className="flex items-center gap-2">
                 {/* Expand/Collapse buttons - visible only for Form, Tree, and View */}
                 {activeLanguage === 'json' && ['form', 'tree', 'view'].includes(viewFormat) && (
