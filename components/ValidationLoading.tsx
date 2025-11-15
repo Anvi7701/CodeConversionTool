@@ -3,7 +3,7 @@ import { SpinnerIcon, CheckIcon } from './icons';
 
 export const ValidationLoading: React.FC = () => {
   return (
-    <div className="absolute inset-0 h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center bg-slate-50 dark:bg-slate-900/50">
+    <div className="absolute inset-0 h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center bg-slate-50 dark:bg-slate-900/50 pointer-events-none">
       <div className="flex items-center gap-3">
         <SpinnerIcon className="h-8 w-8 animate-spin text-sky-500" />
         <CheckIcon className="h-8 w-8 text-sky-500" />
