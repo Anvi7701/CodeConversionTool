@@ -3,6 +3,7 @@ import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
+import { JMESPathTransform } from './JMESPathTransform';
 import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava } from '../utils/codeGenerator';
@@ -88,6 +89,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Fullscreen state
   const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // JMESPath Transform modal state
+  const [showJMESPathModal, setShowJMESPathModal] = useState(false);
 
   // View format state for JSON output (Code, Form, Text, Tree, View)
   type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view';
@@ -1420,6 +1424,38 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       📋
                     </button>
                   </Tooltip>
+                  
+                  {/* Transform with JMESPath - only for JSON */}
+                  {isJsonLanguage && (
+                    <>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                      <Tooltip content="Transform with JMESPath">
+                        <button
+                          onClick={() => {
+                            // Validate JSON before opening modal
+                            try {
+                              JSON.parse(inputCode);
+                              setShowJMESPathModal(true);
+                            } catch {
+                              setValidationError({
+                                isValid: false,
+                                reason: 'Invalid JSON. Please fix syntax errors before using Transform.',
+                                isFixableSyntaxError: true,
+                                suggestedLanguage: undefined
+                              });
+                            }
+                          }}
+                          disabled={!inputCode.trim()}
+                          className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Transform"
+                          title="Transform JSON with JMESPath query"
+                        >
+                          🔄
+                        </button>
+                      </Tooltip>
+                    </>
+                  )}
+                  
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
                   {/* GROUP 3: Move */}
@@ -2035,6 +2071,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
             </div>
           </div>
+        )}
+
+        {/* JMESPath Transform Modal */}
+        {showJMESPathModal && (
+          <JMESPathTransform
+            inputJson={inputCode}
+            onApply={(result) => {
+              setOutputCode(result);
+              setViewFormat('code'); // Switch to Code view to show result
+              setValidationError(null); // Clear any validation errors
+              setOutputError(null); // Clear any output errors
+              setSuccessMessage(null); // Don't show success message - output will show in Output section
+              setShowJMESPathModal(false);
+            }}
+            onClose={() => setShowJMESPathModal(false)}
+          />
         )}
       </div>
     </>
