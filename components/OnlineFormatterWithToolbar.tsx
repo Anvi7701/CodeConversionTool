@@ -1190,6 +1190,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <button
                       onClick={() => {
                         if (isActionDisabled || !inputCode.trim()) return;
+                        handleFormat(3);
+                        setShowBeautifyDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                    >
+                      3 Spaces
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
                         handleFormat(4);
                         setShowBeautifyDropdown(false);
                       }}
@@ -1210,19 +1220,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </div>
                 )}
               </div>
-
-              {/* Minify button */}
-              <button
-                onClick={() => {
-                  if (isActionDisabled || !inputCode.trim()) return;
-                  handleMinify();
-                }}
-                className="px-3 py-1.5 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                title="Minify JSON"
-              >
-                <span>📦</span>
-                <span>Minify</span>
-              </button>
 
               {/* Sort button with dropdown */}
               <div className="relative dropdown-container overflow-visible">
@@ -1547,7 +1544,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   )}
                 </div>
               </div>
-              <span className="text-xs text-slate-500">{inputCode.length} chars</span>
             </div>
 
             <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-hidden">
@@ -1581,6 +1577,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 language={activeLanguage}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
               />
+              
+              {/* Character count - positioned at bottom right */}
+              <div className="absolute bottom-2 right-6 z-10 pointer-events-none">
+                <span className="text-xs text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
+                  {inputCode.length} chars
+                </span>
+              </div>
             </div>
 
             {/* Legacy buttons for non-JSON languages */}

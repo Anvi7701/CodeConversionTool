@@ -212,32 +212,31 @@ export const JMESPathTransform: React.FC<JMESPathTransformProps> = ({ inputJson,
               </label>
               <div className="flex gap-2 relative">
                 {/* Query History Dropdown */}
-                {queryHistory.length > 0 && (
-                  <div className="relative" ref={historyRef}>
-                    <button
-                      onClick={() => setShowHistory(!showHistory)}
-                      className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md transition-colors"
-                    >
-                      📜 History
-                    </button>
-                    {showHistory && (
-                      <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-64 overflow-y-auto z-10">
-                        <div className="p-2">
-                          <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 py-1">Recent Queries</div>
-                          {queryHistory.map((hq, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleSelectFromHistory(hq)}
-                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md text-sm font-mono text-slate-700 dark:text-slate-300 truncate"
-                            >
-                              {hq}
-                            </button>
-                          ))}
-                        </div>
+                <div className="relative" ref={historyRef}>
+                  <button
+                    onClick={() => setShowHistory(!showHistory)}
+                    disabled={queryHistory.length === 0}
+                    className="px-3 py-1 text-sm bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    📜 History
+                  </button>
+                  {showHistory && queryHistory.length > 0 && (
+                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-64 overflow-y-auto z-10">
+                      <div className="p-2">
+                        <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 px-2 py-1">Recent Queries</div>
+                        {queryHistory.map((hq, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleSelectFromHistory(hq)}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md text-sm font-mono text-slate-700 dark:text-slate-300 truncate"
+                          >
+                            {hq}
+                          </button>
+                        ))}
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )}
+                </div>
                 
                 {/* Common Queries Dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -268,16 +267,32 @@ export const JMESPathTransform: React.FC<JMESPathTransformProps> = ({ inputJson,
               </div>
             </div>
 
-            {/* Query Textarea */}
-            <textarea
-              ref={queryInputRef}
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Enter JMESPath query (e.g., @, [*].name, [?id > `1`])"
-              className="w-full h-24 p-3 font-mono text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-slate-800 dark:text-slate-200"
-              spellCheck={false}
-            />
+            {/* Query Textarea with Clear Button */}
+            <div className="relative">
+              <textarea
+                ref={queryInputRef}
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Enter JMESPath query (e.g., @, [*].name, [?id > `1`])"
+                className="w-full h-24 p-3 pr-10 font-mono text-sm bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-slate-800 dark:text-slate-200"
+                spellCheck={false}
+              />
+              {/* Clear Button - only show when there's text */}
+              {query && (
+                <button
+                  onClick={() => setQuery('')}
+                  className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  aria-label="Clear query"
+                  title="Clear query"
+                  type="button"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+            </div>
 
             {/* Error Message */}
             {error && (
