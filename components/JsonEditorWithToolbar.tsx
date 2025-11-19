@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import JsonToolbar from './JsonToolbar';
 import './JsonToolbar.css';
 
@@ -16,11 +16,31 @@ export const JsonEditorWithToolbar: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
 
+  // Refs for scroll synchronization
+  const inputTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputLineNumbersRef = useRef<HTMLDivElement>(null);
+  const outputTextareaRef = useRef<HTMLTextAreaElement>(null);
+  const outputLineNumbersRef = useRef<HTMLDivElement>(null);
+
   // Add to history
   const addToHistory = (value: string) => {
     const newHistory = [...history.slice(0, historyIndex + 1), value];
     setHistory(newHistory);
     setHistoryIndex(newHistory.length - 1);
+  };
+
+  // Sync scroll for Input textarea and line numbers
+  const handleInputScroll = () => {
+    if (inputTextareaRef.current && inputLineNumbersRef.current) {
+      inputLineNumbersRef.current.scrollTop = inputTextareaRef.current.scrollTop;
+    }
+  };
+
+  // Sync scroll for Output textarea and line numbers
+  const handleOutputScroll = () => {
+    if (outputTextareaRef.current && outputLineNumbersRef.current) {
+      outputLineNumbersRef.current.scrollTop = outputTextareaRef.current.scrollTop;
+    }
   };
 
   // Format JSON
@@ -445,13 +465,31 @@ export const JsonEditorWithToolbar: React.FC = () => {
             <span className="panel-title">📝 Input JSON</span>
             <span className="panel-info">{jsonInput.length} characters</span>
           </div>
-          <textarea
-            className="json-textarea"
-            value={jsonInput}
-            onChange={(e) => setJsonInput(e.target.value)}
-            placeholder="Paste your JSON here..."
-            spellCheck={false}
-          />
+          <div className="textarea-with-line-numbers">
+            {/* Line Numbers for Input */}
+            <div
+              ref={inputLineNumbersRef}
+              className="line-numbers"
+              aria-hidden="true"
+            >
+              {jsonInput.split('\n').map((_, index) => (
+                <div key={index} className="line-number">
+                  {index + 1}
+                </div>
+              ))}
+              {jsonInput === '' && <div className="line-number">1</div>}
+            </div>
+            {/* Input Textarea */}
+            <textarea
+              ref={inputTextareaRef}
+              className="json-textarea"
+              value={jsonInput}
+              onChange={(e) => setJsonInput(e.target.value)}
+              onScroll={handleInputScroll}
+              placeholder="Paste your JSON here..."
+              spellCheck={false}
+            />
+          </div>
         </div>
 
         <div className="editor-panel">
@@ -459,17 +497,35 @@ export const JsonEditorWithToolbar: React.FC = () => {
             <span className="panel-title">✨ Output JSON</span>
             <span className="panel-info">{jsonOutput.length} characters</span>
           </div>
-          <textarea
-            className="json-textarea"
-            value={jsonOutput}
-            readOnly
-            placeholder="Formatted JSON will appear here..."
-            spellCheck={false}
-          />
+          <div className="textarea-with-line-numbers">
+            {/* Line Numbers for Output */}
+            <div
+              ref={outputLineNumbersRef}
+              className="line-numbers"
+              aria-hidden="true"
+            >
+              {jsonOutput.split('\n').map((_, index) => (
+                <div key={index} className="line-number">
+                  {index + 1}
+                </div>
+              ))}
+              {jsonOutput === '' && <div className="line-number">1</div>}
+            </div>
+            {/* Output Textarea */}
+            <textarea
+              ref={outputTextareaRef}
+              className="json-textarea"
+              value={jsonOutput}
+              onScroll={handleOutputScroll}
+              readOnly
+              placeholder="Formatted JSON will appear here..."
+              spellCheck={false}
+            />
+          </div>
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .json-editor-container {
           display: flex;
           flex-direction: column;
@@ -562,6 +618,32 @@ export const JsonEditorWithToolbar: React.FC = () => {
         .panel-info {
           font-size: 12px;
           opacity: 0.9;
+        }
+
+        .textarea-with-line-numbers {
+          flex: 1;
+          display: flex;
+          overflow: hidden;
+          background: #fafafa;
+        }
+
+        .line-numbers {
+          padding: 20px 12px 20px 20px;
+          background: #f0f0f0;
+          border-right: 1px solid #d0d0d0;
+          text-align: right;
+          color: #999;
+          font-family: 'Fira Code', 'Courier New', monospace;
+          font-size: 14px;
+          line-height: 1.6;
+          user-select: none;
+          overflow-y: hidden;
+          min-width: 50px;
+        }
+
+        .line-number {
+          height: 22.4px;
+          line-height: 1.6;
         }
 
         .json-textarea {
