@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
+import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { EditorView } from '@codemirror/view';
+import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
+import { keymap } from '@codemirror/view';
 
 // Tree View Component
 interface TreeNodeProps {
@@ -297,21 +300,45 @@ export const FormView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: 
 };
 
 // Text View Component - Now editable with CodeMirror
-export const TextView: React.FC<{ code: string; onChange?: (value: string) => void }> = ({ code, onChange }) => {
+export const TextView: React.FC<{ 
+  code: string; 
+  onChange?: (value: string) => void;
+  expandAll?: boolean;
+  collapseAll?: boolean;
+}> = ({ code, onChange, expandAll: expandAllTrigger, collapseAll: collapseAllTrigger }) => {
+  const editorRef = useRef<ReactCodeMirrorRef>(null);
+
+  // Handle expand all
+  useEffect(() => {
+    if (expandAllTrigger && editorRef.current?.view) {
+      unfoldAll(editorRef.current.view);
+    }
+  }, [expandAllTrigger]);
+
+  // Handle collapse all
+  useEffect(() => {
+    if (collapseAllTrigger && editorRef.current?.view) {
+      foldAll(editorRef.current.view);
+    }
+  }, [collapseAllTrigger]);
+
   return (
     <div className="h-full overflow-auto bg-white dark:bg-slate-900">
       <CodeMirror
+        ref={editorRef}
         value={code}
         onChange={onChange}
         extensions={[
           json(),
           EditorView.lineWrapping,
+          foldGutter(),
+          keymap.of(foldKeymap),
         ]}
         basicSetup={{
           lineNumbers: true,
           highlightActiveLineGutter: true,
           highlightActiveLine: true,
-          foldGutter: false,
+          foldGutter: true,
         }}
         theme="light"
         style={{

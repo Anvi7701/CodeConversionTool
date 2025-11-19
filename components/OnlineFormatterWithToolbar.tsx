@@ -1632,8 +1632,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {/* Expand/Collapse buttons - visible only for Form, Tree, and View */}
-                {activeLanguage === 'json' && ['form', 'tree', 'view'].includes(viewFormat) && (
+                {/* Expand/Collapse buttons - visible for Form, Tree, View, Code, and Text */}
+                {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && (
                   <>
                     <Tooltip content="Expand all fields">
                       <button
@@ -1925,18 +1925,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             case 'form':
                               return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
-                              return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} />;
+                              return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'view':
                               return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             default:
-                              return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />;
+                              return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                           }
                         } catch (error) {
-                          return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />;
+                          return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                         }
                       })()
                     ) : (
-                      <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />
+                      <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
                     )}
                   </div>
                 ) : (
