@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { EditorView } from '@codemirror/view';
 
 // Tree View Component
 interface TreeNodeProps {
@@ -95,10 +98,96 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, path
   );
 };
 
-export const TreeView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: boolean }> = ({ data, expandAll, collapseAll }) => {
+export const TreeView: React.FC<{ 
+  data: any; 
+  expandAll?: boolean; 
+  collapseAll?: boolean;
+  onEdit?: (jsonString: string) => void;
+}> = ({ data, expandAll, collapseAll, onEdit }) => {
+  const [editMode, setEditMode] = useState(false);
+  const [editValue, setEditValue] = useState('');
+
+  const handleEditClick = () => {
+    setEditValue(JSON.stringify(data, null, 2));
+    setEditMode(true);
+  };
+
+  const handleSave = () => {
+    try {
+      // Validate JSON before saving
+      JSON.parse(editValue);
+      if (onEdit) {
+        onEdit(editValue);
+      }
+      setEditMode(false);
+    } catch (error) {
+      alert('Invalid JSON. Please fix errors before saving.');
+    }
+  };
+
+  const handleCancel = () => {
+    setEditMode(false);
+    setEditValue('');
+  };
+
+  if (editMode && onEdit) {
+    return (
+      <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+        <div className="flex gap-2 p-2 border-b border-slate-200 dark:border-slate-700">
+          <button
+            onClick={handleSave}
+            className="px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-sm"
+          >
+            Save Changes
+          </button>
+          <button
+            onClick={handleCancel}
+            className="px-3 py-1 bg-slate-500 hover:bg-slate-600 text-white rounded text-sm"
+          >
+            Cancel
+          </button>
+        </div>
+        <div className="flex-1 overflow-auto">
+          <CodeMirror
+            value={editValue}
+            onChange={(value) => setEditValue(value)}
+            extensions={[
+              json(),
+              EditorView.lineWrapping,
+            ]}
+            basicSetup={{
+              lineNumbers: true,
+              highlightActiveLineGutter: true,
+              highlightActiveLine: true,
+              foldGutter: true,
+            }}
+            theme="light"
+            style={{
+              fontSize: '14px',
+              height: '100%',
+              fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
-      <TreeNode keyName="root" value={data} level={0} isLast={true} path="root" expandAll={expandAll} collapseAll={collapseAll} />
+    <div className="h-full flex flex-col bg-white dark:bg-slate-900">
+      {onEdit && (
+        <div className="p-2 border-b border-slate-200 dark:border-slate-700">
+          <button
+            onClick={handleEditClick}
+            className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm"
+          >
+            ✏️ Edit JSON
+          </button>
+        </div>
+      )}
+      <div className="flex-1 overflow-auto p-4">
+        <TreeNode keyName="root" value={data} level={0} isLast={true} path="root" expandAll={expandAll} collapseAll={collapseAll} />
+      </div>
     </div>
   );
 };
@@ -207,13 +296,30 @@ export const FormView: React.FC<{ data: any; expandAll?: boolean; collapseAll?: 
   );
 };
 
-// Text View Component
-export const TextView: React.FC<{ code: string }> = ({ code }) => {
+// Text View Component - Now editable with CodeMirror
+export const TextView: React.FC<{ code: string; onChange?: (value: string) => void }> = ({ code, onChange }) => {
   return (
-    <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
-      <pre className="font-mono text-sm text-slate-800 dark:text-slate-200 whitespace-pre-wrap break-words">
-        {code}
-      </pre>
+    <div className="h-full overflow-auto bg-white dark:bg-slate-900">
+      <CodeMirror
+        value={code}
+        onChange={onChange}
+        extensions={[
+          json(),
+          EditorView.lineWrapping,
+        ]}
+        basicSetup={{
+          lineNumbers: true,
+          highlightActiveLineGutter: true,
+          highlightActiveLine: true,
+          foldGutter: false,
+        }}
+        theme="light"
+        style={{
+          fontSize: '14px',
+          height: '100%',
+          fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        }}
+      />
     </div>
   );
 };

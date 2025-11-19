@@ -7,7 +7,7 @@ import { JMESPathTransform } from './JMESPathTransform';
 import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava } from '../utils/codeGenerator';
-import { CodeViewer } from './CodeViewer';
+import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';
 import { validateCodeSyntax, correctCodeSyntax, formatCodeWithAi } from '../services/geminiService';
 import { validateSyntaxLocally } from '../utils/localAnalyzers';
@@ -1921,22 +1921,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           const parsedData = JSON.parse(outputCode);
                           switch (viewFormat) {
                             case 'tree':
-                              return <TreeView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
+                              return <TreeView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} onEdit={(value) => setOutputCode(value)} />;
                             case 'form':
                               return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
-                              return <TextView code={outputCode} />;
+                              return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} />;
                             case 'view':
                               return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             default:
-                              return <CodeViewer code={outputCode} language={activeLanguage} />;
+                              return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />;
                           }
                         } catch (error) {
-                          return <CodeViewer code={outputCode} language={activeLanguage} />;
+                          return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />;
                         }
                       })()
                     ) : (
-                      <CodeViewer code={outputCode} language={activeLanguage} />
+                      <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} />
                     )}
                   </div>
                 ) : (
