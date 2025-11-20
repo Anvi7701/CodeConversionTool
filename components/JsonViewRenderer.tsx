@@ -379,50 +379,12 @@ export const TreeView: React.FC<{
   const [editMode, setEditMode] = useState(false);
   const [editValue, setEditValue] = useState('');
   const [treeData, setTreeData] = useState(data);
-  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
-    // Initialize with first 2 levels expanded
-    const initialExpanded = new Set<string>();
-    const addPathsUpToLevel = (obj: any, currentPath: string, level: number) => {
-      if (level >= 2) return;
-      initialExpanded.add(currentPath);
-      if (typeof obj === 'object' && obj !== null) {
-        if (Array.isArray(obj)) {
-          obj.forEach((item, index) => {
-            addPathsUpToLevel(item, `${currentPath}.${index}`, level + 1);
-          });
-        } else {
-          Object.keys(obj).forEach(key => {
-            addPathsUpToLevel(obj[key], `${currentPath}.${key}`, level + 1);
-          });
-        }
-      }
-    };
-    addPathsUpToLevel(data, 'root', 0);
-    return initialExpanded;
-  });
+  const [remountKey, setRemountKey] = useState(0); // Simple counter to force remount
 
-  // Sync with prop changes and reset expanded paths
+  // Sync with prop changes
   useEffect(() => {
     setTreeData(data);
-    // Reset expanded paths when data changes from external source
-    const newExpanded = new Set<string>();
-    const addPathsUpToLevel = (obj: any, currentPath: string, level: number) => {
-      if (level >= 2) return;
-      newExpanded.add(currentPath);
-      if (typeof obj === 'object' && obj !== null) {
-        if (Array.isArray(obj)) {
-          obj.forEach((item, index) => {
-            addPathsUpToLevel(item, `${currentPath}.${index}`, level + 1);
-          });
-        } else {
-          Object.keys(obj).forEach(key => {
-            addPathsUpToLevel(obj[key], `${currentPath}.${key}`, level + 1);
-          });
-        }
-      }
-    };
-    addPathsUpToLevel(data, 'root', 0);
-    setExpandedPaths(newExpanded);
+    setRemountKey(prev => prev + 1); // Increment to force remount
   }, [data]);
 
   const handleEditClick = () => {
@@ -451,6 +413,7 @@ export const TreeView: React.FC<{
   // Handle updates from TreeNode actions
   const handleTreeUpdate = (newData: any) => {
     setTreeData(newData);
+    setRemountKey(prev => prev + 1); // Increment to force remount
     if (onEdit) {
       onEdit(JSON.stringify(newData, null, 2));
     }
@@ -516,7 +479,7 @@ export const TreeView: React.FC<{
       )}
       <div className="flex-1 overflow-auto p-4">
         <TreeNode 
-          key={JSON.stringify(treeData)}
+          key={remountKey}
           keyName="root" 
           value={treeData} 
           level={0} 
