@@ -1919,15 +1919,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       (() => {
                         try {
                           const parsedData = JSON.parse(outputCode);
+                          // Create unique key based on data structure to force remount when data changes
+                          const dataKey = JSON.stringify(parsedData);
                           switch (viewFormat) {
                             case 'tree':
-                              return <TreeView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} onEdit={(value) => setOutputCode(value)} />;
+                              return <TreeView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} onEdit={(value) => setOutputCode(value)} />;
                             case 'form':
-                              return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
+                              return <FormView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
                               return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'view':
-                              return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
+                              return <ConsoleView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             default:
                               return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                           }
