@@ -20,7 +20,7 @@ import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
-import { TreeView, FormView, TextView, ConsoleView } from './JsonViewRenderer';
+import { FormView, TextView, ConsoleView } from './JsonViewRenderer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -93,12 +93,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // JMESPath Transform modal state
   const [showJMESPathModal, setShowJMESPathModal] = useState(false);
 
-  // View format state for JSON output (Code, Form, Text, Tree, View)
-  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view';
+  // View format state for JSON output (Code, Form, Text, View)
+  type ViewFormat = 'code' | 'form' | 'text' | 'view';
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
 
-  // Expand/Collapse state for Form, Tree, and View
+  // Expand/Collapse state for Form and View
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
 
@@ -864,13 +864,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setOutputCode(inputCode);
   };
 
-  // Expand All Fields: expand all nodes in Form, Tree, and View
+  // Expand All Fields: expand all nodes in Form and View
   const handleExpandAllFields = () => {
     setExpandAllTrigger(!expandAllTrigger);
     setCollapseAllTrigger(false);
   };
 
-  // Collapse All Fields: collapse all nodes in Form, Tree, and View
+  // Collapse All Fields: collapse all nodes in Form and View
   const handleCollapseAllFields = () => {
     setCollapseAllTrigger(!collapseAllTrigger);
     setExpandAllTrigger(false);
@@ -1632,8 +1632,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {/* Expand/Collapse buttons - visible for Form, Tree, View, Code, and Text */}
-                {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && (
+                {/* Expand/Collapse buttons - visible for Form, View, Code, and Text */}
+                {activeLanguage === 'json' && ['form', 'view', 'code', 'text'].includes(viewFormat) && (
                   <>
                     <Tooltip content="Expand all fields">
                       <button
@@ -1674,7 +1674,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[120px]">
-                        {(['code', 'form', 'text', 'tree', 'view'] as ViewFormat[]).map((format) => (
+                        {(['code', 'form', 'text', 'view'] as ViewFormat[]).map((format) => (
                           <button
                             key={format}
                             onClick={() => {
@@ -1922,8 +1922,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           // Create unique key based on data structure to force remount when data changes
                           const dataKey = JSON.stringify(parsedData);
                           switch (viewFormat) {
-                            case 'tree':
-                              return <TreeView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} onEdit={(value) => setOutputCode(value)} />;
                             case 'form':
                               return <FormView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
