@@ -73,8 +73,6 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
               title="Open actions menu"
               aria-label="Open actions menu"
               onClick={()=>setShowMenu(m=>!m)}
-              draggable={containerType==='array'|| containerType==='object'}
-              onDragStart={handleDragStart}
               className="w-5 h-5 flex items-center justify-center rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600"
             >
               ▦
@@ -142,6 +140,18 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
               </div>
             )}
           </div>
+        )}
+        {/* Drag handle: show for non-root nodes within array/object parents */}
+        {level>0 && (containerType==='array' || containerType==='object') && (
+          <button
+            title="Drag to reorder within this parent"
+            aria-label="Drag to reorder"
+            draggable
+            onDragStart={handleDragStart}
+            className="ml-1 w-5 h-5 flex items-center justify-center rounded border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/80 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-grab active:cursor-grabbing"
+          >
+            ⠿
+          </button>
         )}
   <div className="flex-1 break-all">
           {isEditingKey? (
