@@ -263,11 +263,19 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
           {isEditingKey ? (
             <input ref={keyInputRef} className="px-1 py-0.5 text-sm border rounded font-semibold bg-white dark:bg-slate-900" value={editedKey} onChange={e=>setEditedKey(e.target.value)} onBlur={saveEditKey} onKeyDown={e=>{ if(e.key==='Enter') saveEditKey(); else if(e.key==='Escape') cancelEditKey(); }} />
           ) : (
-            <span onClick={startEditKey} title={Array.isArray(parentContainer)||level===0? '' : 'Click to rename key'} className="text-slate-700 dark:text-slate-300 font-semibold cursor-text select-text">{keyName}</span>
+            <span onClick={startEditKey} title={Array.isArray(parentContainer)||level===0? '' : 'Click to rename key'} className="text-slate-700 dark:text-slate-300 font-semibold cursor-text select-text">
+              {keyName}
+              {isExpandable && (
+                <span className="ml-1 text-[10px] font-normal text-slate-500 dark:text-slate-400 align-middle" title={`Children: ${isArray?value.length:Object.keys(value).length}`}>{getCollectionInfo()}</span>
+              )}
+            </span>
           )}
           <span className="text-slate-500 dark:text-slate-500">: </span>
           {!isExpandable && renderValue()}
-          {isExpandable && !isExpanded && <span className="text-slate-400 dark:text-slate-500 text-xs ml-1">{getCollectionInfo()}</span>}
+          {/* When expanded, children count already shown beside key; keep collapsed preview but avoid duplicate */}
+          {isExpandable && !isExpanded && (
+            <span className="text-slate-400 dark:text-slate-500 text-xs ml-1" title={`Children: ${isArray?value.length:Object.keys(value).length}`}>{isArray?`[${value.length}]`: `{${Object.keys(value).length}}`}</span>
+          )}
         </div>
         {level>0 && (
           <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Row actions">
