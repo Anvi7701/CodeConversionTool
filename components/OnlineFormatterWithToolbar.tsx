@@ -1919,13 +1919,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       (() => {
                         try {
                           const parsedData = JSON.parse(outputCode);
-                          // Create unique key based on data structure to force remount when data changes
-                          const dataKey = JSON.stringify(parsedData);
+                          // Maintain component instances across edits to preserve scroll & expansion state.
                           switch (viewFormat) {
                             case 'tree':
                               return (
                                 <TreeView
-                                  key={dataKey}
                                   data={parsedData}
                                   expandAll={expandAllTrigger}
                                   collapseAll={collapseAllTrigger}
@@ -1933,11 +1931,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 />
                               );
                             case 'form':
-                              return <FormView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
+                              return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'text':
                               return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             case 'view':
-                              return <ConsoleView key={dataKey} data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
+                              return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                             default:
                               return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
                           }
