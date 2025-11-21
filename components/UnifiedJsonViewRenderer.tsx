@@ -118,7 +118,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     <div className={`font-mono text-sm ${level===0?'':'ml-4'}`}>
       <div className="flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative" onDragOver={handleDragOver} onDrop={handleDrop} onDragLeave={handleDragLeave}>
         {showInsertLine && (
-          <div className="absolute left-0 right-0 -top-px h-[2px] bg-blue-500 dark:bg-blue-400 rounded pointer-events-none" />
+          <div
+            className="absolute left-1 -top-1 w-[6px] h-[6px] rounded-full bg-purple-500 dark:bg-purple-400 shadow-sm pointer-events-none"
+            aria-hidden="true"
+          />
         )}
         {isExpandable? <button onClick={()=>setIsExpanded(e=>!e)} className="flex-shrink-0 w-4 h-5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400">{isExpanded?'▼':'▶'}</button>: <span className="w-4 flex-shrink-0"/>}
         {level>0 && (
