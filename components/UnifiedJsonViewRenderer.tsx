@@ -19,6 +19,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   const [openType,setOpenType]=useState(false);
   const [openStructure,setOpenStructure]=useState(false);
   const [openTransform,setOpenTransform]=useState(false);
+  const dragPayloadRef = useRef<any|null>(null);
   const menuRef=useRef<HTMLDivElement|null>(null);
   const keyInputRef=useRef<HTMLInputElement|null>(null);
   const valueInputRef=useRef<HTMLInputElement|null>(null);
@@ -61,6 +62,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   const handleDragStart:React.DragEventHandler<HTMLElement>=e=>{
     if (containerType === 'other' || level === 0) return;
     const payload = { parentSegs: segments.slice(0,-1), containerType, sourceSeg: segments[segments.length-1] };
+    dragPayloadRef.current = payload;
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
     } catch {}
@@ -70,8 +72,42 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     } catch {}
     e.dataTransfer.effectAllowed = 'move';
   };
-  const handleDragOver:React.DragEventHandler<HTMLDivElement>=e=>{ try{ const d=e.dataTransfer.getData('application/json'); if(!d) return; const p=JSON.parse(d); const sameParent= JSON.stringify(p.parentSegs)=== JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType; if(sameParent) e.preventDefault(); }catch{} };
-  const handleDrop:React.DragEventHandler<HTMLDivElement>=e=>{ const d=e.dataTransfer.getData('application/json'); if(!d) return; const p=JSON.parse(d); const sameParent= JSON.stringify(p.parentSegs)=== JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType; if(!sameParent) return; if(containerType==='array' && Array.isArray(parentContainer)){ const src=Number(p.sourceSeg); const dst=Number(segments[segments.length-1]); if(Number.isNaN(src)|| Number.isNaN(dst)|| src===dst) return; const newParent=[...parentContainer]; const [m]=newParent.splice(src,1); newParent.splice(dst,0,m); onRootUpdate(setValueAtPath(rootData,segments.slice(0,-1),newParent)); } else if(containerType==='object' && parentContainer && typeof parentContainer==='object'){ const srcKey=String(p.sourceSeg); const dstKey=String(segments[segments.length-1]); if(srcKey===dstKey) return; const keys=Object.keys(parentContainer); const si=keys.indexOf(srcKey); const di=keys.indexOf(dstKey); if(si===-1 || di===-1) return; keys.splice(di,0,keys.splice(si,1)[0]); const reordered:Record<string,any>={}; keys.forEach(k=> reordered[k]=parentContainer[k]); onRootUpdate(setValueAtPath(rootData,segments.slice(0,-1),reordered)); } };
+  const handleDragOver:React.DragEventHandler<HTMLDivElement>=e=>{
+    try {
+      // Prefer in-memory payload because some browsers hide dataTransfer during dragover
+      const p = dragPayloadRef.current ?? ((): any => {
+        const d = e.dataTransfer.getData('application/json');
+        return d ? JSON.parse(d) : null;
+      })();
+      const sameParent = p && JSON.stringify(p.parentSegs)===JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType;
+      if (sameParent || !p) {
+        e.preventDefault();
+        try { e.dataTransfer.dropEffect = 'move'; } catch {}
+      }
+    } catch {}
+  };
+  const handleDrop:React.DragEventHandler<HTMLDivElement>=e=>{
+    const d=e.dataTransfer.getData('application/json');
+    const p = d ? JSON.parse(d) : dragPayloadRef.current;
+    dragPayloadRef.current = null; // clear
+    if(!p) return;
+    const sameParent= JSON.stringify(p.parentSegs)=== JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType;
+    if(!sameParent) return;
+    if(containerType==='array' && Array.isArray(parentContainer)){
+      const src=Number(p.sourceSeg); const dst=Number(segments[segments.length-1]);
+      if(Number.isNaN(src)|| Number.isNaN(dst)|| src===dst) return;
+      const newParent=[...parentContainer]; const [m]=newParent.splice(src,1); newParent.splice(dst,0,m);
+      onRootUpdate(setValueAtPath(rootData,segments.slice(0,-1),newParent));
+    } else if(containerType==='object' && parentContainer && typeof parentContainer==='object'){
+      const srcKey=String(p.sourceSeg); const dstKey=String(segments[segments.length-1]);
+      if(srcKey===dstKey) return;
+      const keys=Object.keys(parentContainer); const si=keys.indexOf(srcKey); const di=keys.indexOf(dstKey);
+      if(si===-1 || di===-1) return;
+      keys.splice(di,0,keys.splice(si,1)[0]);
+      const reordered:Record<string,any>={}; keys.forEach(k=> reordered[k]=parentContainer[k]);
+      onRootUpdate(setValueAtPath(rootData,segments.slice(0,-1),reordered));
+    }
+  };
   const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400" title="Click to edit">null</span>: typeof value==='boolean'? <span onClick={startEditValue} className="cursor-text text-purple-600 dark:text-purple-400" title="Click to edit">{String(value)}</span>: typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400" title="Click to edit">"{value}"</span>: null;
   const getCollectionInfo=()=> isArray?`[${value.length}]`: isObject?`{${Object.keys(value).length}}`: '';
   return (
