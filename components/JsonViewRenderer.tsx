@@ -120,10 +120,26 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
       return setValueAtPath(root, parentSegs, newParent);
     }
     if (parent && typeof parent === 'object') {
-      let newKey = `${String(last)}_copy`;
-      let i = 1;
-      while (newKey in parent) newKey = `${String(last)}_copy${i++}`;
-      return setValueAtPath(root, parentSegs, { ...parent, [newKey]: deepClone(nodeVal) });
+      // Insert the duplicated key IMMEDIATELY AFTER the original key, preserving order.
+      // Generate a unique key name: original + _copy, _copy2, ...
+      const base = `${String(last)}_copy`;
+      let newKey = base;
+      let i = 2;
+      while (newKey in parent) newKey = `${base}${i++}`;
+      const keys = Object.keys(parent);
+      const targetIndex = keys.indexOf(String(last));
+      if (targetIndex === -1) {
+        // Fallback: append at end (shouldn't normally happen)
+        return setValueAtPath(root, parentSegs, { ...parent, [newKey]: deepClone(nodeVal) });
+      }
+      const newObj: Record<string, any> = {};
+      keys.forEach((k, idx) => {
+        newObj[k] = parent[k];
+        if (idx === targetIndex) {
+          newObj[newKey] = deepClone(nodeVal);
+        }
+      });
+      return setValueAtPath(root, parentSegs, newObj);
     }
     return root;
   };
