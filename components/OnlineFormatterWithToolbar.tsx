@@ -20,7 +20,7 @@ import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
-import { TreeView, FormView, TextView, ConsoleView } from './JsonViewRenderer';
+import { TreeView, FormView, TextView, ConsoleView } from './UnifiedJsonViewRenderer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
