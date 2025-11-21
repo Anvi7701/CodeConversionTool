@@ -20,6 +20,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   const [openStructure,setOpenStructure]=useState(false);
   const [openTransform,setOpenTransform]=useState(false);
   const dragPayloadRef = useRef<any|null>(null);
+  const [showInsertLine,setShowInsertLine] = useState(false);
   const menuRef=useRef<HTMLDivElement|null>(null);
   const keyInputRef=useRef<HTMLInputElement|null>(null);
   const valueInputRef=useRef<HTMLInputElement|null>(null);
@@ -83,6 +84,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
       if (sameParent || !p) {
         e.preventDefault();
         try { e.dataTransfer.dropEffect = 'move'; } catch {}
+        if (sameParent) setShowInsertLine(true);
       }
     } catch {}
   };
@@ -93,6 +95,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     if(!p) return;
     const sameParent= JSON.stringify(p.parentSegs)=== JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType;
     if(!sameParent) return;
+    setShowInsertLine(false);
     if(containerType==='array' && Array.isArray(parentContainer)){
       const src=Number(p.sourceSeg); const dst=Number(segments[segments.length-1]);
       if(Number.isNaN(src)|| Number.isNaN(dst)|| src===dst) return;
@@ -108,11 +111,15 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
       onRootUpdate(setValueAtPath(rootData,segments.slice(0,-1),reordered));
     }
   };
+  const handleDragLeave:React.DragEventHandler<HTMLDivElement>=()=>{ if(showInsertLine) setShowInsertLine(false); };
   const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400" title="Click to edit">null</span>: typeof value==='boolean'? <span onClick={startEditValue} className="cursor-text text-purple-600 dark:text-purple-400" title="Click to edit">{String(value)}</span>: typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400" title="Click to edit">"{value}"</span>: null;
   const getCollectionInfo=()=> isArray?`[${value.length}]`: isObject?`{${Object.keys(value).length}}`: '';
   return (
     <div className={`font-mono text-sm ${level===0?'':'ml-4'}`}>
-      <div className="flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative" onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div className="flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative" onDragOver={handleDragOver} onDrop={handleDrop} onDragLeave={handleDragLeave}>
+        {showInsertLine && (
+          <div className="absolute left-0 right-0 -top-px h-[2px] bg-blue-500 dark:bg-blue-400 rounded pointer-events-none" />
+        )}
         {isExpandable? <button onClick={()=>setIsExpanded(e=>!e)} className="flex-shrink-0 w-4 h-5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400">{isExpanded?'▼':'▶'}</button>: <span className="w-4 flex-shrink-0"/>}
         {level>0 && (
           <div className="relative flex-shrink-0" ref={menuRef}>
