@@ -83,7 +83,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
                 {/* Type section */}
                 <button onClick={()=>setOpenType(o=>{ const next=!o; if(next){ setOpenStructure(false); setOpenTransform(false); } return next; })} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="type">
                   <span>Type</span>
-                  <span className="text-xs">{openType?'▾':'▸'}</span>
+                  <span className="text-sm">{openType?'▾':'▸'}</span>
                 </button>
                 {openType && (
                   <>
@@ -100,7 +100,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
                   <>
                     <button onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="structure">
                       <span>Structure</span>
-                      <span className="text-xs">{openStructure?'▾':'▸'}</span>
+                      <span className="text-sm">{openStructure?'▾':'▸'}</span>
                     </button>
                     {openStructure && (
                       <>
@@ -117,7 +117,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
                   <>
                     <button onClick={()=>setOpenTransform(o=>{ const next=!o; if(next){ setOpenType(false); setOpenStructure(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="transform">
                       <span>Transform</span>
-                      <span className="text-xs">{openTransform?'▾':'▸'}</span>
+                      <span className="text-sm">{openTransform?'▾':'▸'}</span>
                     </button>
                     {openTransform && (
                       <>
