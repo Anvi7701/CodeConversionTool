@@ -368,12 +368,23 @@ export const TreeView: React.FC<{ data:any; expandAll?:boolean; collapseAll?:boo
   const [editMode,setEditMode]=useState(false);
   const [editValue,setEditValue]=useState('');
   const [treeData,setTreeData]=useState(data);
-  const [remountKey,setRemountKey]=useState(0);
-  useEffect(()=>{ setTreeData(data); setRemountKey(k=>k+1); },[data]);
+  // Track scroll container to preserve scroll position across updates
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  // Update local treeData when upstream data prop changes without forcing full remount
+  useEffect(()=>{ setTreeData(data); },[data]);
   const handleEditClick=()=>{ setEditValue(JSON.stringify(treeData,null,2)); setEditMode(true); };
   const handleSave=()=>{ try{ JSON.parse(editValue); onEdit?.(editValue); setEditMode(false);} catch{ alert('Invalid JSON. Fix errors before saving.'); } };
   const handleCancel=()=>{ setEditMode(false); setEditValue(''); };
-  const handleTreeUpdate=(newData:any)=>{ setTreeData(newData); setRemountKey(k=>k+1); onEdit?.(JSON.stringify(newData,null,2)); };
+  const handleTreeUpdate=(newData:any)=>{
+    // Capture current scroll position before state update
+    const prevScroll = scrollRef.current?.scrollTop || 0;
+    setTreeData(newData);
+    onEdit?.(JSON.stringify(newData,null,2));
+    // Restore scroll after React paints
+    requestAnimationFrame(()=>{
+      if(scrollRef.current) scrollRef.current.scrollTop = prevScroll;
+    });
+  };
   if(editMode && onEdit){ return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
       <div className="flex gap-2 p-2 border-b border-slate-200 dark:border-slate-700">
@@ -393,8 +404,8 @@ export const TreeView: React.FC<{ data:any; expandAll?:boolean; collapseAll?:boo
           <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center">Click keys/values to edit • Actions on left</span>
         </div>
       )}
-      <div className="flex-1 overflow-auto p-4">
-        <TreeNode key={remountKey} keyName="root" value={treeData} level={0} isLast={true} segments={[]} rootData={treeData} onRootUpdate={handleTreeUpdate} expandAll={expandAll} collapseAll={collapseAll} />
+      <div className="flex-1 overflow-auto p-4" ref={scrollRef}>
+        <TreeNode key="root" keyName="root" value={treeData} level={0} isLast={true} segments={[]} rootData={treeData} onRootUpdate={handleTreeUpdate} expandAll={expandAll} collapseAll={collapseAll} />
       </div>
     </div>
   );
