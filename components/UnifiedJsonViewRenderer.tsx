@@ -262,7 +262,6 @@ export const TreeView: React.FC<{ data:any; expandAll?:boolean; collapseAll?:boo
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
       {onEdit && (
         <div className="p-2 border-b border-slate-200 dark:border-slate-700 flex gap-2 items-center">
-          <button onClick={handleEditClick} className="px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white rounded text-sm">✏️ Edit JSON</button>
           <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center">Click keys/values to edit • Actions left column</span>
         </div>
       )}

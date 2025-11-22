@@ -223,6 +223,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   }, [inputCode, activeLanguage]);
 
+  // Add output edits to history (Code/Text/Tree views) with debounce
+  useEffect(() => {
+    if (activeLanguage !== 'json') return;
+    if (!outputCode || !outputCode.trim()) return;
+
+    // Prevent duplicate history entries when programmatic changes already added
+    if (outputCode !== lastSavedToHistoryRef.current) {
+      const timeoutId = setTimeout(() => {
+        const currentHistoryValue = history[historyIndex];
+        if (outputCode !== currentHistoryValue) {
+          addToHistory(outputCode);
+          lastSavedToHistoryRef.current = outputCode;
+        }
+      }, 1000);
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [outputCode, activeLanguage, history, historyIndex]);
+
   // Sync fullscreen state with actual fullscreen status
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -1627,6 +1646,28 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       title="Copy to clipboard (Ctrl+C)"
                     >
                       📋
+                    </button>
+                  </Tooltip>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                  {/* Undo/Redo for Output */}
+                  <Tooltip content="Undo last change">
+                    <button
+                      onClick={handleUndo}
+                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      aria-label="Undo"
+                      title="Undo last change (Ctrl+Z)"
+                    >
+                      ↩️
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Redo last change">
+                    <button
+                      onClick={handleRedo}
+                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      aria-label="Redo"
+                      title="Redo last change (Ctrl+Y)"
+                    >
+                      ↪️
                     </button>
                   </Tooltip>
                 </div>
