@@ -31,8 +31,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   useEffect(()=>{ if(collapseAll) setIsExpanded(false); },[collapseAll]);
   useEffect(()=>{ if(isEditingValue && valueInputRef.current) valueInputRef.current.focus(); },[isEditingValue]);
   useEffect(()=>{ if(isEditingKey && keyInputRef.current) keyInputRef.current.focus(); },[isEditingKey]);
-  useEffect(()=>{ const h=(e:MouseEvent)=>{ if(menuRef.current && !menuRef.current.contains(e.target as Node)) setShowMenu(false); }; if(showMenu) document.addEventListener('mousedown',h); return()=>document.removeEventListener('mousedown',h); },[showMenu]);
-  // Path helpers
+  useEffect(()=>{ const h=(e:MouseEvent)=>{ if(showMenu){ if(menuRef.current && menuRef.current.contains(e.target as Node)) return; setShowMenu(false);} }; if(showMenu) document.addEventListener('mousedown',h); return()=>document.removeEventListener('mousedown',h); },[showMenu]);
   const getDataAtPath=(root:any,segs:(string|number)[])=> segs.reduce((c:any,s)=> c==null? undefined: c[s as any], root);
   const setValueAtPath=(root:any,segs:(string|number)[],nv:any):any=>{ if(segs.length===0) return nv; const [head,...rest]=segs; if(rest.length===0){ if(Array.isArray(root)){ const arr=[...root]; arr[Number(head)]=nv; return arr;} if(root && typeof root==='object') return { ...root,[head as any]: nv }; return root; } if(Array.isArray(root)){ const arr=[...root]; arr[Number(head)]=setValueAtPath(arr[Number(head)],rest,nv); return arr;} if(root && typeof root==='object') return { ...root,[head as any]: setValueAtPath(root[head as any],rest,nv) }; return root; };
   const deepClone=(v:any)=> JSON.parse(JSON.stringify(v));
@@ -45,41 +44,29 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   const convertType=(t:string)=>{ let nv:any; switch(t){ case'string':nv=String(value);break; case'number':nv=Number(value)||0;break; case'boolean':nv=Boolean(value);break; case'null':nv=null;break; case'object':nv={};break; case'array':nv=[];break; default:return;} updateSelf(nv); setShowMenu(false); };
   const arrayTransform=(mode:string)=>{ if(!isArray) return; let next=value.slice(); const cmp=(a:any,b:any)=> typeof a==='number'&& typeof b==='number'? a-b: String(a).localeCompare(String(b)); switch(mode){ case'filter-nulls': next=next.filter((v:any)=> v!==null); break; case'filter-falsy': next=next.filter(Boolean); break; case'sort-asc': next=[...next].sort(cmp); break; case'sort-desc': next=[...next].sort((a:any,b:any)=> cmp(b,a)); break; case'unique': { const out:any[]=[]; const seen=new Set<string>(); for(const item of next){ const k= typeof item==='object'? JSON.stringify(item): String(item); if(!seen.has(k)){ seen.add(k); out.push(item);} } next=out; break;} case'flatten1': next=([] as any[]).concat(...next); break; case'map-number': next=next.map((v:any)=> typeof v==='number'? v: (typeof v==='string' && !isNaN(Number(v))? Number(v): v)); break; case'map-string': next=next.map((v:any)=> typeof v==='string'? v: v===null?'null': typeof v==='object'? JSON.stringify(v): String(v)); break; default:return; } updateSelf(next); setShowMenu(false); };
   const extractJSON= async()=>{ try{ await navigator.clipboard.writeText(JSON.stringify(value,null,2)); alert('Copied node JSON'); } catch{ alert('Copy failed'); } setShowMenu(false); };
-  // Editing
   const startEditValue=()=>{ setEditedValue(value===null?'null': typeof value==='object'? JSON.stringify(value): String(value)); setIsEditingValue(true); };
   const saveEditValue=()=>{ let parsed:any=editedValue; const t=editedValue.trim(); if(/^[{[]/.test(t)){ try{ parsed=JSON.parse(editedValue);}catch{} } else if(t==='null') parsed=null; else if(t==='true') parsed=true; else if(t==='false') parsed=false; else if(!isNaN(Number(t))) parsed=Number(t); updateSelf(parsed); setIsEditingValue(false); };
   const cancelEditValue=()=> setIsEditingValue(false);
   const startEditKey=()=>{ if(Array.isArray(getDataAtPath(rootData,segments.slice(0,-1)))|| level===0) return; setEditedKey(String(segments[segments.length-1])); setIsEditingKey(true); };
   const saveEditKey=()=>{ if(level===0){ setIsEditingKey(false); return;} const parent=getDataAtPath(rootData,segments.slice(0,-1)); if(Array.isArray(parent)){ setIsEditingKey(false); return;} if(!editedKey){ setIsEditingKey(false); return;} onRootUpdate(renameKeyAtPath(rootData,segments,editedKey)); setIsEditingKey(false); };
   const cancelEditKey=()=> setIsEditingKey(false);
-  // Row actions
   const handleInsert=()=>{ insertIntoValue(); setShowMenu(false); };
   const handleDuplicate=()=>{ onRootUpdate(duplicateAtPath(rootData,segments)); setShowMenu(false); };
   const handleRemove=()=>{ if(!confirm(`Remove "${keyName}"?`)) return; onRootUpdate(removeAtPath(rootData,segments)); setShowMenu(false); };
   const handleSort=()=>{ sortValue(); setShowMenu(false); };
-  // Drag & drop
   const parentContainer= level===0? null: getDataAtPath(rootData,segments.slice(0,-1));
   const containerType: 'array'|'object'|'other'= Array.isArray(parentContainer)?'array': (parentContainer && typeof parentContainer==='object')?'object':'other';
   const handleDragStart:React.DragEventHandler<HTMLElement>=e=>{
     if (containerType === 'other' || level === 0) return;
     const payload = { parentSegs: segments.slice(0,-1), containerType, sourceSeg: segments[segments.length-1] };
     dragPayloadRef.current = payload;
-    try {
-      e.dataTransfer.setData('application/json', JSON.stringify(payload));
-    } catch {}
-    // Provide a text fallback to ensure drag starts in all browsers
-    try {
-      e.dataTransfer.setData('text/plain', 'json-node-drag');
-    } catch {}
+    try { e.dataTransfer.setData('application/json', JSON.stringify(payload)); } catch {}
+    try { e.dataTransfer.setData('text/plain', 'json-node-drag'); } catch {}
     e.dataTransfer.effectAllowed = 'move';
   };
   const handleDragOver:React.DragEventHandler<HTMLDivElement>=e=>{
     try {
-      // Prefer in-memory payload because some browsers hide dataTransfer during dragover
-      const p = dragPayloadRef.current ?? ((): any => {
-        const d = e.dataTransfer.getData('application/json');
-        return d ? JSON.parse(d) : null;
-      })();
+      const p = dragPayloadRef.current ?? ((): any => { const d = e.dataTransfer.getData('application/json'); return d ? JSON.parse(d) : null; })();
       const sameParent = p && JSON.stringify(p.parentSegs)===JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType;
       if (sameParent || !p) {
         e.preventDefault();
@@ -91,7 +78,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
   const handleDrop:React.DragEventHandler<HTMLDivElement>=e=>{
     const d=e.dataTransfer.getData('application/json');
     const p = d ? JSON.parse(d) : dragPayloadRef.current;
-    dragPayloadRef.current = null; // clear
+    dragPayloadRef.current = null;
     if(!p) return;
     const sameParent= JSON.stringify(p.parentSegs)=== JSON.stringify(segments.slice(0,-1)) && p.containerType===containerType;
     if(!sameParent) return;
@@ -118,99 +105,67 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     <div className={`font-mono text-sm ${level===0?'':'ml-4'}`}>
       <div className="flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative" onDragOver={handleDragOver} onDrop={handleDrop} onDragLeave={handleDragLeave}>
         {showInsertLine && (
-          <div
-            className="absolute left-1 -top-1 w-[6px] h-[6px] rounded-full bg-purple-500 dark:bg-purple-400 shadow-sm pointer-events-none"
-            aria-hidden="true"
-          />
+          <div className="absolute left-1 -top-1 w-[6px] h-[6px] rounded-full bg-purple-500 dark:bg-purple-400 shadow-sm pointer-events-none" aria-hidden="true" />
         )}
         {isExpandable? <button onClick={()=>setIsExpanded(e=>!e)} className="flex-shrink-0 w-4 h-5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400">{isExpanded?'▼':'▶'}</button>: <span className="w-4 flex-shrink-0"/>}
         {level>0 && (
           <div className="relative flex-shrink-0" ref={menuRef}>
-            <button
-              title="Open actions menu"
-              aria-label="Open actions menu"
-              onClick={()=>setShowMenu(m=>!m)}
-              className="w-5 h-5 flex items-center justify-center rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600"
-            >
-              ▦
-            </button>
+            <button title="Open actions menu" aria-label="Open actions menu" onClick={()=>setShowMenu(m=>!m)} className="w-5 h-5 flex items-center justify-center rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600">▦</button>
             {showMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded shadow-lg z-30 p-1 flex flex-col min-w-[170px] max-h-[70vh] overflow-auto font-mono text-sm">
-                {/* Type section */}
-                <button title="Type: convert value type" onClick={()=>setOpenType(o=>{ const next=!o; if(next){ setOpenStructure(false); setOpenTransform(false); } return next; })} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="type">
-                  <span>Type</span>
-                  <span className="text-[22px]">{openType?'▾':'▸'}</span>
-                </button>
+              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded shadow-lg z-50 p-1 flex flex-col w-[160px] max-h-[60vh] overflow-auto font-mono text-sm">
+                <button title="Type: convert value type" onClick={()=>setOpenType(o=>{ const next=!o; if(next){ setOpenStructure(false); setOpenTransform(false); } return next; })} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap" data-section="type"><span>Type</span><span className="text-[20px]">{openType?'▾':'▸'}</span></button>
                 {openType && (
                   <>
-                    <button onClick={()=>convertType('string')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">String</button>
-                    <button onClick={()=>convertType('number')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Number</button>
-                    <button onClick={()=>convertType('boolean')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Boolean</button>
-                    <button onClick={()=>convertType('null')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Null</button>
-                    <button onClick={()=>convertType('object')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Object {"{}"}</button>
-                    <button onClick={()=>convertType('array')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Array []</button>
+                    <button onClick={()=>convertType('string')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='string'?'!bg-blue-500 !text-white font-semibold':''}`}>String</button>
+                    <button onClick={()=>convertType('number')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='number'?'!bg-blue-500 !text-white font-semibold':''}`}>Number</button>
+                    <button onClick={()=>convertType('boolean')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='boolean'?'!bg-blue-500 !text-white font-semibold':''}`}>Boolean</button>
+                    <button onClick={()=>convertType('null')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${value===null?'!bg-blue-500 !text-white font-semibold':''}`}>Null</button>
+                    <button onClick={()=>convertType('object')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${isObject?'!bg-blue-500 !text-white font-semibold':''}`}>Object {"{}"}</button>
+                    <button onClick={()=>convertType('array')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${isArray?'!bg-blue-500 !text-white font-semibold':''}`}>Array []</button>
                   </>
                 )}
-                {/* Structure section */}
                 {(isObject || isArray) && (
                   <>
-                    <button title="Structure: insert, sort, duplicate, remove" onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="structure">
-                      <span>Structure</span>
-                      <span className="text-[22px]">{openStructure?'▾':'▸'}</span>
-                    </button>
+                    <button title="Structure: insert, sort, duplicate, remove" onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap" data-section="structure"><span>Structure</span><span className="text-[20px]">{openStructure?'▾':'▸'}</span></button>
                     {openStructure && (
                       <>
-                        <button onClick={handleSort} className="text-left px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300">Sort</button>
-                        <button onClick={handleInsert} className="text-left px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 text-slate-700 dark:text-slate-300">Insert</button>
-                        <button onClick={handleDuplicate} className="text-left px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30 text-slate-700 dark:text-slate-300">Duplicate</button>
-                        <button onClick={handleRemove} className="text-left px-2 py-1 rounded border border-transparent hover:border-red-400/50 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold">Remove</button>
+                        <button onClick={handleSort} className="text-left px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 text-sm">Sort</button>
+                        <button onClick={handleInsert} className="text-left px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 text-slate-700 dark:text-slate-300 text-sm">Insert</button>
+                        <button onClick={handleDuplicate} className="text-left px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30 text-slate-700 dark:text-slate-300 text-sm">Duplicate</button>
+                        <button onClick={handleRemove} className="text-left px-2 py-1 rounded border border-transparent hover:border-red-400/50 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold text-sm">Remove</button>
                       </>
                     )}
                   </>
                 )}
-                {/* Transform section */}
                 {isArray && (
                   <>
-                    <button title="Transform: array filters, sort, map, unique, flatten" onClick={()=>setOpenTransform(o=>{ const next=!o; if(next){ setOpenType(false); setOpenStructure(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300" data-section="transform">
-                      <span>Transform</span>
-                      <span className="text-[22px]">{openTransform?'▾':'▸'}</span>
-                    </button>
+                    <button title="Transform: array filters, sort, map, unique, flatten" onClick={()=>setOpenTransform(o=>{ const next=!o; if(next){ setOpenType(false); setOpenStructure(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm" data-section="transform"><span>Transform</span><span className="text-[20px]">{openTransform?'▾':'▸'}</span></button>
                     {openTransform && (
                       <>
-                        <button onClick={()=>arrayTransform('filter-nulls')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Filter nulls</button>
-                        <button onClick={()=>arrayTransform('filter-falsy')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Filter falsy</button>
-                        <button onClick={()=>arrayTransform('sort-asc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Sort ascending</button>
-                        <button onClick={()=>arrayTransform('sort-desc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Sort descending</button>
-                        <button onClick={()=>arrayTransform('map-number')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Map to numbers</button>
-                        <button onClick={()=>arrayTransform('map-string')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Map to strings</button>
-                        <button onClick={()=>arrayTransform('unique')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Unique values</button>
-                        <button onClick={()=>arrayTransform('flatten1')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Flatten depth 1</button>
+                        <button onClick={()=>arrayTransform('filter-nulls')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Filter nulls</button>
+                        <button onClick={()=>arrayTransform('filter-falsy')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Filter falsy</button>
+                        <button onClick={()=>arrayTransform('sort-asc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Sort ascending</button>
+                        <button onClick={()=>arrayTransform('sort-desc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Sort descending</button>
+                        <button onClick={()=>arrayTransform('map-number')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Map to numbers</button>
+                        <button onClick={()=>arrayTransform('map-string')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Map to strings</button>
+                        <button onClick={()=>arrayTransform('unique')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Unique values</button>
+                        <button onClick={()=>arrayTransform('flatten1')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Flatten depth 1</button>
                       </>
                     )}
                   </>
                 )}
-                {/* Other section */}
                 <div className="mt-2">
-                  <span className="px-2 py-1 font-semibold text-slate-700 dark:text-slate-300">Other</span>
-                  <button onClick={extractJSON} className="text-left w-full px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300">Extract JSON</button>
+                  <span className="px-2 py-1 font-semibold text-slate-700 dark:text-slate-300 text-sm">Other</span>
+                  <button onClick={extractJSON} className="text-left w-full px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Extract JSON</button>
                 </div>
               </div>
             )}
           </div>
         )}
-        {/* Drag handle: show for non-root nodes within array/object parents */}
         {level>0 && (containerType==='array' || containerType==='object') && (
-          <button
-            title="Drag to reorder within this parent"
-            aria-label="Drag to reorder"
-            draggable
-            onDragStart={handleDragStart}
-            className="ml-1 w-5 h-5 flex items-center justify-center rounded border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/80 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-grab active:cursor-grabbing"
-          >
-            ⠿
-          </button>
+          <button title="Drag to reorder within this parent" aria-label="Drag to reorder" draggable onDragStart={handleDragStart} className="ml-1 w-5 h-5 flex items-center justify-center rounded border border-slate-200 dark:border-slate-600 bg-white/60 dark:bg-slate-700/80 text-slate-500 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600 cursor-grab active:cursor-grabbing">⠿</button>
         )}
-  <div className="flex-1 break-all">
+        <div className="flex-1 break-all">
           {isEditingKey? (
             <input ref={keyInputRef} className="px-1 py-0.5 text-sm border rounded font-semibold bg-white dark:bg-slate-900" value={editedKey} onChange={e=>setEditedKey(e.target.value)} onBlur={saveEditKey} onKeyDown={e=>{ if(e.key==='Enter') saveEditKey(); else if(e.key==='Escape') cancelEditKey(); }} />
           ): (
@@ -281,14 +236,14 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
   const isArray= Array.isArray(value);
   const renderVal=()=> value===null? <span className="text-slate-400 italic">null</span>: typeof value==='boolean'? <span className="text-purple-600 dark:text-purple-400 font-medium">{String(value)}</span>: typeof value==='number'? <span className="text-blue-600 dark:text-blue-400 font-medium">{value}</span>: typeof value==='string'? <span className="text-slate-800 dark:text-slate-200">{value}</span>: null;
   if(isObject) return (
-    <div className={`${level>0?'ml-6 mt-3':'mt-2'} p-3 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-800/50`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName}</div>
+    <div className={`${level>0?'ml-6 mt-3':'mt-2'}`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName}</div>
       {isExpanded && <div className="space-y-2">{Object.entries(value).map(([k,v])=> <FormField key={`${path}.${k}`} keyName={k} value={v} level={level+1} path={`${path}.${k}`} expandAll={expandAll} collapseAll={collapseAll} />)}</div>}
     </div>
   );
   if(isArray) return (
-    <div className={`${level>0?'ml-6 mt-3':'mt-2'} p-3 border border-slate-300 dark:border-slate-600 rounded-md bg-slate-50 dark:bg-slate-800/50`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-2 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName} <span className="text-xs text-slate-500">({value.length} items)</span></div>
+    <div className={`${level>0?'ml-6 mt-3':'mt-2'}`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName} <span className="text-xs text-slate-500">({value.length} items)</span></div>
       {isExpanded && <div className="space-y-2">{value.map((item:any,i:number)=> <FormField key={`${path}.${i}`} keyName={`Item ${i+1}`} value={item} level={level+1} path={`${path}.${i}`} expandAll={expandAll} collapseAll={collapseAll} />)}</div>}
     </div>
   );

@@ -78,6 +78,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [historyIndex, setHistoryIndex] = useState(-1);
   const lastSavedToHistoryRef = useRef<string>('');
 
+  // Output formatter history (tracks outputCode states for undo/redo independently of input JSON history)
+  const [outputHistory, setOutputHistory] = useState<string[]>([]);
+  const [outputHistoryIndex, setOutputHistoryIndex] = useState(-1);
+  const isApplyingOutputHistoryRef = useRef(false);
+
   // Graph viewer state
   const [showGraph, setShowGraph] = useState(false);
   const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
@@ -851,6 +856,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  // Output undo (does NOT modify inputCode; only reverts outputCode formatting steps)
+  const handleOutputUndo = () => {
+    if (outputHistoryIndex > 0) {
+      const newIndex = outputHistoryIndex - 1;
+      setOutputHistoryIndex(newIndex);
+      isApplyingOutputHistoryRef.current = true;
+      setOutputCode(outputHistory[newIndex]);
+    }
+  };
+
+  // Output redo
+  const handleOutputRedo = () => {
+    if (outputHistoryIndex >= 0 && outputHistoryIndex < outputHistory.length - 1) {
+      const newIndex = outputHistoryIndex + 1;
+      setOutputHistoryIndex(newIndex);
+      isApplyingOutputHistoryRef.current = true;
+      setOutputCode(outputHistory[newIndex]);
+    }
+  };
+
   const handleCopy = async () => {
     if (!inputCode.trim()) return; // Don't copy if no input
     try {
@@ -1002,8 +1027,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   const isActionDisabled = isLoading || isValidating || isCorrecting;
   const isJsonLanguage = activeLanguage === 'json';
-  const canUndo = historyIndex > 0 && isJsonLanguage;
-  const canRedo = historyIndex < history.length - 1 && isJsonLanguage;
+  // Input history availability (JSON input edits)
+  const canUndoInput = historyIndex > 0 && isJsonLanguage;
+  const canRedoInput = historyIndex < history.length - 1 && isJsonLanguage;
+
+  // Output history availability (formatted output edits)
+  const canUndoOutput = outputHistoryIndex > 0; // at beginning (index 0) cannot undo
+  const canRedoOutput = outputHistoryIndex >= 0 && outputHistoryIndex < outputHistory.length - 1; // at latest cannot redo
 
   // Parse JSON and convert to graph data (only when showing graph)
   const parsedJson = useMemo(() => {
@@ -1029,6 +1059,101 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const handleNodeSelect = (selection: Selection) => {
     setSelectedNodePath(selection.path);
   };
+
+  // Helper to render non-code views for formatted output
+  const renderStructuredOutputView = () => {
+    if (!outputCode) return null;
+    try {
+      const parsedData = JSON.parse(outputCode);
+      switch (viewFormat) {
+        case 'tree':
+          return (
+            <TreeView
+              data={parsedData}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+              onEdit={(value) => setOutputCode(value)}
+            />
+          );
+        case 'form':
+          return (
+            <FormView
+              data={parsedData}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+            />
+          );
+        case 'text':
+          return (
+            <TextView
+              code={outputCode}
+              onChange={(value) => setOutputCode(value)}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+            />
+          );
+        case 'view':
+          return (
+            <ConsoleView
+              data={parsedData}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+            />
+          );
+        default:
+          return (
+            <CodeMirrorViewer
+              code={outputCode}
+              language={activeLanguage}
+              onChange={(value) => setOutputCode(value)}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+            />
+          );
+      }
+    } catch (e) {
+      // Fallback to code view if JSON parse fails
+      return (
+        <CodeMirrorViewer
+          code={outputCode}
+          language={activeLanguage}
+          onChange={(value) => setOutputCode(value)}
+          expandAll={expandAllTrigger}
+          collapseAll={collapseAllTrigger}
+        />
+      );
+    }
+  };
+
+  // Track outputCode changes to build output history (ignore changes triggered by undo/redo application)
+  useEffect(() => {
+    if (!outputCode || !outputCode.trim()) return;
+    if (isApplyingOutputHistoryRef.current) {
+      // Skip adding history entry when we are applying an existing one
+      isApplyingOutputHistoryRef.current = false;
+      return;
+    }
+    // First entry
+    if (outputHistoryIndex === -1) {
+      const initial = [outputCode];
+      setOutputHistory(initial);
+      setOutputHistoryIndex(0);
+      return;
+    }
+    // Avoid duplicates
+    if (outputCode === outputHistory[outputHistoryIndex]) return;
+    const newHist = [...outputHistory.slice(0, outputHistoryIndex + 1), outputCode];
+    setOutputHistory(newHist);
+    setOutputHistoryIndex(newHist.length - 1);
+  }, [outputCode]);
+
+  // Reset output history when clearing
+  useEffect(() => {
+    if (!outputCode) {
+      setOutputHistory([]);
+      setOutputHistoryIndex(-1);
+    }
+  }, [outputCode]);
 
   // Handler for node toggle in graph
   const handleNodeToggle = (nodeId: string) => {
@@ -1488,11 +1613,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
-                  {/* GROUP 4: Undo and Redo */}
+                  {/* GROUP 4: Undo and Redo (INPUT JSON) */}
                   <Tooltip content="Undo last change">
                     <button
-                      onClick={handleUndo}
-                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      onClick={canUndoInput ? handleUndo : undefined}
+                      disabled={!canUndoInput}
+                      className={`p-1 rounded-md transition-all text-xl ${canUndoInput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                       title="Undo last change (Ctrl+Z)"
                     >
@@ -1501,8 +1627,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                   <Tooltip content="Redo last change">
                     <button
-                      onClick={handleRedo}
-                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      onClick={canRedoInput ? handleRedo : undefined}
+                      disabled={!canRedoInput}
+                      className={`p-1 rounded-md transition-all text-xl ${canRedoInput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                       title="Redo last change (Ctrl+Y)"
                     >
@@ -1649,11 +1776,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                  {/* Undo/Redo for Output */}
+                  {/* Undo/Redo for OUTPUT (Formatted JSON) */}
                   <Tooltip content="Undo last change">
                     <button
-                      onClick={handleUndo}
-                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      onClick={canUndoOutput ? handleOutputUndo : undefined}
+                      disabled={!canUndoOutput}
+                      className={`p-1 rounded-md transition-all text-xl ${canUndoOutput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                       title="Undo last change (Ctrl+Z)"
                     >
@@ -1662,8 +1790,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                   <Tooltip content="Redo last change">
                     <button
-                      onClick={handleRedo}
-                      className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer"
+                      onClick={canRedoOutput ? handleOutputRedo : undefined}
+                      disabled={!canRedoOutput}
+                      className={`p-1 rounded-md transition-all text-xl ${canRedoOutput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                       title="Redo last change (Ctrl+Y)"
                     >
@@ -1956,37 +2085,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 ) : outputCode ? (
                   <div className="h-full w-full">
                     {/* Render different views based on viewFormat for JSON */}
-                    {activeLanguage === 'json' && viewFormat !== 'code' ? (
-                      (() => {
-                        try {
-                          const parsedData = JSON.parse(outputCode);
-                          // Maintain component instances across edits to preserve scroll & expansion state.
-                          switch (viewFormat) {
-                            case 'tree':
-                              return (
-                                <TreeView
-                                  data={parsedData}
-                                  expandAll={expandAllTrigger}
-                                  collapseAll={collapseAllTrigger}
-                                  onEdit={(value) => setOutputCode(value)}
-                                />
-                              );
-                            case 'form':
-                              return <FormView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
-                            case 'text':
-                              return <TextView code={outputCode} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
-                            case 'view':
-                              return <ConsoleView data={parsedData} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
-                            default:
-                              return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
-                          }
-                        } catch (error) {
-                          return <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />;
-                        }
-                      })()
-                    ) : (
-                      <CodeMirrorViewer code={outputCode} language={activeLanguage} onChange={(value) => setOutputCode(value)} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
-                    )}
+                    {activeLanguage === 'json' && outputCode && viewFormat !== 'code'
+                      ? renderStructuredOutputView()
+                      : (
+                        <CodeMirrorViewer
+                          code={outputCode || ''}
+                          language={activeLanguage}
+                          onChange={(value) => setOutputCode(value)}
+                          expandAll={expandAllTrigger}
+                          collapseAll={collapseAllTrigger}
+                        />
+                      )}
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
