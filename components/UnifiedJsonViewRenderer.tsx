@@ -6,7 +6,17 @@ import { EditorView } from '@codemirror/view';
 import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
 import { keymap } from '@codemirror/view';
 
-const customFoldGutter = foldGutter();
+// Create custom fold gutter with solid arrow icons
+const customFoldGutter = foldGutter({
+  markerDOM: (open) => {
+    const marker = document.createElement('span');
+    marker.textContent = open ? '▼' : '▶';
+    marker.style.cursor = 'pointer';
+    marker.style.userSelect = 'none';
+    marker.title = open ? 'Fold' : 'Unfold';
+    return marker;
+  }
+});
 
 interface TreeNodeProps { keyName: string; value: any; level: number; isLast: boolean; segments: (string|number)[]; rootData: any; onRootUpdate:(d:any)=>void; expandAll?:boolean; collapseAll?:boolean; }
 const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segments, rootData, onRootUpdate, expandAll, collapseAll }) => {
@@ -227,24 +237,105 @@ export const TreeView: React.FC<{ data:any; expandAll?:boolean; collapseAll?:boo
   );
 };
 
-interface FormFieldProps { keyName:string; value:any; level:number; path:string; expandAll?:boolean; collapseAll?:boolean; }
-const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,collapseAll })=>{
+interface FormFieldProps { keyName:string; value:any; level:number; path:(string|number)[]; expandAll?:boolean; collapseAll?:boolean; onValueChange?: (path: (string|number)[], newValue: any) => void; }
+const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,collapseAll,onValueChange })=>{
   const [isExpanded,setIsExpanded]=useState(level<1);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const prevValueRef = useRef(value);
+  
   useEffect(()=>{ if(expandAll) setIsExpanded(true); },[expandAll]);
   useEffect(()=>{ if(collapseAll) setIsExpanded(false); },[collapseAll]);
+  useEffect(() => { if (isEditing && inputRef.current) inputRef.current.focus(); }, [isEditing]);
+  
+  // Close editing mode when value changes from parent
+  useEffect(() => {
+    if (prevValueRef.current !== value) {
+      setIsEditing(false);
+      prevValueRef.current = value;
+    }
+  }, [value]);
+  
   const isObject= typeof value==='object' && value!==null && !Array.isArray(value);
   const isArray= Array.isArray(value);
-  const renderVal=()=> value===null? <span className="text-slate-400 italic">null</span>: typeof value==='boolean'? <span className="text-purple-600 dark:text-purple-400 font-medium">{String(value)}</span>: typeof value==='number'? <span className="text-blue-600 dark:text-blue-400 font-medium">{value}</span>: typeof value==='string'? <span className="text-slate-800 dark:text-slate-200">{value}</span>: null;
+  
+  const startEdit = () => {
+    if (isObject || isArray || !onValueChange) return; // Don't edit complex types in form view
+    const stringValue = value === null ? 'null' : typeof value === 'object' ? JSON.stringify(value) : String(value);
+    setEditValue(stringValue);
+    setIsEditing(true);
+  };
+  
+  const saveEdit = () => {
+    if (!onValueChange) return;
+    
+    let parsed: any = editValue;
+    const trimmed = editValue.trim();
+    
+    // Try to parse the value intelligently
+    if (trimmed === 'null') {
+      parsed = null;
+    } else if (trimmed === 'true') {
+      parsed = true;
+    } else if (trimmed === 'false') {
+      parsed = false;
+    } else if (!isNaN(Number(trimmed)) && trimmed !== '') {
+      parsed = Number(trimmed);
+    } else if (/^[{[]/.test(trimmed)) {
+      try {
+        parsed = JSON.parse(editValue);
+      } catch {
+        // Keep as string if JSON parsing fails
+      }
+    }
+    
+    onValueChange(path, parsed);
+    setIsEditing(false);
+  };
+  
+  const cancelEdit = () => {
+    setIsEditing(false);
+  };
+  
+  const renderVal=()=> {
+    if (isEditing) {
+      return (
+        <input
+          ref={inputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={saveEdit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              saveEdit();
+            } else if (e.key === 'Escape') {
+              cancelEdit();
+            }
+          }}
+          className="flex-1 px-2 py-1 text-sm border border-blue-400 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      );
+    }
+    
+    const canEdit = onValueChange && !isObject && !isArray;
+    const hoverClass = canEdit ? 'cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-600 px-1 rounded' : '';
+    const title = canEdit ? 'Click to edit' : '';
+    
+    return value===null? <span className={`text-slate-400 italic ${hoverClass}`} onClick={startEdit} title={title}>null</span>: typeof value==='boolean'? <span className={`text-purple-600 dark:text-purple-400 font-medium ${hoverClass}`} onClick={startEdit} title={title}>{String(value)}</span>: typeof value==='number'? <span className={`text-blue-600 dark:text-blue-400 font-medium ${hoverClass}`} onClick={startEdit} title={title}>{value}</span>: typeof value==='string'? <span className={`text-slate-800 dark:text-slate-200 ${hoverClass}`} onClick={startEdit} title={title}>{value}</span>: null;
+  };
+  
   if(isObject) return (
     <div className={`${level>0?'ml-6 mt-3':'mt-2'}`}>
       <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName}</div>
-      {isExpanded && <div className="space-y-2">{Object.entries(value).map(([k,v])=> <FormField key={`${path}.${k}`} keyName={k} value={v} level={level+1} path={`${path}.${k}`} expandAll={expandAll} collapseAll={collapseAll} />)}</div>}
+      {isExpanded && <div className="space-y-2">{Object.entries(value).map(([k,v])=> <FormField key={`${path.join('.')}.${k}`} keyName={k} value={v} level={level+1} path={[...path, k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
     </div>
   );
   if(isArray) return (
     <div className={`${level>0?'ml-6 mt-3':'mt-2'}`}>
       <div onClick={()=>setIsExpanded(e=>!e)} className="font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-sm cursor-pointer hover:text-slate-900 dark:hover:text-slate-100">{isExpanded?'▼':'▶'} {keyName} <span className="text-xs text-slate-500">({value.length} items)</span></div>
-      {isExpanded && <div className="space-y-2">{value.map((item:any,i:number)=> <FormField key={`${path}.${i}`} keyName={`Item ${i+1}`} value={item} level={level+1} path={`${path}.${i}`} expandAll={expandAll} collapseAll={collapseAll} />)}</div>}
+      {isExpanded && <div className="space-y-2">{value.map((item:any,i:number)=> <FormField key={`${path.join('.')}.${i}`} keyName={`Item ${i+1}`} value={item} level={level+1} path={[...path, i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
     </div>
   );
   return (
@@ -254,15 +345,67 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
     </div>
   );
 };
-export const FormView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:boolean; }>=({ data,expandAll,collapseAll })=> (
-  <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
-    {typeof data==='object' && data!==null ? (Array.isArray(data)? (
-      <div className="space-y-2">{data.map((item:any,i:number)=><FormField key={i} keyName={`Item ${i+1}`} value={item} level={0} path={`${i}`} expandAll={expandAll} collapseAll={collapseAll} />)}</div>
-    ): (
-      <div className="space-y-2">{Object.entries(data).map(([k,v])=> <FormField key={k} keyName={k} value={v} level={0} path={k} expandAll={expandAll} collapseAll={collapseAll} />)}</div>
-    )): <div className="text-slate-600 dark:text-slate-400">Invalid JSON data</div>}
-  </div>
-);
+export const FormView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:boolean; onEdit?: (jsonString: string) => void; }>=({ data,expandAll,collapseAll,onEdit })=> {
+  const [formData, setFormData] = useState(data);
+  
+  useEffect(() => {
+    setFormData(data);
+  }, [data]);
+  
+  const setValueAtPath = (root: any, path: (string|number)[], newValue: any): any => {
+    if (path.length === 0) return newValue;
+    
+    const [head, ...rest] = path;
+    
+    if (rest.length === 0) {
+      if (Array.isArray(root)) {
+        const arr = [...root];
+        arr[Number(head)] = newValue;
+        return arr;
+      }
+      if (root && typeof root === 'object') {
+        return { ...root, [head]: newValue };
+      }
+      return root;
+    }
+    
+    if (Array.isArray(root)) {
+      const arr = [...root];
+      arr[Number(head)] = setValueAtPath(arr[Number(head)], rest, newValue);
+      return arr;
+    }
+    
+    if (root && typeof root === 'object') {
+      return { ...root, [head]: setValueAtPath(root[head], rest, newValue) };
+    }
+    
+    return root;
+  };
+  
+  const handleValueChange = (path: (string|number)[], newValue: any) => {
+    const newData = setValueAtPath(formData, path, newValue);
+    setFormData(newData);
+    
+    if (onEdit) {
+      onEdit(JSON.stringify(newData, null, 2));
+    }
+  };
+  
+  return (
+    <div className="h-full overflow-auto p-4 bg-white dark:bg-slate-900">
+      {onEdit && (
+        <div className="mb-3 pb-2 border-b border-slate-200 dark:border-slate-700">
+          <span className="text-xs text-slate-500 dark:text-slate-400">Click any value to edit • Press Enter to save, Esc to cancel</span>
+        </div>
+      )}
+      {typeof formData==='object' && formData!==null ? (Array.isArray(formData)? (
+        <div className="space-y-2">{formData.map((item:any,i:number)=><FormField key={i} keyName={`Item ${i+1}`} value={item} level={0} path={[i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
+      ): (
+        <div className="space-y-2">{Object.entries(formData).map(([k,v])=> <FormField key={k} keyName={k} value={v} level={0} path={[k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
+      )): <div className="text-slate-600 dark:text-slate-400">Invalid JSON data</div>}
+    </div>
+  );
+};
 export const TextView:React.FC<{ code:string; onChange?:(v:string)=>void; expandAll?:boolean; collapseAll?:boolean; }>=({ code,onChange,expandAll:expandAllTrigger,collapseAll:collapseAllTrigger })=>{
   const editorRef=useRef<ReactCodeMirrorRef>(null);
   useEffect(()=>{ if(expandAllTrigger && editorRef.current?.view) unfoldAll(editorRef.current.view); },[expandAllTrigger]);

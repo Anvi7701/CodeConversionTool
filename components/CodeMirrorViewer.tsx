@@ -11,6 +11,18 @@ import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language
 import { keymap } from '@codemirror/view';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 
+// Create custom fold gutter with solid arrow icons
+const customFoldGutter = foldGutter({
+  markerDOM: (open) => {
+    const marker = document.createElement('span');
+    marker.textContent = open ? '▼' : '▶';
+    marker.style.cursor = 'pointer';
+    marker.style.userSelect = 'none';
+    marker.title = open ? 'Fold' : 'Unfold';
+    return marker;
+  }
+});
+
 interface CodeMirrorViewerProps {
   code: string;
   language: string;
@@ -68,7 +80,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   const extensions = useMemo(() => {
     return [
       languageExtension,
-      foldGutter(), // Adds fold icons in gutter
+      customFoldGutter, // Use custom fold gutter (same as Text view)
       keymap.of(foldKeymap), // Keyboard shortcuts for folding
       EditorView.lineWrapping, // Wrap long lines
       ...(readOnly ? [EditorView.editable.of(false)] : []), // Only add read-only if specified
@@ -87,7 +99,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           lineNumbers: true,
           highlightActiveLineGutter: !readOnly,
           highlightActiveLine: !readOnly,
-          foldGutter: true,
+          foldGutter: false, // Disable default fold gutter (using custom one in extensions)
           dropCursor: !readOnly,
           allowMultipleSelections: !readOnly,
           indentOnInput: !readOnly,

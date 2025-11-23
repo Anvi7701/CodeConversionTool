@@ -21,6 +21,7 @@ import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
 import { TreeView, FormView, TextView, ConsoleView } from './UnifiedJsonViewRenderer';
+import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -112,6 +113,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Expand/Collapse state for Form, Tree, and View
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
+
+  // Structure analysis mode - when active, only "View" format is available
+  const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState(false);
 
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
@@ -703,6 +707,43 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  const handleStructureAnalysis = () => {
+    const trimmedInput = inputCode.trim();
+    if (!trimmedInput) {
+      setOutputError('Please enter JSON code to analyze');
+      return;
+    }
+
+    if (activeLanguage !== 'json') {
+      setOutputError('Structure analysis is only available for JSON format');
+      return;
+    }
+
+    setIsLoading(true);
+    setOutputError(null);
+    setValidationError(null);
+    setSuccessMessage(null);
+    setErrorSource('input');
+    setErrorLines([]);
+
+    try {
+      const analysis = analyzeJsonStructure(trimmedInput);
+      const formattedOutput = JSON.stringify(analysis, null, 2);
+      setOutputCode(formattedOutput);
+      // Don't set success message as it blocks the output display
+      // The output itself shows the analysis was successful
+      addToHistory(formattedOutput);
+      
+      // Enable structure analysis mode and switch to "view" format
+      setIsStructureAnalysisMode(true);
+      setViewFormat('view');
+    } catch (err: any) {
+      setOutputError(`Analysis failed: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleAutoCorrect = async () => {
     // Determine which code to correct based on error source
     const codeToCorrect = errorSource === 'output' ? outputCode : inputCode;
@@ -797,6 +838,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setValidationError(null);
     setSuccessMessage(null);
     setOutputCode(null);
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
 
     try {
       let formattedCode = '';
@@ -921,6 +963,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const trimmedInput = inputCode.trim();
     if (!trimmedInput || activeLanguage !== 'json') return;
 
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
     try {
       const jsonObj = JSON.parse(trimmedInput);
       const minified = JSON.stringify(jsonObj);
@@ -942,6 +985,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const trimmedInput = inputCode.trim();
     if (!trimmedInput || activeLanguage !== 'json') return;
 
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
     try {
       const jsonObj = JSON.parse(trimmedInput);
       const compacted = JSON.stringify(jsonObj); // Remove all whitespaces
@@ -963,6 +1007,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const trimmedInput = inputCode.trim();
     if (!trimmedInput || activeLanguage !== 'json') return;
 
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
     try {
       const parsed = JSON.parse(trimmedInput);
       
@@ -1114,12 +1159,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!outputCode.trim()) return; // Don't clear if already empty
     setOutputCode('');
     setValidationError(null);
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
   };
 
   // Move: copy data from input box to output box
   const handleMove = () => {
     if (!inputCode.trim()) return; // Don't move if input is empty
     setOutputCode(inputCode);
+    setIsStructureAnalysisMode(false); // Reset structure analysis mode
   };
 
   // Expand All Fields: expand all nodes in Form and View
@@ -1454,6 +1501,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
+              onEdit={(updatedJson) => {
+                setOutputCode(updatedJson);
+              }}
             />
           );
         case 'text':
@@ -1813,6 +1863,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <span>✓</span>
                 <span>Validate</span>
               </button>
+
+              {/* Structure Analysis button - Only show for JSON */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    handleStructureAnalysis();
+                  }}
+                  className="px-3 py-1.5 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Analyze JSON structure and generate statistics report"
+                >
+                  <span>📈</span>
+                  <span>Structure Analysis</span>
+                </button>
+              )}
             </div>
 
             {/* Right side controls - Mode selector and Format selector */}
@@ -2218,30 +2283,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[120px]">
-                        {(['code', 'form', 'text', 'tree', 'view'] as ViewFormat[]).map((format) => (
-                          <button
-                            key={format}
-                            onClick={() => {
-                              // Validate output JSON before switching views
-                              if (activeLanguage === 'json' && outputCode && format !== 'code') {
-                                setPreviousView(viewFormat); // Store current view before validation
-                                const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format });
-                                if (!isValid) {
-                                  // Don't switch view if JSON is invalid - pending action stored
-                                  setShowViewDropdown(false);
-                                  return;
+                        {(['code', 'form', 'text', 'tree', 'view'] as ViewFormat[]).map((format) => {
+                          const isDisabled = isStructureAnalysisMode && format !== 'view';
+                          return (
+                            <button
+                              key={format}
+                              onClick={() => {
+                                if (isDisabled) return;
+                                
+                                // Validate output JSON before switching views
+                                if (activeLanguage === 'json' && outputCode && format !== 'code') {
+                                  setPreviousView(viewFormat); // Store current view before validation
+                                  const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format });
+                                  if (!isValid) {
+                                    // Don't switch view if JSON is invalid - pending action stored
+                                    setShowViewDropdown(false);
+                                    return;
+                                  }
                                 }
-                              }
-                              setViewFormat(format);
-                              setShowViewDropdown(false);
-                            }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${
-                              viewFormat === format ? 'bg-slate-100 dark:bg-slate-700 font-semibold' : ''
-                            }`}
-                          >
-                            {format.charAt(0).toUpperCase() + format.slice(1)}
-                          </button>
-                        ))}
+                                setViewFormat(format);
+                                setShowViewDropdown(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                                isDisabled 
+                                  ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-500' 
+                                  : 'hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer'
+                              } ${
+                                viewFormat === format ? 'bg-slate-100 dark:bg-slate-700 font-semibold' : ''
+                              }`}
+                              disabled={isDisabled}
+                            >
+                              {format.charAt(0).toUpperCase() + format.slice(1)}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
