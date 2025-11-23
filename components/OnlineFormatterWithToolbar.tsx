@@ -72,6 +72,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
   const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
   const [showFixSummary, setShowFixSummary] = useState(false);
+  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input'); // Track if errors are from input or output
 
   // History for undo/redo (only for JSON)
   const [history, setHistory] = useState<string[]>([]);
@@ -102,6 +103,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view';
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
+  const [previousView, setPreviousView] = useState<ViewFormat>('code'); // Track the view before error
+
+  // Pending action after error fix (view switch, save, or download)
+  type PendingAction = { type: 'view-switch', targetView: ViewFormat } | { type: 'save' } | { type: 'download' } | null;
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
 
   // Expand/Collapse state for Form, Tree, and View
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
@@ -201,13 +207,83 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const handleInputChange = (value: string) => {
     setInputCode(value);
     setOutputError(null);
-    setOutputCode(null);
     setValidationError(null);
     setSuccessMessage(null);
     setIsValidated(false);
     setErrorLines([]);
     setAppliedFixes([]);
     setShowFixSummary(false);
+    
+    // Automatically validate and copy JSON to output when input changes (paste or upload)
+    if (activeLanguage === 'json' && value.trim()) {
+      try {
+        // Try to parse JSON
+        JSON.parse(value);
+        // Valid JSON - copy to output
+        setOutputCode(value);
+        setErrorLines([]);
+      } catch (jsonErr: any) {
+        // Invalid JSON - show error handling (same as Validate button)
+        const allErrors = validateJsonSyntax(value);
+        setErrorLines(allErrors);
+        setErrorSource('input');
+        setOutputCode(null);
+        
+        if (formatterMode === 'smart') {
+          // Smart mode: Always offer AI-powered correction
+          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${jsonErr.message}`;
+
+          if (allErrors.length > 0) {
+            errorAnalysis += `\n\n**Error Locations:**\n`;
+            allErrors.forEach(error => {
+              errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+            });
+          }
+
+          errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+          
+          setValidationError({
+            isValid: false,
+            reason: errorAnalysis,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
+        } else {
+          // Fast mode: Check if errors are simple or complex
+          const hasComplexErrors = allErrors.some(isComplexError);
+          
+          if (hasComplexErrors) {
+            // Has complex errors - suggest Smart mode
+            let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+            allErrors.forEach(error => {
+              fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+            });
+            
+            setValidationError({
+              isValid: false,
+              reason: fastError,
+              isFixableSyntaxError: true,
+              suggestedLanguage: undefined
+            });
+          } else {
+            // Only simple errors - can be fixed
+            let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+            allErrors.forEach(error => {
+              fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+            });
+            
+            setValidationError({
+              isValid: false,
+              reason: fastError,
+              isFixableSyntaxError: true,
+              suggestedLanguage: undefined
+            });
+          }
+        }
+      }
+    } else {
+      setOutputCode(null);
+    }
   };
   
   // Add to history with debounce for manual edits
@@ -405,6 +481,57 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  // Handle automatic fixing of simple JSON errors in OUTPUT - only for JSON in Fast mode
+  const handleFixSimpleErrorsOutput = async () => {
+    if (activeLanguage !== 'json' || !outputCode) return;
+    
+    const result = fixSimpleJsonErrors(outputCode);
+    
+    if (result.wasFixed) {
+      // Update the output with fixed JSON
+      setOutputCode(result.fixed);
+      setAppliedFixes(result.changes);
+      
+      // Re-validate to check for remaining errors
+      const remainingErrors = validateJsonSyntax(result.fixed);
+      setErrorLines(remainingErrors);
+      
+      // If there are remaining errors, show them
+      if (remainingErrors.length > 0) {
+        setValidationError({
+          isValid: false,
+          reason: `Remaining errors after auto-fix: ${remainingErrors.length} error${remainingErrors.length > 1 ? 's' : ''}`,
+          isFixableSyntaxError: true,
+          suggestedLanguage: undefined
+        });
+        setShowFixSummary(true);
+        setIsValidated(false);
+      } else {
+        // All errors fixed! Mark as validated and ready to use
+        setValidationError(null);
+        setIsValidated(true);
+        
+        // If there's a pending action, execute it immediately without showing fix summary or success message
+        if (pendingAction) {
+          setShowFixSummary(false);
+          setSuccessMessage(null);
+          setAppliedFixes([]);
+          setTimeout(() => {
+            executePendingAction();
+          }, 50);
+        } else {
+          // Only show fix summary and success message if no pending action
+          setShowFixSummary(true);
+          setSuccessMessage(`✅ All syntax errors have been fixed in output! Applied ${result.changes.length} fix${result.changes.length > 1 ? 'es' : ''}. You can now use your JSON.`);
+        }
+      }
+    } else {
+      // No fixes could be applied
+      setAppliedFixes([]);
+      setShowFixSummary(true);
+    }
+  };
+
   const handleValidate = async () => {
     const trimmedInput = inputCode.trim();
     if (!trimmedInput) {
@@ -430,6 +557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // JSON has syntax error - validate and find all errors
           const allErrors = validateJsonSyntax(trimmedInput);
           setErrorLines(allErrors);
+          setErrorSource('input');
           
           if (formatterMode === 'smart') {
             // Smart mode: Always offer AI-powered correction
@@ -576,7 +704,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   const handleAutoCorrect = async () => {
-    if (!inputCode) return;
+    // Determine which code to correct based on error source
+    const codeToCorrect = errorSource === 'output' ? outputCode : inputCode;
+    if (!codeToCorrect) return;
     
     // Store the request for retry functionality
     const executeCorrection = async () => {
@@ -617,11 +747,29 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             };
           }
           
-          const correctedCode = await correctCodeSyntax(inputCode, activeLanguage);
-          setInputCode(correctedCode);
-          addToHistory(correctedCode);
+          const correctedCode = await correctCodeSyntax(codeToCorrect, activeLanguage);
+          
+          // Update the correct state based on error source
+          if (errorSource === 'output') {
+            setOutputCode(correctedCode);
+            
+            // If there's a pending action, execute it immediately without showing success message
+            if (pendingAction) {
+              setSuccessMessage(null);
+              setTimeout(() => {
+                executePendingAction();
+              }, 50);
+            } else {
+              // Only show success message if no pending action
+              setSuccessMessage("✅ AI successfully corrected the syntax in output. You can now use your JSON.");
+            }
+          } else {
+            setInputCode(correctedCode);
+            addToHistory(correctedCode);
+            setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
+          }
+          
           setIsValidated(true);
-          setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
           setShowFixSummary(false);
           setLastAiRequest(null);
       } catch (err: any) {
@@ -656,9 +804,75 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       
       switch (activeLanguage) {
         case 'json':
-          const jsonObj = JSON.parse(trimmedInput);
-          formattedCode = JSON.stringify(jsonObj, null, indentChar);
-          addToHistory(formattedCode);
+          // Validate JSON first with same error handling as Validate button
+          try {
+            const jsonObj = JSON.parse(trimmedInput);
+            formattedCode = JSON.stringify(jsonObj, null, indentChar);
+            addToHistory(formattedCode);
+          } catch (jsonErr: any) {
+            // JSON has syntax error - validate and find all errors (same as Validate button)
+            const allErrors = validateJsonSyntax(trimmedInput);
+            setErrorLines(allErrors);
+            setErrorSource('input');
+            
+            if (formatterMode === 'smart') {
+              // Smart mode: Always offer AI-powered correction
+              let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${jsonErr.message}`;
+
+              if (allErrors.length > 0) {
+                errorAnalysis += `\n\n**Error Locations:**\n`;
+                allErrors.forEach(error => {
+                  errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+                });
+              }
+
+              errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being formatted. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+              
+              setValidationError({
+                isValid: false,
+                reason: errorAnalysis,
+                isFixableSyntaxError: true,
+                suggestedLanguage: undefined
+              });
+              setIsLoading(false);
+              return;
+            } else {
+              // Fast mode: Check if errors are simple or complex
+              const hasComplexErrors = allErrors.some(isComplexError);
+              
+              if (hasComplexErrors) {
+                // Has complex errors - suggest Smart mode
+                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+                allErrors.forEach(error => {
+                  fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+                });
+                
+                setValidationError({
+                  isValid: false,
+                  reason: fastError,
+                  isFixableSyntaxError: true,
+                  suggestedLanguage: undefined
+                });
+                setIsLoading(false);
+                return;
+              } else {
+                // Only simple errors - can be fixed
+                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+                allErrors.forEach(error => {
+                  fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+                });
+                
+                setValidationError({
+                  isValid: false,
+                  reason: fastError,
+                  isFixableSyntaxError: true,
+                  suggestedLanguage: undefined
+                });
+                setIsLoading(false);
+                return;
+              }
+            }
+          }
           break;
         case 'xml':
         case 'wsdl':
@@ -925,6 +1139,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
     if (!content) return;
+    
+    // Validate output JSON before downloading
+    if (activeLanguage === 'json' && outputCode) {
+      setPreviousView(viewFormat); // Store current view before validation
+      const isValid = validateOutputJson(outputCode, { type: 'download' });
+      if (!isValid) {
+        // Don't proceed with download if JSON is invalid - pending action stored
+        return;
+      }
+    }
+    
     const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
     const blob = new Blob([content], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
@@ -940,6 +1165,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
     if (!content) return;
+    
+    // Validate output JSON before saving
+    if (activeLanguage === 'json' && outputCode) {
+      setPreviousView(viewFormat); // Store current view before validation
+      const isValid = validateOutputJson(outputCode, { type: 'save' });
+      if (!isValid) {
+        // Don't proceed with save if JSON is invalid - pending action stored
+        return;
+      }
+    }
+    
     const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
     const fileName = `formatted.${ext}`;
     // Try File System Access API
@@ -1025,6 +1261,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setLastAiRequest(null);
   };
 
+  // Handle return to previous view with errors visible
+  const handleReturnToCodeView = () => {
+    setValidationError(null);
+    setSuccessMessage(null);
+    setPendingAction(null);
+    // Return to the previous view (the view user was on before error occurred)
+    setViewFormat(previousView);
+  };
+
   const isActionDisabled = isLoading || isValidating || isCorrecting;
   const isJsonLanguage = activeLanguage === 'json';
   // Input history availability (JSON input edits)
@@ -1058,6 +1303,134 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Handler for node selection in graph
   const handleNodeSelect = (selection: Selection) => {
     setSelectedNodePath(selection.path);
+  };
+
+  // Execute pending action after error fix (view switch, save, or download)
+  const executePendingAction = () => {
+    if (!pendingAction) return;
+    
+    const action = pendingAction;
+    setPendingAction(null); // Clear pending action before executing
+    
+    if (action.type === 'view-switch') {
+      setViewFormat(action.targetView);
+    } else if (action.type === 'download') {
+      // Re-trigger download
+      const content = outputCode || inputCode;
+      if (content) {
+        const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `formatted.${ext}`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } else if (action.type === 'save') {
+      // Re-trigger save
+      const content = outputCode || inputCode;
+      if (content) {
+        const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
+        const fileName = `formatted.${ext}`;
+        // @ts-ignore
+        if (window.showSaveFilePicker) {
+          // @ts-ignore
+          window.showSaveFilePicker({
+            suggestedName: fileName,
+            types: [
+              {
+                description: `${activeLanguage.toUpperCase()} Files`,
+                accept: { 'text/plain': languageDetails[activeLanguage].extensions }
+              }
+            ]
+          }).then(async (handle: any) => {
+            const writable = await handle.createWritable();
+            await writable.write(content);
+            await writable.close();
+          }).catch((err: any) => {
+            // User cancelled or error - do nothing
+          });
+        }
+      }
+    }
+  };
+
+  // Validate output JSON and show errors if invalid (used for view switching and save/download)
+  const validateOutputJson = (code: string, action?: PendingAction): boolean => {
+    if (activeLanguage !== 'json' || !code || !code.trim()) return true;
+    
+    try {
+      JSON.parse(code);
+      // Valid JSON
+      setErrorLines([]);
+      setValidationError(null);
+      setPendingAction(null); // Clear any pending action
+      return true;
+    } catch (jsonErr: any) {
+      // Invalid JSON - store the pending action to execute after fix
+      if (action) {
+        setPendingAction(action);
+      }
+      
+      // Show error handling (same as Validate button)
+      const allErrors = validateJsonSyntax(code);
+      setErrorLines(allErrors);
+      setErrorSource('output');
+      
+      if (formatterMode === 'smart') {
+        // Smart mode: Always offer AI-powered correction
+        let errorAnalysis = `### Invalid JSON Syntax in Output\n\n**Error Details:**\n${jsonErr.message}`;
+
+        if (allErrors.length > 0) {
+          errorAnalysis += `\n\n**Error Locations:**\n`;
+          allErrors.forEach(error => {
+            errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+        }
+
+        errorAnalysis += `\n\n**What Happened:**\nThe JSON in the output area has syntax errors. This could be due to manual edits or formatting issues.\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Switch back to Code view to see the exact error locations`;
+        
+        setValidationError({
+          isValid: false,
+          reason: errorAnalysis,
+          isFixableSyntaxError: true,
+          suggestedLanguage: undefined
+        });
+      } else {
+        // Fast mode: Check if errors are simple or complex
+        const hasComplexErrors = allErrors.some(isComplexError);
+        
+        if (hasComplexErrors) {
+          // Has complex errors - suggest Smart mode
+          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          allErrors.forEach(error => {
+            fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+          
+          setValidationError({
+            isValid: false,
+            reason: fastError,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
+        } else {
+          // Only simple errors - can be fixed
+          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          allErrors.forEach(error => {
+            fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+          
+          setValidationError({
+            isValid: false,
+            reason: fastError,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
+        }
+      }
+      return false;
+    }
   };
 
   // Helper to render non-code views for formatted output
@@ -1722,6 +2095,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 onChange={handleInputChange}
                 language={activeLanguage}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
+                errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
               />
               
               {/* Character count - positioned at bottom right */}
@@ -1848,6 +2222,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <button
                             key={format}
                             onClick={() => {
+                              // Validate output JSON before switching views
+                              if (activeLanguage === 'json' && outputCode && format !== 'code') {
+                                setPreviousView(viewFormat); // Store current view before validation
+                                const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format });
+                                if (!isValid) {
+                                  // Don't switch view if JSON is invalid - pending action stored
+                                  setShowViewDropdown(false);
+                                  return;
+                                }
+                              }
                               setViewFormat(format);
                               setShowViewDropdown(false);
                             }}
@@ -2010,14 +2394,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                     ✓ All errors can be automatically fixed! Click below to fix common errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate).
                                   </p>
                                   <button
-                                    onClick={handleFixSimpleErrors}
+                                    onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
                                     disabled={isActionDisabled}
-                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2"
                                   >
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                     Fix Simple Errors
+                                  </button>
+                                  <button
+                                    onClick={handleReturnToCodeView}
+                                    className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                    </svg>
+                                    Return
                                   </button>
                                 </div>
                               ) : (
@@ -2036,12 +2429,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                   </div>
                                   <button
                                     disabled
-                                    className="w-full px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
+                                    className="w-full px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2 mb-2"
                                   >
                                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                     </svg>
                                     Fix Simple Errors (Unavailable)
+                                  </button>
+                                  <button
+                                    onClick={handleReturnToCodeView}
+                                    className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                                  >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                    </svg>
+                                    Return
                                   </button>
                                 </div>
                               )}
@@ -2055,12 +2457,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <button
                                 onClick={handleAutoCorrect}
                                 disabled={isActionDisabled || isCorrecting}
-                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2"
                               >
                                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                                   <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
                                 </svg>
                                 {isCorrecting ? 'Fixing...' : 'Fix Complex Errors with AI'}
+                              </button>
+                              <button
+                                onClick={handleReturnToCodeView}
+                                className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                              >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                </svg>
+                                Return
                               </button>
                             </div>
                           )}

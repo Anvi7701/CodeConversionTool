@@ -1,5 +1,11 @@
 import React, { useRef, useEffect } from 'react';
 
+interface ErrorPosition {
+  line: number;
+  column: number;
+  message?: string;
+}
+
 interface CodeEditorProps {
   value: string;
   onChange: (value: string) => void;
@@ -7,25 +13,39 @@ interface CodeEditorProps {
   onPaste?: (pastedText: string) => void;
   placeholder?: string;
   errorLine?: number | null;
+  errorLines?: ErrorPosition[]; // Support multiple error lines
 }
 
 // Simple line numbers component without folding
 const LineNumbers: React.FC<{ 
   lineCount: number;
   errorLine: number | null;
-}> = React.memo(({ lineCount, errorLine }) => {
+  errorLines?: ErrorPosition[];
+}> = React.memo(({ lineCount, errorLine, errorLines }) => {
   const lines = Array.from({ length: Math.max(1, lineCount) }, (_, i) => i + 1);
+  
+  // Create a set of error line numbers for quick lookup
+  const errorLineNumbers = new Set<number>();
+  if (errorLines && errorLines.length > 0) {
+    errorLines.forEach(error => errorLineNumbers.add(error.line));
+  } else if (errorLine) {
+    errorLineNumbers.add(errorLine);
+  }
   
   return (
     <>
       {lines.map((num) => {
+        const hasError = errorLineNumbers.has(num);
         return (
           <div 
             key={num} 
-            className={`h-5 leading-5 rounded-l-md -mr-4 pr-3 flex items-center justify-end ${
-              num === errorLine ? 'bg-red-500/20 text-red-400' : ''
+            className={`h-5 leading-5 rounded-l-md -mr-4 pr-3 flex items-center justify-end relative ${
+              hasError ? 'bg-red-500/20 text-red-400' : ''
             }`}
           >
+            {hasError && (
+              <span className="absolute -left-1 text-red-500 animate-pulse">▶</span>
+            )}
             <span>{num}</span>
           </div>
         );
@@ -34,7 +54,7 @@ const LineNumbers: React.FC<{
   );
 });
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
 
@@ -56,8 +76,15 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
       // Scroll the error line to the middle of the view
       const scrollTop = (errorLine - 1) * lineHeight - lineEl.clientHeight / 2;
       lineEl.scrollTop = Math.max(0, scrollTop);
+    } else if (errorLines && errorLines.length > 0 && textareaRef.current) {
+      // Scroll to the first error line if multiple errors exist
+      const firstErrorLine = errorLines[0].line;
+      const lineHeight = 20;
+      const lineEl = textareaRef.current;
+      const scrollTop = (firstErrorLine - 1) * lineHeight - lineEl.clientHeight / 2;
+      lineEl.scrollTop = Math.max(0, scrollTop);
     }
-  }, [errorLine]);
+  }, [errorLine, errorLines]);
 
   const handleGutterWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (textareaRef.current) {
@@ -85,6 +112,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
         <LineNumbers 
           lineCount={lineCount} 
           errorLine={errorLine}
+          errorLines={errorLines}
         />
       </div>
       <textarea
