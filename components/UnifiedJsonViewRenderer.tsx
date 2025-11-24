@@ -109,64 +109,99 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     }
   };
   const handleDragLeave:React.DragEventHandler<HTMLDivElement>=()=>{ if(showInsertLine) setShowInsertLine(false); };
-  const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400" title="Click to edit">null</span>: typeof value==='boolean'? <span onClick={startEditValue} className="cursor-text text-purple-600 dark:text-purple-400" title="Click to edit">{String(value)}</span>: typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400" title="Click to edit">"{value}"</span>: null;
+  const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 inline-block hover:scale-105" title="Click to edit">null</span>: typeof value==='boolean'? <span onClick={startEditValue} className="cursor-text text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">{String(value)}</span>: typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">"{value}"</span>: null;
   const getCollectionInfo=()=> isArray?`[${value.length}]`: isObject?`{${Object.keys(value).length}}`: '';
+  
+  // Determine if current node is a primitive (not object/array)
+  const isPrimitive = !isObject && !isArray;
+  
+  // Get type-specific styling for colorful display
+  const getValueTypeStyle = () => {
+    if (typeof value === 'string') return 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-l-2 border-green-400 dark:border-green-500';
+    if (typeof value === 'number') return 'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-l-2 border-blue-400 dark:border-blue-500';
+    if (typeof value === 'boolean') return 'bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-l-2 border-purple-400 dark:border-purple-500';
+    if (value === null) return 'bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800/20 dark:to-gray-800/20 border-l-2 border-slate-400 dark:border-slate-500';
+    if (isArray) return 'bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/20 dark:to-cyan-900/20 border-l-2 border-teal-400 dark:border-teal-500';
+    if (isObject) return 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 border-l-2 border-orange-400 dark:border-orange-500';
+    return '';
+  };
+  
   return (
     <div className={`font-mono text-sm ${level===0?'':'ml-4'}`}>
-      <div className="flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative" onDragOver={handleDragOver} onDrop={handleDrop} onDragLeave={handleDragLeave}>
+      <div className={`flex items-start gap-1 hover:bg-slate-100 dark:hover:bg-slate-800 py-0.5 pl-1 pr-2 rounded group relative transition-all duration-200 hover:shadow-sm ${getValueTypeStyle()}`} onDragOver={handleDragOver} onDrop={handleDrop} onDragLeave={handleDragLeave}>
         {showInsertLine && (
-          <div className="absolute left-1 -top-1 w-[6px] h-[6px] rounded-full bg-purple-500 dark:bg-purple-400 shadow-sm pointer-events-none" aria-hidden="true" />
+          <div className="absolute left-1 -top-1 w-[6px] h-[6px] rounded-full bg-purple-500 dark:bg-purple-400 shadow-sm pointer-events-none animate-pulse" aria-hidden="true" />
         )}
-        {isExpandable? <button onClick={()=>setIsExpanded(e=>!e)} className="flex-shrink-0 w-4 h-5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400">{isExpanded?'▼':'▶'}</button>: <span className="w-4 flex-shrink-0"/>}
+        {isExpandable? <button onClick={()=>setIsExpanded(e=>!e)} className="flex-shrink-0 w-4 h-5 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-400 transition-all duration-200 hover:scale-110">{isExpanded?'▼':'▶'}</button>: <span className="w-4 flex-shrink-0"/>}
         {level>0 && (
           <div className="relative flex-shrink-0" ref={menuRef}>
-            <button title="Open actions menu" aria-label="Open actions menu" onClick={()=>setShowMenu(m=>!m)} className="w-5 h-5 flex items-center justify-center rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-600">▦</button>
+            <button title="Open actions menu" aria-label="Open actions menu" onClick={()=>setShowMenu(m=>!m)} className="w-5 h-5 flex items-center justify-center rounded border border-slate-300 dark:border-slate-600 bg-gradient-to-br from-white to-slate-50 dark:from-slate-700 dark:to-slate-800 text-slate-600 dark:text-slate-300 hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 hover:shadow-md hover:scale-105">▦</button>
             {showMenu && (
-              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded shadow-lg z-50 p-1 flex flex-col w-[160px] max-h-[60vh] overflow-auto font-mono text-sm">
-                <button title="Type: convert value type" onClick={()=>setOpenType(o=>{ const next=!o; if(next){ setOpenStructure(false); setOpenTransform(false); } return next; })} className="flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap" data-section="type"><span>Type</span><span className="text-[20px]">{openType?'▾':'▸'}</span></button>
+              <div className="absolute top-full left-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-lg shadow-xl z-50 p-1 flex flex-col w-[160px] max-h-[60vh] overflow-auto font-mono text-sm">
+                {/* Type conversion - available for all nodes */}
+                <button title="Type: convert value type" onClick={()=>setOpenType(o=>{ const next=!o; if(next){ setOpenStructure(false); setOpenTransform(false); } return next; })} className="flex items-center justify-between px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200" data-section="type"><span>Type</span><span className="text-[20px]">{openType?'▾':'▸'}</span></button>
                 {openType && (
                   <>
-                    <button onClick={()=>convertType('string')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='string'?'!bg-blue-500 !text-white font-semibold':''}`}>String</button>
-                    <button onClick={()=>convertType('number')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='number'?'!bg-blue-500 !text-white font-semibold':''}`}>Number</button>
-                    <button onClick={()=>convertType('boolean')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${typeof value==='boolean'?'!bg-blue-500 !text-white font-semibold':''}`}>Boolean</button>
-                    <button onClick={()=>convertType('null')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${value===null?'!bg-blue-500 !text-white font-semibold':''}`}>Null</button>
-                    <button onClick={()=>convertType('object')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${isObject?'!bg-blue-500 !text-white font-semibold':''}`}>Object {"{}"}</button>
-                    <button onClick={()=>convertType('array')} className={`text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm ${isArray?'!bg-blue-500 !text-white font-semibold':''}`}>Array []</button>
+                    <button onClick={()=>convertType('string')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${typeof value==='string'?'!bg-gradient-to-r !from-green-500 !to-emerald-500 !text-white font-semibold shadow-md':''}`}>String</button>
+                    <button onClick={()=>convertType('number')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${typeof value==='number'?'!bg-gradient-to-r !from-blue-500 !to-cyan-500 !text-white font-semibold shadow-md':''}`}>Number</button>
+                    <button onClick={()=>convertType('boolean')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${typeof value==='boolean'?'!bg-gradient-to-r !from-purple-500 !to-pink-500 !text-white font-semibold shadow-md':''}`}>Boolean</button>
+                    <button onClick={()=>convertType('null')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-slate-50 hover:to-gray-50 dark:hover:from-slate-800/30 dark:hover:to-gray-800/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${value===null?'!bg-gradient-to-r !from-slate-500 !to-gray-500 !text-white font-semibold shadow-md':''}`}>Null</button>
+                    <button onClick={()=>convertType('object')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 dark:hover:from-orange-900/30 dark:hover:to-amber-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${isObject?'!bg-gradient-to-r !from-orange-500 !to-amber-500 !text-white font-semibold shadow-md':''}`}>Object {"{}"}</button>
+                    <button onClick={()=>convertType('array')} className={`text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 dark:hover:from-teal-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 ${isArray?'!bg-gradient-to-r !from-teal-500 !to-cyan-500 !text-white font-semibold shadow-md':''}`}>Array []</button>
                   </>
                 )}
-                {(isObject || isArray) && (
+                
+                {/* Structure section - show different options based on node type */}
+                {!isPrimitive && (
                   <>
-                    <button title="Structure: insert, sort, duplicate, remove" onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap" data-section="structure"><span>Structure</span><span className="text-[20px]">{openStructure?'▾':'▸'}</span></button>
+                    <button title="Structure: insert, sort, duplicate, remove" onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200" data-section="structure"><span>Structure</span><span className="text-[20px]">{openStructure?'▾':'▸'}</span></button>
                     {openStructure && (
                       <>
-                        <button onClick={handleSort} className="text-left px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 text-sm">Sort</button>
-                        <button onClick={handleInsert} className="text-left px-2 py-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 text-slate-700 dark:text-slate-300 text-sm">Insert</button>
-                        <button onClick={handleDuplicate} className="text-left px-2 py-1 rounded hover:bg-purple-50 dark:hover:bg-purple-900/30 text-slate-700 dark:text-slate-300 text-sm">Duplicate</button>
-                        <button onClick={handleRemove} className="text-left px-2 py-1 rounded border border-transparent hover:border-red-400/50 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-semibold text-sm">Remove</button>
+                        <button onClick={handleSort} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 hover:shadow-sm">Sort</button>
+                        <button onClick={handleInsert} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 hover:shadow-sm">Insert</button>
+                        <button onClick={handleDuplicate} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 hover:shadow-sm">Duplicate</button>
+                        <button onClick={handleRemove} className="text-left px-2 py-1 rounded border border-transparent hover:border-red-400/50 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/30 dark:hover:to-rose-900/30 text-red-600 dark:text-red-400 font-semibold text-sm transition-all duration-200 hover:shadow-sm">Remove</button>
                       </>
                     )}
                   </>
                 )}
+                
+                {/* For primitives, show simplified structure options */}
+                {isPrimitive && (
+                  <>
+                    <button title="Structure: duplicate, remove" onClick={()=>setOpenStructure(o=>{ const next=!o; if(next){ setOpenType(false); setOpenTransform(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 font-semibold text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200" data-section="structure"><span>Structure</span><span className="text-[20px]">{openStructure?'▾':'▸'}</span></button>
+                    {openStructure && (
+                      <>
+                        <button onClick={handleDuplicate} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 text-slate-700 dark:text-slate-300 text-sm transition-all duration-200 hover:shadow-sm">Duplicate</button>
+                        <button onClick={handleRemove} className="text-left px-2 py-1 rounded border border-transparent hover:border-red-400/50 hover:bg-gradient-to-r hover:from-red-50 hover:to-rose-50 dark:hover:from-red-900/30 dark:hover:to-rose-900/30 text-red-600 dark:text-red-400 font-semibold text-sm transition-all duration-200 hover:shadow-sm">Remove</button>
+                      </>
+                    )}
+                  </>
+                )}
+                
+                {/* Transform section - only for arrays */}
                 {isArray && (
                   <>
-                    <button title="Transform: array filters, sort, map, unique, flatten" onClick={()=>setOpenTransform(o=>{ const next=!o; if(next){ setOpenType(false); setOpenStructure(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-semibold text-slate-700 dark:text-slate-300 text-sm" data-section="transform"><span>Transform</span><span className="text-[20px]">{openTransform?'▾':'▸'}</span></button>
+                    <button title="Transform: array filters, sort, map, unique, flatten" onClick={()=>setOpenTransform(o=>{ const next=!o; if(next){ setOpenType(false); setOpenStructure(false); } return next; })} className="mt-2 flex items-center justify-between px-2 py-1 rounded hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 dark:hover:from-teal-900/30 dark:hover:to-cyan-900/30 font-semibold text-slate-700 dark:text-slate-300 text-sm transition-all duration-200" data-section="transform"><span>Transform</span><span className="text-[20px]">{openTransform?'▾':'▸'}</span></button>
                     {openTransform && (
                       <>
-                        <button onClick={()=>arrayTransform('filter-nulls')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Filter nulls</button>
-                        <button onClick={()=>arrayTransform('filter-falsy')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Filter falsy</button>
-                        <button onClick={()=>arrayTransform('sort-asc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Sort ascending</button>
-                        <button onClick={()=>arrayTransform('sort-desc')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Sort descending</button>
-                        <button onClick={()=>arrayTransform('map-number')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Map to numbers</button>
-                        <button onClick={()=>arrayTransform('map-string')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Map to strings</button>
-                        <button onClick={()=>arrayTransform('unique')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Unique values</button>
-                        <button onClick={()=>arrayTransform('flatten1')} className="text-left px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Flatten depth 1</button>
+                        <button onClick={()=>arrayTransform('filter-nulls')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-slate-50 hover:to-gray-50 dark:hover:from-slate-800/30 dark:hover:to-gray-800/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Filter nulls</button>
+                        <button onClick={()=>arrayTransform('filter-falsy')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-slate-50 hover:to-gray-50 dark:hover:from-slate-800/30 dark:hover:to-gray-800/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Filter falsy</button>
+                        <button onClick={()=>arrayTransform('sort-asc')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Sort ascending</button>
+                        <button onClick={()=>arrayTransform('sort-desc')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Sort descending</button>
+                        <button onClick={()=>arrayTransform('map-number')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Map to numbers</button>
+                        <button onClick={()=>arrayTransform('map-string')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Map to strings</button>
+                        <button onClick={()=>arrayTransform('unique')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Unique values</button>
+                        <button onClick={()=>arrayTransform('flatten1')} className="text-left px-2 py-1 rounded hover:bg-gradient-to-r hover:from-teal-50 hover:to-cyan-50 dark:hover:from-teal-900/30 dark:hover:to-cyan-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Flatten depth 1</button>
                       </>
                     )}
                   </>
                 )}
-                <div className="mt-2">
+                
+                {/* Other section - available for all nodes */}
+                <div className="mt-2 border-t border-slate-200 dark:border-slate-600 pt-2">
                   <span className="px-2 py-1 font-semibold text-slate-700 dark:text-slate-300 text-sm">Other</span>
-                  <button onClick={extractJSON} className="text-left w-full px-2 py-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap">Extract JSON</button>
+                  <button onClick={extractJSON} className="text-left w-full px-2 py-1 rounded hover:bg-gradient-to-r hover:from-indigo-50 hover:to-blue-50 dark:hover:from-indigo-900/30 dark:hover:to-blue-900/30 text-slate-700 dark:text-slate-300 text-sm whitespace-nowrap transition-all duration-200 hover:shadow-sm">Extract JSON</button>
                 </div>
               </div>
             )}
@@ -179,14 +214,14 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
           {isEditingKey? (
             <input ref={keyInputRef} className="px-1 py-0.5 text-sm border rounded font-semibold bg-white dark:bg-slate-900" value={editedKey} onChange={e=>setEditedKey(e.target.value)} onBlur={saveEditKey} onKeyDown={e=>{ if(e.key==='Enter') saveEditKey(); else if(e.key==='Escape') cancelEditKey(); }} />
           ): (
-            <span onClick={startEditKey} title={Array.isArray(getDataAtPath(rootData,segments.slice(0,-1)))|| level===0? '': 'Click to rename key'} className="text-slate-700 dark:text-slate-300 font-semibold cursor-text select-text">
+            <span onClick={startEditKey} title={Array.isArray(getDataAtPath(rootData,segments.slice(0,-1)))|| level===0? '': 'Click to rename key'} className="text-teal-700 dark:text-teal-400 font-bold cursor-text select-text bg-teal-50/50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded hover:bg-teal-100 dark:hover:bg-teal-900/40 transition-all duration-200 inline-block">
               {keyName}
               {isExpandable && <span className="ml-1 text-[10px] font-normal text-slate-500 dark:text-slate-400 align-middle" title={`Children: ${isArray? value.length: Object.keys(value).length}`}>{getCollectionInfo()}</span>}
             </span>
           )}
-          <span className="text-slate-500 dark:text-slate-500">: </span>
+          <span className="text-slate-500 dark:text-slate-500 mx-1">:</span>
           {!isExpandable && renderValue()}
-          {isExpandable && !isExpanded && <span className="text-slate-400 dark:text-slate-500 text-xs ml-1" title={`Children: ${isArray? value.length: Object.keys(value).length}`}>{isArray?`[${value.length}]`: `{${Object.keys(value).length}}`}</span>}
+          {isExpandable && !isExpanded && <span className="text-slate-400 dark:text-slate-500 text-xs ml-1 bg-slate-100 dark:bg-slate-700/50 px-1.5 py-0.5 rounded" title={`Children: ${isArray? value.length: Object.keys(value).length}`}>{isArray?`[${value.length}]`: `{${Object.keys(value).length}}`}</span>}
         </div>
       </div>
       {isExpanded && isExpandable && (

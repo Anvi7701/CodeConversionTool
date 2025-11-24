@@ -22,6 +22,7 @@ import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJs
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
 import { TreeView, FormView, TextView, ConsoleView } from './UnifiedJsonViewRenderer';
 import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
+import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -1138,8 +1139,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const handleCopy = async () => {
     if (!inputCode.trim()) return; // Don't copy if no input
     try {
-      const textToCopy = outputCode || inputCode;
-      await navigator.clipboard.writeText(textToCopy);
+      await navigator.clipboard.writeText(inputCode);
+      setCopySuccess(true);
+      setTimeout(() => setCopySuccess(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy:', error);
+    }
+  };
+
+  const handleCopyOutput = async () => {
+    if (!outputCode || !outputCode.trim()) return; // Don't copy if no output
+    try {
+      await navigator.clipboard.writeText(outputCode);
       setCopySuccess(true);
       setTimeout(() => setCopySuccess(false), 2000);
     } catch (error) {
@@ -1212,6 +1223,188 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
     if (!content) return;
+    
+    // Check if we're in Structure Analysis mode
+    if (isStructureAnalysisMode && outputCode) {
+      try {
+        const analysisData = JSON.parse(outputCode);
+        
+        // Generate HTML report
+        const htmlReport = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Structure Analysis Report</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 40px 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 32px; color: #2c3e50; margin-bottom: 10px; }
+        .header p { color: #7f8c8d; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 30px; }
+        .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 20px; color: #2c3e50; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .status-valid { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border: 2px solid #28a745; }
+        .status-invalid { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border: 2px solid #dc3545; }
+        .summary-card { background: linear-gradient(135deg, #cfe2ff 0%, #b6d4fe 100%); border: 2px solid #0d6efd; }
+        .details-card { background: linear-gradient(135deg, #e7d6f5 0%, #d4b5e8 100%); border: 2px solid #6f42c1; }
+        .stats-card { background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border: 2px solid #ffc107; }
+        .info-row { display: flex; justify-content: space-between; padding: 12px; margin: 8px 0; background: white; border-radius: 8px; }
+        .info-label { font-weight: 600; color: #495057; }
+        .info-value { font-weight: 700; color: #0d6efd; }
+        .stat-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid; }
+        .stat-strings { background: linear-gradient(135deg, #d1f5d3 0%, #b8edb5 100%); border-color: #28a745; }
+        .stat-numbers { background: linear-gradient(135deg, #cfe2ff 0%, #b6d4fe 100%); border-color: #0d6efd; }
+        .stat-booleans { background: linear-gradient(135deg, #e7d6f5 0%, #d4b5e8 100%); border-color: #6f42c1; }
+        .stat-nulls { background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%); border-color: #6c757d; }
+        .stat-objects { background: linear-gradient(135deg, #ffe5b4 0%, #ffd480 100%); border-color: #fd7e14; }
+        .stat-arrays { background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%); border-color: #17a2b8; }
+        .stat-label { font-weight: 600; color: #495057; display: flex; align-items: center; gap: 8px; }
+        .stat-value { font-size: 24px; font-weight: 700; }
+        .message-box { padding: 15px; background: white; border-radius: 8px; margin-top: 15px; }
+        .message-valid { color: #28a745; font-weight: 600; }
+        .message-invalid { color: #dc3545; font-weight: 600; }
+        @media print { body { background: white; padding: 20px; } .card { break-inside: avoid; box-shadow: none; border: 1px solid #dee2e6; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 JSON Structure Analysis Report</h1>
+            <p>Comprehensive analysis of your JSON structure and statistics</p>
+        </div>
+        
+        <div class="grid">
+            <div>
+                <!-- Validation Status -->
+                <div class="card ${analysisData.isValid ? 'status-valid' : 'status-invalid'}">
+                    <h2>${analysisData.isValid ? '✅' : '❌'} Validation Status</h2>
+                    <div class="info-row">
+                        <span class="info-label">Status:</span>
+                        <span class="info-value" style="color: ${analysisData.isValid ? '#28a745' : '#dc3545'};">${analysisData.isValid ? 'Valid' : 'Invalid'}</span>
+                    </div>
+                    <div class="message-box">
+                        <p class="${analysisData.isValid ? 'message-valid' : 'message-invalid'}">${analysisData.message}</p>
+                    </div>
+                </div>
+                
+                <!-- Summary -->
+                <div class="card summary-card" style="margin-top: 20px;">
+                    <h2>📋 Summary</h2>
+                    ${Object.entries(analysisData.summary).map(([key, value]) => `
+                        <div class="info-row">
+                            <span class="info-label">${key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                            <span class="info-value">${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Details -->
+                <div class="card details-card" style="margin-top: 20px;">
+                    <h2>🔍 Details</h2>
+                    ${Object.entries(analysisData.details)
+                        .filter(([key]) => !['objectKeys', 'valueTypes'].includes(key))
+                        .map(([key, value]) => `
+                            <div class="info-row">
+                                <span class="info-label">${key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                                <span class="info-value">${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}</span>
+                            </div>
+                        `).join('')}
+                </div>
+            </div>
+            
+            <!-- Statistics -->
+            <div>
+                <div class="card stats-card">
+                    <h2>📈 Statistics</h2>
+                    <p style="color: #856404; margin-bottom: 20px; font-size: 14px;">Complete breakdown of data types in your JSON</p>
+                    
+                    <div class="stat-item stat-strings">
+                        <span class="stat-label">📝 Strings</span>
+                        <span class="stat-value" style="color: #28a745;">${analysisData.statistics.strings}</span>
+                    </div>
+                    
+                    <div class="stat-item stat-numbers">
+                        <span class="stat-label">🔢 Numbers</span>
+                        <span class="stat-value" style="color: #0d6efd;">${analysisData.statistics.numbers}</span>
+                    </div>
+                    
+                    <div class="stat-item stat-booleans">
+                        <span class="stat-label">✓ Booleans</span>
+                        <span class="stat-value" style="color: #6f42c1;">${analysisData.statistics.booleans}</span>
+                    </div>
+                    
+                    <div class="stat-item stat-nulls">
+                        <span class="stat-label">∅ Nulls</span>
+                        <span class="stat-value" style="color: #6c757d;">${analysisData.statistics.nulls}</span>
+                    </div>
+                    
+                    <div class="stat-item stat-objects">
+                        <span class="stat-label">📦 Objects</span>
+                        <span class="stat-value" style="color: #fd7e14;">${analysisData.statistics.objects}</span>
+                    </div>
+                    
+                    <div class="stat-item stat-arrays">
+                        <span class="stat-label">📚 Arrays</span>
+                        <span class="stat-value" style="color: #17a2b8;">${analysisData.statistics.arrays}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px; color: #6c757d; font-size: 14px;">
+            <p>Generated on ${new Date().toLocaleString()}</p>
+        </div>
+    </div>
+</body>
+</html>`;
+
+        // Save as HTML file
+        // @ts-ignore
+        if (window.showSaveFilePicker) {
+          try {
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker({
+              suggestedName: 'json-analysis-report.html',
+              types: [
+                {
+                  description: 'HTML Report',
+                  accept: { 'text/html': ['.html'] },
+                },
+              ],
+            });
+            const writable = await handle.createWritable();
+            await writable.write(htmlReport);
+            await writable.close();
+            return;
+          } catch (err: any) {
+            if (err.name === 'AbortError') {
+              console.log('Save dialog was cancelled by user');
+              return;
+            }
+            console.warn('Save As dialog error:', err);
+            return;
+          }
+        }
+        // Fallback for browsers that don't support File System Access API
+        const blob = new Blob([htmlReport], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'json-analysis-report.html';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      } catch (err) {
+        console.error('Error generating report:', err);
+        alert('Failed to generate report. Please try again.');
+        return;
+      }
+    }
     
     // Validate output JSON before saving
     if (activeLanguage === 'json' && outputCode) {
@@ -1516,6 +1709,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             />
           );
         case 'view':
+          // Check if this is structure analysis data
+          if (isStructureAnalysisMode && parsedData && 
+              typeof parsedData === 'object' && 
+              'statistics' in parsedData && 
+              parsedData.statistics) {
+            return (
+              <StatisticsDetailViewer
+                data={parsedData}
+                expandAll={expandAllTrigger}
+                collapseAll={collapseAllTrigger}
+                onClose={() => {
+                  setOutputCode('');
+                  setIsStructureAnalysisMode(false);
+                }}
+              />
+            );
+          }
+          // Default ConsoleView for regular JSON
           return (
             <ConsoleView
               data={parsedData}
@@ -2206,7 +2417,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                   <Tooltip content="Copy to clipboard">
                     <button
-                      onClick={handleCopy}
+                      onClick={handleCopyOutput}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Copy"
                       title="Copy to clipboard (Ctrl+C)"
@@ -2339,28 +2550,31 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Clear icons - positioned at top right inside the output box */}
-              <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
-                <Tooltip content="Download formatted file">
-                  <button
-                    onClick={handleDownload}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
-                    aria-label="Download"
-                    title="Download formatted file"
-                  >
-                    📥
-                  </button>
-                </Tooltip>
-                <Tooltip content="Clear output">
-                  <button
-                    onClick={handleClearOutput}
-                    className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
-                    aria-label="Clear Output"
-                    title="Clear all output content"
-                  >
-                    🧹
-                  </button>
-                </Tooltip>
-              </div>
+              {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode */}
+              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && (
+                <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
+                  <Tooltip content="Download formatted file">
+                    <button
+                      onClick={handleDownload}
+                      className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
+                      aria-label="Download"
+                      title="Download formatted file"
+                    >
+                      📥
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Clear output">
+                    <button
+                      onClick={handleClearOutput}
+                      className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
+                      aria-label="Clear Output"
+                      title="Clear all output content"
+                    >
+                      🧹
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
               <div className="flex-grow relative bg-slate-50 dark:bg-slate-900/50 min-h-0">
                 {isLoading ? (
                   <FormattingLoading />
@@ -2396,6 +2610,83 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <p className="text-sm text-red-600 dark:text-red-400 mb-4">
                               {validationError.reason.split('\n')[0]}
                             </p>
+                            
+                            {/* Action Buttons - Relocated next to error count */}
+                            {formatterMode === 'fast' ? (
+                              <div className="flex gap-2">
+                                {errorLines.every(e => !isComplexError(e)) ? (
+                                  <>
+                                    <button
+                                      onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
+                                      disabled={isActionDisabled}
+                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                      title="Automatically fix common JSON errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate)"
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                      </svg>
+                                      Auto Fix
+                                    </button>
+                                    <button
+                                      onClick={handleReturnToCodeView}
+                                      className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                      title="Return to previous view"
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                      </svg>
+                                      Return
+                                    </button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <button
+                                      disabled
+                                      className="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center gap-2"
+                                      title="Auto Fix is unavailable because your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to Smart (AI) mode for advanced error correction."
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                      </svg>
+                                      Auto Fix (Unavailable)
+                                    </button>
+                                    <button
+                                      onClick={handleReturnToCodeView}
+                                      className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                      title="Return to previous view"
+                                    >
+                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                      </svg>
+                                      Return
+                                    </button>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              /* SMART (AI) MODE */
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={errorSource === 'output' ? handleAutoCorrect : handleAutoCorrect}
+                                  disabled={isActionDisabled}
+                                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  title="Use AI to fix complex errors including bracket mismatches, structural issues, and context-aware repairs"
+                                >
+                                  <span>🤖</span>
+                                  Fix Complex Errors with AI
+                                </button>
+                                <button
+                                  onClick={handleReturnToCodeView}
+                                  className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                  title="Return to previous view"
+                                >
+                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                  </svg>
+                                  Return
+                                </button>
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -2458,97 +2749,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             ))}
                           </div>
 
-                          {/* Action Buttons based on Mode and Error Type */}
-                          {formatterMode === 'fast' ? (
-                            /* FAST MODE */
-                            <>
-                              {/* Case 1: Only Simple Errors - Enable "Fix Simple Errors" */}
-                              {errorLines.every(e => !isComplexError(e)) ? (
-                                <div className="mt-3">
-                                  <p className="text-xs text-blue-700 dark:text-blue-300 mb-2">
-                                    ✓ All errors can be automatically fixed! Click below to fix common errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate).
-                                  </p>
-                                  <button
-                                    onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
-                                    disabled={isActionDisabled}
-                                    className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2"
-                                  >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    Fix Simple Errors
-                                  </button>
-                                  <button
-                                    onClick={handleReturnToCodeView}
-                                    className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                  >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                    </svg>
-                                    Return
-                                  </button>
-                                </div>
-                              ) : (
-                                /* Case 2 & 3: Has Complex Errors - Disabled "Fix Simple Errors" with advice */
-                                <div className="mt-3">
-                                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg mb-3">
-                                    <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
-                                      <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                      </svg>
-                                      <span className="font-medium">Complex Errors Detected</span>
-                                    </p>
-                                    <p className="text-xs text-purple-700 dark:text-purple-300">
-                                      Your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to <span className="font-semibold">Smart (AI)</span> mode for advanced error correction with bracket matching and context-aware repairs.
-                                    </p>
-                                  </div>
-                                  <button
-                                    disabled
-                                    className="w-full px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2 mb-2"
-                                  >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                    </svg>
-                                    Fix Simple Errors (Unavailable)
-                                  </button>
-                                  <button
-                                    onClick={handleReturnToCodeView}
-                                    className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                                  >
-                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                      <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                    </svg>
-                                    Return
-                                  </button>
-                                </div>
-                              )}
-                            </>
-                          ) : (
-                            /* SMART (AI) MODE */
-                            <div className="mt-3">
-                              <p className="text-xs text-purple-700 dark:text-purple-300 mb-2">
-                                AI-powered error correction can handle all types of errors including bracket mismatches, structural issues, and complex syntax problems.
+                          {/* Helper text for Fast mode with complex errors */}
+                          {formatterMode === 'fast' && errorLines.some(e => isComplexError(e)) && (
+                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg">
+                              <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
+                                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                                </svg>
+                                <span className="font-medium">Complex Errors Detected</span>
                               </p>
-                              <button
-                                onClick={handleAutoCorrect}
-                                disabled={isActionDisabled || isCorrecting}
-                                className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed mb-2"
-                              >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 00-1-1h-.5a1.5 1.5 0 010-3H4a1 1 0 001-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" />
-                                </svg>
-                                {isCorrecting ? 'Fixing...' : 'Fix Complex Errors with AI'}
-                              </button>
-                              <button
-                                onClick={handleReturnToCodeView}
-                                className="w-full px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                              >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                </svg>
-                                Return
-                              </button>
+                              <p className="text-xs text-purple-700 dark:text-purple-300">
+                                Your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to <span className="font-semibold">Smart (AI)</span> mode for advanced error correction with bracket matching and context-aware repairs.
+                              </p>
                             </div>
+                          )}
+
+                          {/* Helper text for Smart (AI) mode */}
+                          {formatterMode === 'smart' && (
+                            <p className="text-xs text-purple-700 dark:text-purple-300">
+                              AI-powered error correction can handle all types of errors including bracket mismatches, structural issues, and complex syntax problems.
+                            </p>
                           )}
                         </div>
                       </div>

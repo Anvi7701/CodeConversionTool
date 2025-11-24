@@ -29,6 +29,14 @@ interface StructureAnalysis {
     objects: number;
     arrays: number;
   };
+  detailedItems?: {
+    strings: Array<{ value: string; path: string }>;
+    numbers: Array<{ value: number; path: string }>;
+    booleans: Array<{ value: boolean; path: string }>;
+    nulls: Array<{ path: string }>;
+    objects: Array<{ preview: string; path: string }>;
+    arrays: Array<{ preview: string; path: string }>;
+  };
 }
 
 /**
@@ -47,26 +55,44 @@ export function analyzeJsonStructure(jsonString: string): StructureAnalysis {
       arrays: 0,
     };
     
+    const detailedItems = {
+      strings: [] as Array<{ value: string; path: string }>,
+      numbers: [] as Array<{ value: number; path: string }>,
+      booleans: [] as Array<{ value: boolean; path: string }>,
+      nulls: [] as Array<{ path: string }>,
+      objects: [] as Array<{ preview: string; path: string }>,
+      arrays: [] as Array<{ preview: string; path: string }>,
+    };
+    
     let maxDepth = 0;
     
-    // Recursive function to analyze structure and count types
-    function analyze(value: any, depth: number = 0): void {
+    // Recursive function to analyze structure and collect items with paths
+    function analyze(value: any, depth: number = 0, path: string = 'root'): void {
       maxDepth = Math.max(maxDepth, depth);
       
       if (value === null) {
         statistics.nulls++;
+        detailedItems.nulls.push({ path });
       } else if (Array.isArray(value)) {
         statistics.arrays++;
-        value.forEach(item => analyze(item, depth + 1));
+        const preview = `Array(${value.length})`;
+        detailedItems.arrays.push({ preview, path });
+        value.forEach((item, index) => analyze(item, depth + 1, `${path}[${index}]`));
       } else if (typeof value === 'object') {
         statistics.objects++;
-        Object.values(value).forEach(val => analyze(val, depth + 1));
+        const keys = Object.keys(value);
+        const preview = `{${keys.slice(0, 3).join(', ')}${keys.length > 3 ? '...' : ''}}`;
+        detailedItems.objects.push({ preview, path });
+        Object.entries(value).forEach(([key, val]) => analyze(val, depth + 1, `${path}.${key}`));
       } else if (typeof value === 'string') {
         statistics.strings++;
+        detailedItems.strings.push({ value, path });
       } else if (typeof value === 'number') {
         statistics.numbers++;
+        detailedItems.numbers.push({ value, path });
       } else if (typeof value === 'boolean') {
         statistics.booleans++;
+        detailedItems.booleans.push({ value, path });
       }
     }
     
@@ -117,6 +143,7 @@ export function analyzeJsonStructure(jsonString: string): StructureAnalysis {
         valueTypes: valueTypes,
       },
       statistics: statistics,
+      detailedItems: detailedItems,
     };
     
   } catch (error) {
