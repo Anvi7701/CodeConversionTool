@@ -2552,7 +2552,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Download and Clear icons - positioned at top right inside the output box */}
               {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode */}
               {!validationError && !outputError && !aiError && !isStructureAnalysisMode && (
-                <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
+                <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[17px] right-6' : viewFormat === 'form' ? 'top-[17px] right-6' : 'top-2 right-6'}`}>
                   <Tooltip content="Download formatted file">
                     <button
                       onClick={handleDownload}
