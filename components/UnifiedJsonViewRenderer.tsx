@@ -457,41 +457,41 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
               cancelEdit();
             }
           }}
-          className="flex-1 px-3 py-1.5 text-sm border-2 border-blue-400 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
+          className="flex-1 px-2 py-1 text-sm border-2 border-blue-400 rounded-md bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
         />
       );
     }
     
     const canEdit = onValueChange && !isObject && !isArray;
-    const hoverClass = canEdit ? 'cursor-pointer hover:scale-105 hover:shadow-sm px-2 py-0.5 rounded transition-all duration-200' : 'px-2 py-0.5';
+    const hoverClass = canEdit ? 'cursor-pointer hover:scale-105 hover:shadow-sm px-1.5 py-0.5 rounded transition-all duration-200' : 'px-1.5 py-0.5';
     const title = canEdit ? 'Click to edit' : '';
     
     return value===null? <span className={`text-slate-500 dark:text-slate-400 italic font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-gray-700' : ''}`} onClick={startEdit} title={title}>null</span>: typeof value==='boolean'? (<div className="inline-flex items-center gap-2"><input type="checkbox" checked={value} onChange={handleBooleanToggle} disabled={!onValueChange} className="w-4 h-4 cursor-pointer accent-purple-600 dark:accent-purple-400 rounded disabled:opacity-50 disabled:cursor-not-allowed" title={value ? 'Checked (true)' : 'Unchecked (false)'} /><span className="font-bold text-purple-700 dark:text-purple-300 select-none">{String(value)}</span></div>): typeof value==='number'? <span className={`text-blue-700 dark:text-blue-300 font-bold ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: typeof value==='string'? <span className={`text-green-700 dark:text-green-300 font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: null;
   };
   
   if(isObject) return (
-    <div className={`${level>0?'ml-6 mt-3':'mt-2'} bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-l-1 border-orange-400 dark:border-orange-500 rounded-md p-3 shadow-sm hover:shadow-md transition-all duration-200`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-orange-700 dark:text-orange-300 mb-2 text-sm cursor-pointer hover:text-orange-900 dark:hover:text-orange-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
+    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-l-1 border-orange-400 dark:border-orange-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-orange-700 dark:text-orange-300 mb-1 text-sm cursor-pointer hover:text-orange-900 dark:hover:text-orange-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
         <span className="inline-block transition-transform duration-200" style={{transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>▶</span>
         <span>{keyName}</span>
-        <span className="text-xs bg-orange-200 dark:bg-orange-800 px-2 py-0.5 rounded-full">{Object.keys(value).length} props</span>
+        <span className="text-xs bg-orange-200 dark:bg-orange-800 px-1.5 py-0.5 rounded-full">{Object.keys(value).length} props</span>
       </div>
-      {isExpanded && <div className="space-y-2 mt-2">{Object.entries(value).map(([k,v])=> <FormField key={`${path.join('.')}.${k}`} keyName={k} value={v} level={level+1} path={[...path, k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
+      {isExpanded && <div className="space-y-1 mt-1">{Object.entries(value).map(([k,v])=> <FormField key={`${path.join('.')}.${k}`} keyName={k} value={v} level={level+1} path={[...path, k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
     </div>
   );
   if(isArray) return (
-    <div className={`${level>0?'ml-6 mt-3':'mt-2'} bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/10 dark:to-cyan-900/10 border-l-1 border-teal-400 dark:border-teal-500 rounded-md p-3 shadow-sm hover:shadow-md transition-all duration-200`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-teal-700 dark:text-teal-300 mb-2 text-sm cursor-pointer hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
+    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/10 dark:to-cyan-900/10 border-l-1 border-teal-400 dark:border-teal-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-teal-700 dark:text-teal-300 mb-1 text-sm cursor-pointer hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
         <span className="inline-block transition-transform duration-200" style={{transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>▶</span>
         <span>{keyName}</span>
-        <span className="text-xs bg-teal-200 dark:bg-teal-800 px-2 py-0.5 rounded-full">{value.length} items</span>
+        <span className="text-xs bg-teal-200 dark:bg-teal-800 px-1.5 py-0.5 rounded-full">{value.length} items</span>
       </div>
-      {isExpanded && <div className="space-y-2 mt-2">{value.map((item:any,i:number)=> <FormField key={`${path.join('.')}.${i}`} keyName={`Item ${i+1}`} value={item} level={level+1} path={[...path, i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
+      {isExpanded && <div className="space-y-1 mt-1">{value.map((item:any,i:number)=> <FormField key={`${path.join('.')}.${i}`} keyName={`Item ${i+1}`} value={item} level={level+1} path={[...path, i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onValueChange} />)}</div>}
     </div>
   );
   return (
-    <div className={`flex items-baseline gap-3 py-2.5 px-3 rounded-md shadow-sm hover:shadow-md transition-all duration-200 ${getFieldBgClass()}`}>
-      <label className="text-sm font-bold text-teal-700 dark:text-teal-300 min-w-[140px] bg-teal-50/50 dark:bg-teal-900/20 px-2 py-1 rounded">{keyName}:</label>
+    <div className={`flex items-baseline gap-2 py-1 px-2 rounded-md shadow-sm hover:shadow-md transition-all duration-200 ${getFieldBgClass()}`}>
+      <label className="text-sm font-semibold text-teal-700 dark:text-teal-300 min-w-[100px] bg-teal-50/50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded">{keyName}:</label>
       <div className="flex-1 text-sm">{renderVal()}</div>
     </div>
   );
@@ -545,15 +545,15 @@ export const FormView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:bool
   return (
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800">
       {onEdit && (
-        <div className="mb-4 pb-3 border-b-2 border-gradient-to-r from-blue-200 to-cyan-200 dark:from-blue-800 dark:to-cyan-800 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-3 shadow-sm mx-4 mt-2">
+        <div className="mb-2 pb-2 border-b-2 border-gradient-to-r from-blue-200 to-cyan-200 dark:from-blue-800 dark:to-cyan-800 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-2 shadow-sm mx-3 mt-2">
           <span className="text-sm font-medium text-blue-700 dark:text-blue-300">✏️ Click any value to edit • Press Enter to save, Esc to cancel</span>
         </div>
       )}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-3">
         {typeof formData==='object' && formData!==null ? (Array.isArray(formData)? (
-          <div className="space-y-2">{formData.map((item:any,i:number)=><FormField key={i} keyName={`Item ${i+1}`} value={item} level={0} path={[i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
+          <div className="space-y-1">{formData.map((item:any,i:number)=><FormField key={i} keyName={`Item ${i+1}`} value={item} level={0} path={[i]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
         ): (
-          <div className="space-y-2">{Object.entries(formData).map(([k,v])=> <FormField key={k} keyName={k} value={v} level={0} path={[k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
+          <div className="space-y-1">{Object.entries(formData).map(([k,v])=> <FormField key={k} keyName={k} value={v} level={0} path={[k]} expandAll={expandAll} collapseAll={collapseAll} onValueChange={onEdit ? handleValueChange : undefined} />)}</div>
         )): <div className="text-slate-600 dark:text-slate-400">Invalid JSON data</div>}
       </div>
     </div>
