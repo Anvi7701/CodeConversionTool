@@ -32,6 +32,10 @@ const WsdlFormatterPage = lazy(() => import('./components/formatters/WsdlFormatt
 const SoapFormatterPage = lazy(() => import('./components/formatters/SoapFormatterPage.tsx').then(m => ({ default: m.SoapFormatterPage })));
 const AngularFormatterPage = lazy(() => import('./components/formatters/AngularFormatterPage.tsx').then(m => ({ default: m.AngularFormatterPage })));
 
+// JSON Tools with SEO
+const JsonGraphViewerPage = lazy(() => import('./components/JsonGraphViewerPage.tsx').then(m => ({ default: m.JsonGraphViewerPage })));
+const JsonStructureAnalyzerPage = lazy(() => import('./components/JsonStructureAnalyzerPage.tsx').then(m => ({ default: m.JsonStructureAnalyzerPage })));
+
 const App: React.FC = () => {
   const location = useLocation();
 
@@ -81,6 +85,16 @@ const App: React.FC = () => {
               <Link to="/data-to-class" onClick={(e) => handleNavLinkClick(e, '/data-to-class')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Data To Class</Link>
             </div>
           </div>
+
+          {/* JSON Visualization & Analysis Section */}
+          <div className="mt-4">
+            <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">JSON Visualization & Analysis</h2>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
+              <Link to="/json-graph-viewer" onClick={(e) => handleNavLinkClick(e, '/json-graph-viewer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Graph Viewer</Link>
+              <span className="text-slate-400">|</span>
+              <Link to="/json-structure-analyzer" onClick={(e) => handleNavLinkClick(e, '/json-structure-analyzer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Structure Analyzer</Link>
+            </div>
+          </div>
         </div>
       </nav>
 
@@ -114,6 +128,10 @@ const App: React.FC = () => {
             <Route path="/wsdl-formatter" element={<WsdlFormatterPage />} />
             <Route path="/soap-formatter" element={<SoapFormatterPage />} />
             <Route path="/angular-formatter" element={<AngularFormatterPage />} />
+            
+            {/* JSON Visualization & Analysis routes */}
+            <Route path="/json-graph-viewer" element={<JsonGraphViewerPage />} />
+            <Route path="/json-structure-analyzer" element={<JsonStructureAnalyzerPage />} />
           </Routes>
         </Suspense>
       </div>

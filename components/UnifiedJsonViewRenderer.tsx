@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
-import { EditorView } from '@codemirror/view';
+import { EditorView, Decoration, DecorationSet, WidgetType, ViewPlugin, ViewUpdate } from '@codemirror/view';
 import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
 import { keymap } from '@codemirror/view';
+import { StateField, StateEffect } from '@codemirror/state';
 
 // Create custom fold gutter with solid arrow icons
 const customFoldGutter = foldGutter({
@@ -17,6 +18,95 @@ const customFoldGutter = foldGutter({
     return marker;
   }
 });
+
+// Boolean checkbox widget for CodeMirror
+class BooleanCheckboxWidget extends WidgetType {
+  constructor(readonly value: boolean, readonly pos: number, readonly onChange: (pos: number, newValue: boolean) => void) {
+    super();
+  }
+
+  eq(other: BooleanCheckboxWidget) {
+    return other.value === this.value && other.pos === this.pos;
+  }
+
+  toDOM() {
+    const wrap = document.createElement('span');
+    wrap.className = 'inline-flex items-center gap-1.5 align-middle mx-1 px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30';
+    wrap.style.verticalAlign = 'middle';
+    
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = this.value;
+    checkbox.className = 'w-3.5 h-3.5 cursor-pointer accent-purple-600 dark:accent-purple-400 rounded';
+    checkbox.title = this.value ? 'Checked (true) - Click to toggle' : 'Unchecked (false) - Click to toggle';
+    checkbox.onclick = (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.onChange(this.pos, !this.value);
+    };
+    
+    wrap.appendChild(checkbox);
+    return wrap;
+  }
+
+  ignoreEvent() {
+    return false;
+  }
+}
+
+// State effect for toggling boolean
+const toggleBooleanEffect = StateEffect.define<{ pos: number; newValue: boolean }>();
+
+// Create decorations for boolean values with checkboxes
+function createBooleanDecorations(view: EditorView, onChange: (pos: number, newValue: boolean) => void) {
+  const decorations: any[] = [];
+  const doc = view.state.doc;
+  const text = doc.toString();
+  
+  // Match boolean values in JSON (true/false not in strings)
+  const booleanRegex = /\b(true|false)\b/g;
+  let match;
+  
+  while ((match = booleanRegex.exec(text)) !== null) {
+    const pos = match.index;
+    const value = match[1] === 'true';
+    
+    // Check if it's inside a string by counting quotes before this position
+    const beforeText = text.substring(0, pos);
+    const quoteCount = (beforeText.match(/"/g) || []).length;
+    const isInString = quoteCount % 2 !== 0;
+    
+    if (!isInString) {
+      const deco = Decoration.widget({
+        widget: new BooleanCheckboxWidget(value, pos, onChange),
+        side: -1
+      });
+      decorations.push(deco.range(pos));
+    }
+  }
+  
+  return Decoration.set(decorations);
+}
+
+// ViewPlugin for managing boolean decorations
+const booleanDecorationsPlugin = (onChange: (pos: number, newValue: boolean) => void) => ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet;
+
+    constructor(view: EditorView) {
+      this.decorations = createBooleanDecorations(view, onChange);
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = createBooleanDecorations(update.view, onChange);
+      }
+    }
+  },
+  {
+    decorations: v => v.decorations
+  }
+);
 
 interface TreeNodeProps { keyName: string; value: any; level: number; isLast: boolean; segments: (string|number)[]; rootData: any; onRootUpdate:(d:any)=>void; expandAll?:boolean; collapseAll?:boolean; }
 const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segments, rootData, onRootUpdate, expandAll, collapseAll }) => {
@@ -109,7 +199,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segm
     }
   };
   const handleDragLeave:React.DragEventHandler<HTMLDivElement>=()=>{ if(showInsertLine) setShowInsertLine(false); };
-  const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 inline-block hover:scale-105" title="Click to edit">null</span>: typeof value==='boolean'? <span onClick={startEditValue} className="cursor-text text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-semibold px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">{String(value)}</span>: typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">"{value}"</span>: null;
+  const handleBooleanToggle = () => {
+    updateSelf(!value);
+  };
+  const renderValue=()=> isEditingValue? (<input ref={valueInputRef} className="px-1 py-0.5 text-sm border rounded bg-white dark:bg-slate-900" value={editedValue} onChange={e=>setEditedValue(e.target.value)} onBlur={saveEditValue} onKeyDown={e=>{ if(e.key==='Enter') saveEditValue(); else if(e.key==='Escape') cancelEditValue(); }} />): value===null? <span onClick={startEditValue} className="cursor-text text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 px-1.5 py-0.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 transition-all duration-200 inline-block hover:scale-105" title="Click to edit">null</span>: typeof value==='boolean'? (<div className="inline-flex items-center gap-2 px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30"><input type="checkbox" checked={value} onChange={handleBooleanToggle} className="w-4 h-4 cursor-pointer accent-purple-600 dark:accent-purple-400 rounded" title={value ? 'Checked (true)' : 'Unchecked (false)'} /><span className="text-purple-600 dark:text-purple-400 font-semibold text-sm select-none">{String(value)}</span></div>): typeof value==='number'? <span onClick={startEditValue} className="cursor-text text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-900/30 dark:hover:to-cyan-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">{value}</span>: typeof value==='string'? <span onClick={startEditValue} className="cursor-text text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 px-1.5 py-0.5 rounded hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-900/30 dark:hover:to-emerald-900/30 transition-all duration-200 inline-block hover:scale-105 hover:shadow-sm" title="Click to edit">"{value}"</span>: null;
   const getCollectionInfo=()=> isArray?`[${value.length}]`: isObject?`{${Object.keys(value).length}}`: '';
   
   // Determine if current node is a primitive (not object/array)
@@ -342,6 +435,12 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
     setIsEditing(false);
   };
   
+  const handleBooleanToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onValueChange) {
+      onValueChange(path, e.target.checked);
+    }
+  };
+  
   const renderVal=()=> {
     if (isEditing) {
       return (
@@ -367,7 +466,7 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
     const hoverClass = canEdit ? 'cursor-pointer hover:scale-105 hover:shadow-sm px-2 py-0.5 rounded transition-all duration-200' : 'px-2 py-0.5';
     const title = canEdit ? 'Click to edit' : '';
     
-    return value===null? <span className={`text-slate-500 dark:text-slate-400 italic font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-gray-700' : ''}`} onClick={startEdit} title={title}>null</span>: typeof value==='boolean'? <span className={`text-purple-700 dark:text-purple-300 font-bold ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-purple-100 hover:to-pink-100 dark:hover:from-purple-900/40 dark:hover:to-pink-900/40' : ''}`} onClick={startEdit} title={title}>{String(value)}</span>: typeof value==='number'? <span className={`text-blue-700 dark:text-blue-300 font-bold ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: typeof value==='string'? <span className={`text-green-700 dark:text-green-300 font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: null;
+    return value===null? <span className={`text-slate-500 dark:text-slate-400 italic font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100 dark:hover:from-slate-700 dark:hover:to-gray-700' : ''}`} onClick={startEdit} title={title}>null</span>: typeof value==='boolean'? (<div className="inline-flex items-center gap-2"><input type="checkbox" checked={value} onChange={handleBooleanToggle} disabled={!onValueChange} className="w-4 h-4 cursor-pointer accent-purple-600 dark:accent-purple-400 rounded disabled:opacity-50 disabled:cursor-not-allowed" title={value ? 'Checked (true)' : 'Unchecked (false)'} /><span className="font-bold text-purple-700 dark:text-purple-300 select-none">{String(value)}</span></div>): typeof value==='number'? <span className={`text-blue-700 dark:text-blue-300 font-bold ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-blue-100 hover:to-cyan-100 dark:hover:from-blue-900/40 dark:hover:to-cyan-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: typeof value==='string'? <span className={`text-green-700 dark:text-green-300 font-medium ${hoverClass} ${canEdit ? 'hover:bg-gradient-to-r hover:from-green-100 hover:to-emerald-100 dark:hover:from-green-900/40 dark:hover:to-emerald-900/40' : ''}`} onClick={startEdit} title={title}>{value}</span>: null;
   };
   
   if(isObject) return (
@@ -462,11 +561,47 @@ export const FormView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:bool
 };
 export const TextView:React.FC<{ code:string; onChange?:(v:string)=>void; expandAll?:boolean; collapseAll?:boolean; }>=({ code,onChange,expandAll:expandAllTrigger,collapseAll:collapseAllTrigger })=>{
   const editorRef=useRef<ReactCodeMirrorRef>(null);
+  
   useEffect(()=>{ if(expandAllTrigger && editorRef.current?.view) unfoldAll(editorRef.current.view); },[expandAllTrigger]);
   useEffect(()=>{ if(collapseAllTrigger && editorRef.current?.view) foldAll(editorRef.current.view); },[collapseAllTrigger]);
+  
+  // Handle boolean toggle in CodeMirror
+  const handleBooleanToggle = (pos: number, newValue: boolean) => {
+    if (!onChange || !editorRef.current?.view) return;
+    
+    const view = editorRef.current.view;
+    const doc = view.state.doc;
+    const text = doc.toString();
+    
+    // Find the boolean value at the position
+    const boolMatch = text.substring(pos).match(/^(true|false)/);
+    if (!boolMatch) return;
+    
+    const oldValue = boolMatch[1];
+    const newValueStr = newValue ? 'true' : 'false';
+    
+    // Replace the boolean value
+    const newText = text.substring(0, pos) + newValueStr + text.substring(pos + oldValue.length);
+    onChange(newText);
+  };
+  
   return (
     <div className="h-full overflow-auto bg-white dark:bg-slate-900">
-      <CodeMirror ref={editorRef} value={code} onChange={onChange} extensions={[json(), EditorView.lineWrapping, customFoldGutter, keymap.of(foldKeymap)]} basicSetup={{ lineNumbers:true, highlightActiveLine:true, highlightActiveLineGutter:true, foldGutter:false }} theme="light" style={{ fontSize:'14px', height:'100%', fontFamily:'ui-monospace, Menlo, Monaco, Consolas, "Courier New", monospace' }} />
+      <CodeMirror 
+        ref={editorRef} 
+        value={code} 
+        onChange={onChange} 
+        extensions={[
+          json(), 
+          EditorView.lineWrapping, 
+          customFoldGutter, 
+          keymap.of(foldKeymap),
+          ...(onChange ? [booleanDecorationsPlugin(handleBooleanToggle)] : [])
+        ]} 
+        basicSetup={{ lineNumbers:true, highlightActiveLine:true, highlightActiveLineGutter:true, foldGutter:false }} 
+        theme="light" 
+        style={{ fontSize:'14px', height:'100%', fontFamily:'ui-monospace, Menlo, Monaco, Consolas, "Courier New", monospace' }} 
+      />
     </div>
   );
 };
