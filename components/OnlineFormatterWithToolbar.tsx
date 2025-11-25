@@ -2891,7 +2891,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
 
               {/* Graph Viewer */}
-              <div className="flex-1 overflow-hidden relative">
+              <div className="flex-1 overflow-auto relative">
                 <GraphViewer
                   data={graphData}
                   onSelect={handleNodeSelect}

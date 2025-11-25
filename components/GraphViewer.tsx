@@ -440,10 +440,10 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
     return (
         <div 
             className="w-full h-full relative" 
-            style={{ minHeight: '400px' }}
+            style={{ minHeight: '400px', minWidth: '100%' }}
             onClick={() => setIsDownloadOpen(false)}
         >
-            <svg ref={svgRef} width="100%" height="100%" className="bg-slate-50 dark:bg-dark-bg/50 select-none"></svg>
+            <svg ref={svgRef} width="100%" height="100%" className="bg-slate-50 dark:bg-dark-bg/50 select-none" style={{ minWidth: '1200px', minHeight: '800px' }}></svg>
              <div className="absolute top-2 right-2 flex gap-2" style={{ zIndex: 100000 }}>
                 <Tooltip content="Save to System">
                     <button 
