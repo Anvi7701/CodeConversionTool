@@ -494,7 +494,7 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
                     )}
                 </div>
             </div>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-max max-w-[90%] text-center text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/70 dark:bg-dark-card/70 rounded-md backdrop-blur-sm pointer-events-none shadow-md">
+            <div className="fixed bottom-2 left-1/2 -translate-x-1/2 w-max max-w-[90%] text-center text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/70 dark:bg-dark-card/70 rounded-md backdrop-blur-sm pointer-events-none shadow-md" style={{ zIndex: 100003 }}>
                 Tip: Click nodes to expand/collapse. Scroll to zoom, and drag to explore the graph.
             </div>
              <style>{`
