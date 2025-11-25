@@ -89,8 +89,12 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
         const { nodes, edges } = data;
         const svg = d3.select(svgRef.current);
         const parent = svg.node().parentElement;
-        const width = parent.clientWidth;
-        const height = parent.clientHeight;
+        
+        // Get the scrollable container dimensions for proper centering
+        const scrollContainer = parent?.parentElement;
+        const width = scrollContainer?.clientWidth || parent.clientWidth || 1200;
+        const height = scrollContainer?.clientHeight || parent.clientHeight || 800;
+        
         svg.attr('viewBox', `0 0 ${width} ${height}`);
 
         svg.selectAll('*').remove(); // Clear previous render
@@ -188,8 +192,10 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
         
             if (!contentGroup.node() || !parentEl) return;
         
-            const width = parentEl.clientWidth;
-            const height = parentEl.clientHeight;
+            // Use scrollable container dimensions for centering
+            const scrollContainer = parentEl?.parentElement;
+            const width = scrollContainer?.clientWidth || parentEl.clientWidth || 1200;
+            const height = scrollContainer?.clientHeight || parentEl.clientHeight || 800;
         
             const bounds = contentGroup.node().getBBox();
             
@@ -494,7 +500,7 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
                     )}
                 </div>
             </div>
-            <div className="fixed bottom-2 left-1/2 -translate-x-1/2 w-max max-w-[90%] text-center text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/70 dark:bg-dark-card/70 rounded-md backdrop-blur-sm pointer-events-none shadow-md" style={{ zIndex: 100003 }}>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-max max-w-[90%] text-center text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/90 dark:bg-dark-card/90 rounded-md backdrop-blur-sm pointer-events-none shadow-md" style={{ zIndex: 10 }}>
                 Tip: Click nodes to expand/collapse. Scroll to zoom, and drag to explore the graph.
             </div>
              <style>{`
