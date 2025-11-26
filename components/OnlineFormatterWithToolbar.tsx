@@ -562,6 +562,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     try {
       // For JSON, use enhanced validation with error detection
       if (activeLanguage === 'json') {
+        // Early comment detection so Fast mode Auto Fix can enable even if complex errors occur
+        const earlySingle = Array.from(trimmedInput.matchAll(/\/\/.*$/gm));
+        const earlyMulti = Array.from(trimmedInput.matchAll(/\/\*[\s\S]*?\*\//g));
+        if (earlySingle.length + earlyMulti.length > 0) {
+          setHasCommentsInInput(true);
+        }
         try {
           JSON.parse(trimmedInput);
           // Valid JSON
