@@ -138,12 +138,12 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
   };
 
   const renderCellValue = (value: any) => {
-    if (value === null) return <span className="text-slate-400 italic font-mono">null</span>;
-    if (value === undefined) return <span className="text-slate-400 italic font-mono">undefined</span>;
-    if (typeof value === 'boolean') return <span className="text-purple-600 dark:text-purple-400 font-mono font-semibold">{String(value)}</span>;
-    if (typeof value === 'number') return <span className="text-blue-600 dark:text-blue-400 font-mono font-semibold">{value}</span>;
-    if (typeof value === 'string') return <span className="text-green-600 dark:text-green-400 font-mono">{value}</span>;
-    if (typeof value === 'object') return <span className="text-orange-600 dark:text-orange-400 font-mono text-xs">{JSON.stringify(value)}</span>;
+    if (value === null) return <span className="text-slate-500 dark:text-slate-400 italic font-mono">null</span>;
+    if (value === undefined) return <span className="text-slate-500 dark:text-slate-400 italic font-mono">undefined</span>;
+    if (typeof value === 'boolean') return <span className="text-purple-700 dark:text-purple-400 font-mono font-semibold">{String(value)}</span>;
+    if (typeof value === 'number') return <span className="text-blue-700 dark:text-blue-400 font-mono font-semibold">{value}</span>;
+    if (typeof value === 'string') return <span className="text-green-700 dark:text-green-400 font-mono">"{value}"</span>;
+    if (typeof value === 'object') return <span className="text-orange-700 dark:text-orange-400 font-mono text-xs">{JSON.stringify(value)}</span>;
     return String(value);
   };
 
@@ -175,7 +175,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-900">
       {/* Toolbar */}
-      <div className="flex-shrink-0 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+      <div className="flex-shrink-0 border-b border-slate-400 dark:border-slate-500 bg-slate-200 dark:bg-slate-700 p-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           {/* Search */}
           <div className="flex-1 min-w-[200px] max-w-md">
@@ -194,11 +194,11 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
           </div>
           
           {/* Stats */}
-          <div className="flex items-center gap-4 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex items-center gap-4 text-sm text-slate-900 dark:text-slate-100">
             <span className="font-medium">
               {processedData.length} {processedData.length === 1 ? 'row' : 'rows'}
             </span>
-            <span className="text-slate-300 dark:text-slate-600">|</span>
+            <span className="text-slate-400 dark:text-slate-400">|</span>
             <span className="font-medium">{columns.length} columns</span>
           </div>
           
@@ -219,16 +219,16 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
       {/* Table */}
       <div className="flex-1 overflow-auto">
         <table className="w-full border-collapse">
-          <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800">
+          <thead className="sticky top-0 z-10 bg-slate-200 dark:bg-slate-700">
             <tr>
-              <th className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800">
+              <th className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-900 dark:text-slate-100 border-b-2 border-slate-400 dark:border-slate-500 bg-slate-200 dark:bg-slate-700">
                 #
               </th>
               {columns.map((column) => (
                 <th
                   key={column}
                   onClick={() => handleSort(column)}
-                  className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none bg-slate-100 dark:bg-slate-800"
+                  className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-900 dark:text-slate-100 border-b-2 border-slate-400 dark:border-slate-500 cursor-pointer hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors select-none bg-slate-200 dark:bg-slate-700"
                 >
                   <div className="flex items-center gap-2">
                     <span className="truncate">{column}</span>
@@ -248,7 +248,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
                 key={rowIndex}
                 className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-700"
               >
-                <td className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
+                <td className="px-3 py-1.5 text-xs text-slate-700 dark:text-slate-300 font-mono">
                   {(currentPage - 1) * itemsPerPage + rowIndex + 1}
                 </td>
                 {columns.map((column) => (
@@ -283,9 +283,9 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex-shrink-0 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3">
+        <div className="flex-shrink-0 border-t border-slate-400 dark:border-slate-500 bg-slate-200 dark:bg-slate-700 p-3">
           <div className="flex items-center justify-between">
-            <div className="text-sm text-slate-600 dark:text-slate-400">
+            <div className="text-sm text-slate-900 dark:text-slate-100">
               Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, processedData.length)} of {processedData.length}
             </div>
             <div className="flex items-center gap-2">
