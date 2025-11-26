@@ -138,11 +138,11 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
   };
 
   const renderCellValue = (value: any) => {
-    if (value === null) return <span className="text-slate-400 italic">null</span>;
-    if (value === undefined) return <span className="text-slate-400 italic">undefined</span>;
-    if (typeof value === 'boolean') return <span className="text-purple-600 dark:text-purple-400 font-semibold">{String(value)}</span>;
-    if (typeof value === 'number') return <span className="text-blue-600 dark:text-blue-400 font-semibold">{value}</span>;
-    if (typeof value === 'string') return <span className="text-green-600 dark:text-green-400">{value}</span>;
+    if (value === null) return <span className="text-slate-400 italic font-mono">null</span>;
+    if (value === undefined) return <span className="text-slate-400 italic font-mono">undefined</span>;
+    if (typeof value === 'boolean') return <span className="text-purple-600 dark:text-purple-400 font-mono font-semibold">{String(value)}</span>;
+    if (typeof value === 'number') return <span className="text-blue-600 dark:text-blue-400 font-mono font-semibold">{value}</span>;
+    if (typeof value === 'string') return <span className="text-green-600 dark:text-green-400 font-mono">{value}</span>;
     if (typeof value === 'object') return <span className="text-orange-600 dark:text-orange-400 font-mono text-xs">{JSON.stringify(value)}</span>;
     return String(value);
   };
@@ -185,7 +185,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
                 placeholder="Search table..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-3 py-2 pl-9 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 pl-9 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
               />
               <svg className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -221,14 +221,14 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
         <table className="w-full border-collapse">
           <thead className="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800">
+              <th className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-800">
                 #
               </th>
               {columns.map((column) => (
                 <th
                   key={column}
                   onClick={() => handleSort(column)}
-                  className="px-4 py-3 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none bg-slate-100 dark:bg-slate-800"
+                  className="px-3 py-1.5 text-left text-xs font-mono font-semibold text-slate-700 dark:text-slate-300 border-b-2 border-slate-300 dark:border-slate-600 cursor-pointer hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors select-none bg-slate-100 dark:bg-slate-800"
                 >
                   <div className="flex items-center gap-2">
                     <span className="truncate">{column}</span>
@@ -248,14 +248,14 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
                 key={rowIndex}
                 className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-b border-slate-200 dark:border-slate-700"
               >
-                <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 font-mono">
+                <td className="px-3 py-1.5 text-xs text-slate-500 dark:text-slate-400 font-mono">
                   {(currentPage - 1) * itemsPerPage + rowIndex + 1}
                 </td>
                 {columns.map((column) => (
                   <td
                     key={column}
                     onClick={() => onEdit && handleEdit(rowIndex, column, row[column])}
-                    className={`px-4 py-3 text-sm ${onEdit ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
+                    className={`px-3 py-1.5 text-sm font-mono ${onEdit ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''}`}
                   >
                     {editingCell?.row === rowIndex && editingCell?.col === column ? (
                       <input
@@ -268,7 +268,7 @@ export const TableView: React.FC<TableViewProps> = ({ data, expandAll, collapseA
                           if (e.key === 'Escape') setEditingCell(null);
                         }}
                         autoFocus
-                        className="w-full px-2 py-1 text-sm border-2 border-blue-500 rounded bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+                        className="w-full px-2 py-1 text-sm font-mono border-2 border-blue-500 rounded bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100"
                       />
                     ) : (
                       <div className="truncate max-w-xs">{renderCellValue(row[column])}</div>
