@@ -6,6 +6,7 @@ import { EditorView, Decoration, DecorationSet, WidgetType, ViewPlugin, ViewUpda
 import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
 import { keymap } from '@codemirror/view';
 import { StateField, StateEffect } from '@codemirror/state';
+import { TableView } from './TableView';
 
 // Create custom fold gutter with solid arrow icons
 const customFoldGutter = foldGutter({
@@ -776,3 +777,6 @@ export const ConsoleView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:b
     <ViewNode value={data} level={0} expandAll={expandAll} collapseAll={collapseAll} />
   </div>
 );
+
+// Export TableView for use in parent components
+export { TableView };

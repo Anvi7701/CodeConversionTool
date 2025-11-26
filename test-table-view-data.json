@@ -1,0 +1,110 @@
+[
+  {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com",
+    "age": 28,
+    "active": true,
+    "department": "Engineering",
+    "salary": 95000
+  },
+  {
+    "id": 2,
+    "name": "Bob Smith",
+    "email": "bob@example.com",
+    "age": 35,
+    "active": true,
+    "department": "Marketing",
+    "salary": 78000
+  },
+  {
+    "id": 3,
+    "name": "Carol White",
+    "email": "carol@example.com",
+    "age": 42,
+    "active": false,
+    "department": "Sales",
+    "salary": 82000
+  },
+  {
+    "id": 4,
+    "name": "David Brown",
+    "email": "david@example.com",
+    "age": 31,
+    "active": true,
+    "department": "Engineering",
+    "salary": 102000
+  },
+  {
+    "id": 5,
+    "name": "Emma Davis",
+    "email": "emma@example.com",
+    "age": 26,
+    "active": true,
+    "department": "Design",
+    "salary": 71000
+  },
+  {
+    "id": 6,
+    "name": "Frank Wilson",
+    "email": "frank@example.com",
+    "age": 39,
+    "active": false,
+    "department": "Operations",
+    "salary": 88000
+  },
+  {
+    "id": 7,
+    "name": "Grace Lee",
+    "email": "grace@example.com",
+    "age": 33,
+    "active": true,
+    "department": "Engineering",
+    "salary": 97000
+  },
+  {
+    "id": 8,
+    "name": "Henry Martinez",
+    "email": "henry@example.com",
+    "age": 45,
+    "active": true,
+    "department": "Management",
+    "salary": 125000
+  },
+  {
+    "id": 9,
+    "name": "Ivy Taylor",
+    "email": "ivy@example.com",
+    "age": 29,
+    "active": true,
+    "department": "Marketing",
+    "salary": 73000
+  },
+  {
+    "id": 10,
+    "name": "Jack Anderson",
+    "email": "jack@example.com",
+    "age": 37,
+    "active": false,
+    "department": "Sales",
+    "salary": 79000
+  },
+  {
+    "id": 11,
+    "name": "Kelly Thomas",
+    "email": "kelly@example.com",
+    "age": 32,
+    "active": true,
+    "department": "Engineering",
+    "salary": 99000
+  },
+  {
+    "id": 12,
+    "name": "Leo Garcia",
+    "email": "leo@example.com",
+    "age": 41,
+    "active": true,
+    "department": "Operations",
+    "salary": 91000
+  }
+]

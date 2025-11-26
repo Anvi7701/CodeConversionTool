@@ -20,7 +20,7 @@ import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
-import { TreeView, FormView, TextView, ConsoleView } from './UnifiedJsonViewRenderer';
+import { TreeView, FormView, TextView, ConsoleView, TableView } from './UnifiedJsonViewRenderer';
 import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import type { Selection } from '../types';
@@ -101,8 +101,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // JMESPath Transform modal state
   const [showJMESPathModal, setShowJMESPathModal] = useState(false);
 
-  // View format state for JSON output (Code, Form, Text, Tree, View)
-  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view';
+  // View format state for JSON output (Code, Form, Text, Tree, View, Table)
+  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view' | 'table';
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [previousView, setPreviousView] = useState<ViewFormat>('code'); // Track the view before error
@@ -1507,6 +1507,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setSuccessMessage(null);
     setPendingAction(null);
     // Return to the previous view (the view user was on before error occurred)
+    // Auto-expand when returning to Form or Tree view
+    if ((previousView === 'form' || previousView === 'tree') && viewFormat !== previousView) {
+      setExpandAllTrigger(true);
+      setTimeout(() => setExpandAllTrigger(false), 100);
+    }
     setViewFormat(previousView);
   };
 
@@ -1553,6 +1558,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setPendingAction(null); // Clear pending action before executing
     
     if (action.type === 'view-switch') {
+      // Auto-expand when switching to Form or Tree view
+      if ((action.targetView === 'form' || action.targetView === 'tree') && viewFormat !== action.targetView) {
+        setExpandAllTrigger(true);
+        setTimeout(() => setExpandAllTrigger(false), 100);
+      }
       setViewFormat(action.targetView);
     } else if (action.type === 'download') {
       // Re-trigger download
@@ -1706,6 +1716,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               onChange={(value) => setOutputCode(value)}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
+            />
+          );
+        case 'table':
+          return (
+            <TableView
+              data={parsedData}
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+              onEdit={(value) => setOutputCode(value)}
             />
           );
         case 'view':
@@ -2429,9 +2448,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   {/* Undo/Redo for OUTPUT (Formatted JSON) */}
                   <Tooltip content="Undo last change">
                     <button
-                      onClick={canUndoOutput ? handleOutputUndo : undefined}
-                      disabled={!canUndoOutput}
-                      className={`p-1 rounded-md transition-all text-xl ${canUndoOutput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
+                      onClick={canUndoOutput && !isStructureAnalysisMode ? handleOutputUndo : undefined}
+                      disabled={!canUndoOutput || isStructureAnalysisMode}
+                      className={`p-1 rounded-md transition-all text-xl ${canUndoOutput && !isStructureAnalysisMode ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                       title="Undo last change (Ctrl+Z)"
                     >
@@ -2453,7 +2472,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
               <div className="flex items-center gap-2">
                 {/* Expand/Collapse buttons - visible for Form, Tree, View, Code, and Text */}
-                {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && (
+                {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && (
                   <>
                     <Tooltip content="Expand all fields">
                       <button
@@ -2482,19 +2501,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="relative view-dropdown-container">
                     <button
                       onClick={() => {
+                        if (isStructureAnalysisMode) return;
                         console.log('View dropdown clicked, current format:', viewFormat);
                         setShowViewDropdown(!showViewDropdown);
                       }}
-                      className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      disabled={isStructureAnalysisMode}
+                      className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                        isStructureAnalysisMode 
+                          ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
+                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      } text-white`}
                       aria-label="Select View Format"
-                      title="Select view format"
+                      title={isStructureAnalysisMode ? "View selector disabled in Structure Analysis mode" : "Select view format"}
                     >
                       <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
                       <span className="text-xs">▼</span>
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[120px]">
-                        {(['code', 'form', 'text', 'tree', 'view'] as ViewFormat[]).map((format) => {
+                        {(['code', 'form', 'text', 'tree', 'table', 'view'] as ViewFormat[]).map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
                           return (
                             <button
@@ -2512,6 +2537,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                     return;
                                   }
                                 }
+                                
+                                // Auto-expand when switching to Form or Tree view
+                                if ((format === 'form' || format === 'tree') && viewFormat !== format) {
+                                  setExpandAllTrigger(true);
+                                  // Reset the trigger after a brief moment to allow future expansions
+                                  setTimeout(() => setExpandAllTrigger(false), 100);
+                                }
+                                
                                 setViewFormat(format);
                                 setShowViewDropdown(false);
                               }}
@@ -2550,9 +2583,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Clear icons - positioned at top right inside the output box */}
-              {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode */}
-              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && (
-                <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[2px] right-2' : viewFormat === 'form' ? 'top-[17px] right-6' : 'top-2 right-6'}`}>
+              {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode or when showing success message */}
+              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && !successMessage && (
+                <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[2px] right-2' : viewFormat === 'form' ? 'top-[17px] right-6' : viewFormat === 'table' ? 'top-[2px] right-2' : 'top-2 right-6'}`}>
                   <Tooltip content="Download formatted file">
                     <button
                       onClick={handleDownload}
@@ -2783,25 +2816,41 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       />
                     )}
                   </div>
-                ) : successMessage ? (
-                  <div className="h-full flex flex-col items-center justify-center text-green-700 dark:text-green-300 p-4 text-center">
-                    <CheckIcon className="h-10 w-10 mb-4" />
-                    <p>{successMessage}</p>
-                  </div>
-                ) : outputCode ? (
-                  <div className="h-full w-full">
-                    {/* Render different views based on viewFormat for JSON */}
-                    {activeLanguage === 'json' && outputCode && viewFormat !== 'code'
-                      ? renderStructuredOutputView()
-                      : (
-                        <CodeMirrorViewer
-                          code={outputCode || ''}
-                          language={activeLanguage}
-                          onChange={(value) => setOutputCode(value)}
-                          expandAll={expandAllTrigger}
-                          collapseAll={collapseAllTrigger}
-                        />
-                      )}
+                ) : outputCode || successMessage ? (
+                  <div className="h-full w-full flex flex-col">
+                    {/* Success Message Banner - shown at top when present */}
+                    {successMessage && (
+                      <div className="flex-shrink-0 bg-green-50 dark:bg-green-900/20 border-b-2 border-green-300 dark:border-green-700 px-4 py-3">
+                        <div className="flex items-center gap-3 text-green-700 dark:text-green-300">
+                          <CheckIcon className="h-5 w-5 flex-shrink-0" />
+                          <p className="text-sm font-medium">{successMessage}</p>
+                        </div>
+                      </div>
+                    )}
+                    {/* Output Content - shown below success message if present */}
+                    {outputCode && (
+                      <div className="flex-1 min-h-0">
+                        {/* Render different views based on viewFormat for JSON */}
+                        {activeLanguage === 'json' && viewFormat !== 'code'
+                          ? renderStructuredOutputView()
+                          : (
+                            <CodeMirrorViewer
+                              code={outputCode || ''}
+                              language={activeLanguage}
+                              onChange={(value) => setOutputCode(value)}
+                              expandAll={expandAllTrigger}
+                              collapseAll={collapseAllTrigger}
+                            />
+                          )}
+                      </div>
+                    )}
+                    {/* Show placeholder if only success message without output */}
+                    {!outputCode && (
+                      <div className="flex-1 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                        <FormatIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                        <p>Formatted code will appear here.</p>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
