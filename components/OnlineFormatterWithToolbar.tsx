@@ -574,6 +574,30 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           setErrorLines(allErrors);
           setErrorSource('input');
 
+          // Detect comments for documentation (do not modify validation flow)
+          let commentInfo = '';
+          const singleLineMatches = Array.from(trimmedInput.matchAll(/\/\/.*$/gm));
+          const multiLineMatches = Array.from(trimmedInput.matchAll(/\/\*[\s\S]*?\*\//g));
+          const commentsCount = singleLineMatches.length + multiLineMatches.length;
+          if (commentsCount > 0) {
+            commentInfo = `\n\n📝 **Comments Detected** (${commentsCount}):\n`;
+            singleLineMatches.forEach(m => {
+              if (m.index !== undefined) {
+                const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
+                const line = trimmedInput.substring(0, m.index).split('\n').length;
+                commentInfo += `- Line ${line}: // ${preview}${m[0].length > 50 ? '...' : ''}\n`;
+              }
+            });
+            multiLineMatches.forEach(m => {
+              if (m.index !== undefined) {
+                const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
+                const line = trimmedInput.substring(0, m.index).split('\n').length;
+                commentInfo += `- Line ${line}: /* ${preview}${m[0].length > 50 ? '...' : ''}\n`;
+              }
+            });
+            commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
+          }
+
           if (formatterMode === 'smart') {
             // Smart mode: Always offer AI-powered correction
             let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${err.message}`;
@@ -589,7 +613,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             
             setValidationError({
               isValid: false,
-              reason: errorAnalysis,
+              reason: errorAnalysis + commentInfo,
               isFixableSyntaxError: true,
               suggestedLanguage: undefined
             });
@@ -606,7 +630,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
               setValidationError({
                 isValid: false,
-                reason: fastError,
+                reason: fastError + commentInfo,
                 isFixableSyntaxError: true,
                 suggestedLanguage: undefined
               });
@@ -619,7 +643,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
               setValidationError({
                 isValid: false,
-                reason: fastError,
+                reason: fastError + commentInfo,
                 isFixableSyntaxError: true,
                 suggestedLanguage: undefined
               });
