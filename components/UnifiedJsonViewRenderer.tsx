@@ -778,5 +778,6 @@ export const ConsoleView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:b
   </div>
 );
 
-// Export TableView for use in parent components
+// Export TableView and its ref type for use in parent components
 export { TableView };
+export type { TableViewRef } from './TableView';

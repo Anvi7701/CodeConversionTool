@@ -20,7 +20,7 @@ import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
-import { TreeView, FormView, TextView, ConsoleView, TableView } from './UnifiedJsonViewRenderer';
+import { TreeView, FormView, TextView, ConsoleView, TableView, type TableViewRef } from './UnifiedJsonViewRenderer';
 import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import type { Selection } from '../types';
@@ -117,6 +117,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Structure analysis mode - when active, only "View" format is available
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState(false);
+
+  // Ref for TableView component to access its helper functions
+  const tableViewRef = useRef<TableViewRef>(null);
 
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
@@ -1149,6 +1152,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   const handleCopyOutput = async () => {
     if (!outputCode || !outputCode.trim()) return; // Don't copy if no output
+    
+    // If in table view, copy as tab-separated values (pasteable to Excel/Sheets)
+    if (viewFormat === 'table' && tableViewRef.current) {
+      try {
+        await tableViewRef.current.copyTableToClipboard();
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy table:', error);
+      }
+      return;
+    }
+    
     try {
       await navigator.clipboard.writeText(outputCode);
       setCopySuccess(true);
@@ -1198,6 +1214,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const content = outputCode || inputCode;
     if (!content) return;
     
+    // Note: Download button behavior remains simple (downloads to default folder)
+    // For table view, the Download button is hidden - users should use "Save to File" for folder selection
+    
     // Validate output JSON before downloading
     if (activeLanguage === 'json' && outputCode) {
       setPreviousView(viewFormat); // Store current view before validation
@@ -1223,6 +1242,55 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!inputCode.trim()) return;
     const content = outputCode || inputCode;
     if (!content) return;
+    
+    // If in table view, open Save As dialog with both CSV and Excel format options
+    if (viewFormat === 'table' && tableViewRef.current) {
+      // @ts-ignore
+      if (window.showSaveFilePicker) {
+        try {
+          // @ts-ignore
+          const handle = await window.showSaveFilePicker({
+            suggestedName: `table_data_${new Date().toISOString().slice(0, 10)}.csv`,
+            types: [
+              {
+                description: 'CSV File',
+                accept: { 'text/csv': ['.csv'] },
+              },
+              {
+                description: 'Excel File',
+                accept: { 'application/vnd.ms-excel': ['.xls'] },
+              },
+            ],
+          });
+          
+          // Get the selected file name and determine format by extension
+          const fileName = handle.name;
+          const isExcel = fileName.toLowerCase().endsWith('.xls') || fileName.toLowerCase().endsWith('.xlsx');
+          
+          let content: string;
+          if (isExcel) {
+            content = tableViewRef.current.generateExcel();
+          } else {
+            content = tableViewRef.current.generateCSV();
+          }
+          
+          const writable = await handle.createWritable();
+          await writable.write(content);
+          await writable.close();
+          return;
+        } catch (err: any) {
+          if (err.name === 'AbortError') {
+            console.log('Save dialog was cancelled by user');
+            return;
+          }
+          console.warn('Save As dialog error:', err);
+          return;
+        }
+      }
+      // Fallback for browsers that don't support File System Access API
+      alert('Save dialog is not supported in your browser. Please use the Export button in the table toolbar instead.');
+      return;
+    }
     
     // Check if we're in Structure Analysis mode
     if (isStructureAnalysisMode && outputCode) {
@@ -1721,6 +1789,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         case 'table':
           return (
             <TableView
+              ref={tableViewRef}
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
@@ -2583,9 +2652,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Clear icons - positioned at top right inside the output box */}
-              {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode or when showing success message */}
-              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && !successMessage && (
-                <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[2px] right-2' : viewFormat === 'form' ? 'top-[17px] right-6' : viewFormat === 'table' ? 'top-[2px] right-2' : 'top-2 right-6'}`}>
+              {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode or when showing success message or in Table view */}
+              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && !successMessage && viewFormat !== 'table' && (
+                <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[2px] right-2' : viewFormat === 'form' ? 'top-[17px] right-6' : 'top-2 right-6'}`}>
                   <Tooltip content="Download formatted file">
                     <button
                       onClick={handleDownload}
