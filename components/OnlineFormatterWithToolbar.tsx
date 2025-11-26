@@ -2740,178 +2740,163 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     {/* For JSON with detailed error display */}
                     {activeLanguage === 'json' && errorLines.length > 0 ? (
                       <div className="space-y-4">
-                        <div className="flex items-start gap-3 mb-4">
-                          <svg className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                          </svg>
-                          <div className="flex-1">
-                            <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
-                              {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
-                            </h3>
-                            <p className="text-sm text-red-600 dark:text-red-400 mb-4 whitespace-pre-wrap">
-                              {validationError.reason}
-                            </p>
-                            
-                            {/* Action Buttons - Relocated next to error count */}
-                            {formatterMode === 'fast' ? (
-                              <div className="flex gap-2">
-                                {errorLines.every(e => !isComplexError(e)) || hasCommentsInInput ? (
-                                  <>
-                                    <button
-                                      onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
-                                      disabled={isActionDisabled}
-                                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                      title="Automatically fix common JSON errors like missing commas, trailing commas, unquoted keys, and single quotes (95%+ success rate)"
-                                    >
-                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                      </svg>
-                                      Auto Fix
-                                    </button>
-                                    <button
-                                      onClick={handleReturnToCodeView}
-                                      className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                      title="Return to previous view"
-                                    >
-                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                      </svg>
-                                      Return
-                                    </button>
-                                  </>
-                                ) : (
-                                  <>
-                                    <button
-                                      disabled
-                                      className="px-4 py-2 bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 rounded-lg text-sm font-medium cursor-not-allowed flex items-center gap-2"
-                                      title="Auto Fix is unavailable because your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to Smart (AI) mode for advanced error correction."
-                                    >
-                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                                      </svg>
-                                      Auto Fix (Unavailable)
-                                    </button>
-                                    <button
-                                      onClick={handleReturnToCodeView}
-                                      className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                      title="Return to previous view"
-                                    >
-                                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                      </svg>
-                                      Return
-                                    </button>
-                                  </>
+                        {(() => {
+                          const inputStr = inputCode || '';
+                          const singleLineMatches = Array.from(inputStr.matchAll(/\/\/.*$/gm));
+                          const multiLineMatches = Array.from(inputStr.matchAll(/\/\*[\s\S]*?\*\//g));
+                          const commentsCount = singleLineMatches.length + multiLineMatches.length;
+
+                          // Determine if an error is directly caused by a comment token at its location
+                          const isCommentCausedError = (error: ErrorPosition): boolean => {
+                            const { line, column } = error;
+                            if (!line || !column) return false;
+                            const lines = inputStr.split('\n');
+                            if (line - 1 >= lines.length) return false;
+                            const targetLine = lines[line - 1] || '';
+                            const colIdx = Math.max(0, Math.min(column - 1, targetLine.length));
+                            const seg = targetLine.substring(Math.max(0, colIdx - 2), Math.min(targetLine.length, colIdx + 2));
+                            return seg.includes('//') || seg.includes('/*');
+                          };
+
+                          // Exclude comment-caused entries from simple/complex counts
+                          const nonCommentErrors = errorLines.filter(e => !isCommentCausedError(e));
+                          const simpleCount = nonCommentErrors.filter(e => !isComplexError(e)).length;
+                          const complexCount = nonCommentErrors.filter(e => isComplexError(e)).length;
+
+                          return (
+                            <div className="rounded-lg border border-red-300 dark:border-red-700 bg-red-50/40 dark:bg-red-900/10">
+                              <div className="p-4 flex items-start gap-3">
+                                <svg className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                                    <h3 className="text-lg font-semibold text-red-700 dark:text-red-300">
+                                      {errorLines.length} Syntax Issue{errorLines.length > 1 ? 's' : ''}
+                                    </h3>
+                                    <div className="flex gap-2">
+                                      {formatterMode === 'fast' ? (
+                                        <>
+                                          <button
+                                            onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
+                                            disabled={!(errorLines.every(e => !isComplexError(e)) || hasCommentsInInput) || isActionDisabled}
+                                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="Automatically fix common JSON issues; removes comments when present"
+                                          >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                            </svg>
+                                            Auto Fix
+                                          </button>
+                                          <button
+                                            onClick={handleReturnToCodeView}
+                                            className="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                            title="Return to previous view"
+                                          >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                            </svg>
+                                            Return
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <div className="flex gap-2">
+                                          <button
+                                            onClick={errorSource === 'output' ? handleAutoCorrect : handleAutoCorrect}
+                                            disabled={isActionDisabled}
+                                            className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            title="Use AI to fix complex errors including bracket mismatches and structural issues"
+                                          >
+                                            <span>🤖</span>
+                                            Fix with AI
+                                          </button>
+                                          <button
+                                            onClick={handleReturnToCodeView}
+                                            className="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                                            title="Return to previous view"
+                                          >
+                                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                                            </svg>
+                                            Return
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Quick chips */}
+                                  <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Simple: {simpleCount}</span>
+                                    <span className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Complex: {complexCount}</span>
+                                    {commentsCount > 0 && (
+                                      <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300">Comments: {commentsCount}</span>
+                                    )}
+                                  </div>
+
+                                  {/* Minimal primary message */}
+                                  <p className="mt-3 text-sm text-red-700 dark:text-red-300">
+                                    {validationError.reason.split('\n')[0]}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <div className="px-4 pb-4 space-y-3">
+                                {/* Collapsible: Error locations */}
+                                <details className="rounded border border-red-200 dark:border-red-800 bg-white dark:bg-slate-900">
+                                  <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-red-800 dark:text-red-200">Error Locations</summary>
+                                  <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                                    {errorLines.map((error, idx) => (
+                                      <div key={idx} className="p-2 rounded border-l-4 text-xs bg-red-50 dark:bg-slate-800 border-red-300 dark:border-red-700">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="font-semibold text-red-800 dark:text-red-200">Line {error.line}, Column {error.column}</span>
+                                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${isComplexError(error) ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'}`}>
+                                            {isComplexError(error) ? 'Complex' : 'Simple'}
+                                          </span>
+                                        </div>
+                                        <p className="text-red-700 dark:text-red-300 font-mono">{error.message || 'Syntax error detected'}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </details>
+
+                                {/* Collapsible: Comments detected */}
+                                {commentsCount > 0 && (
+                                  <details className="rounded border border-amber-200 dark:border-amber-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-amber-800 dark:text-amber-300">Comments Detected ({commentsCount})</summary>
+                                    <div className="px-3 py-2 text-xs text-amber-900 dark:text-amber-300 space-y-1">
+                                      {singleLineMatches.map((m, idx) => {
+                                        const idxPos = m.index ?? 0;
+                                        const line = inputStr.substring(0, idxPos).split('\n').length;
+                                        const preview = m[0].substring(0, 80).replace(/\n/g, ' ');
+                                        return <div key={`sl-${idx}`}>• Line {line}: // {preview}{m[0].length > 80 ? '…' : ''}</div>;
+                                      })}
+                                      {multiLineMatches.map((m, idx) => {
+                                        const idxPos = m.index ?? 0;
+                                        const line = inputStr.substring(0, idxPos).split('\n').length;
+                                        const preview = m[0].substring(0, 80).replace(/\n/g, ' ');
+                                        return <div key={`ml-${idx}`}>• Line {line}: /* {preview}{m[0].length > 80 ? '…' : ''}</div>;
+                                      })}
+                                      <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-400">Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.</p>
+                                    </div>
+                                  </details>
+                                )}
+
+                                {/* Contextual tip */}
+                                {formatterMode === 'fast' && complexCount > 0 && (
+                                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg">
+                                    <p className="text-xs text-purple-800 dark:text-purple-200">
+                                      Complex issues detected. Auto Fix will remove comments and simple issues; for remaining structural problems, switch to Smart (AI).
+                                    </p>
+                                  </div>
+                                )}
+                                {formatterMode === 'smart' && (
+                                  <p className="text-xs text-purple-700 dark:text-purple-300">AI can address complex structural errors including bracket mismatches.</p>
                                 )}
                               </div>
-                            ) : (
-                              /* SMART (AI) MODE */
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={errorSource === 'output' ? handleAutoCorrect : handleAutoCorrect}
-                                  disabled={isActionDisabled}
-                                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  title="Use AI to fix complex errors including bracket mismatches, structural issues, and context-aware repairs"
-                                >
-                                  <span>🤖</span>
-                                  Fix Complex Errors with AI
-                                </button>
-                                <button
-                                  onClick={handleReturnToCodeView}
-                                  className="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-                                  title="Return to previous view"
-                                >
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                                  </svg>
-                                  Return
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Fix Summary - shown after auto-fix is applied */}
-                        {showFixSummary && appliedFixes.length > 0 && (
-                          <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-300 dark:border-green-700 rounded-lg">
-                            <h4 className="text-sm font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
-                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                              </svg>
-                              ✅ Automatically Fixed {appliedFixes.length} Issue{appliedFixes.length > 1 ? 's' : ''}
-                            </h4>
-                            <p className="text-sm text-green-700 dark:text-green-300 mb-2">
-                              {getFixSummary(appliedFixes)}
-                            </p>
-                            <div className="text-xs text-green-600 dark:text-green-400 space-y-1">
-                              {appliedFixes.map((fix, idx) => (
-                                <div key={idx}>• Line {fix.line}: {fix.description}</div>
-                              ))}
                             </div>
-                          </div>
-                        )}
-
-                        {/* Error List */}
-                        <div className="border-2 border-red-300 dark:border-red-700 rounded-lg p-4 bg-red-50/50 dark:bg-red-900/10 mb-4">
-                          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
-                            {errorLines.map((error, idx) => (
-                              <div 
-                                key={idx} 
-                                className={`p-2 bg-white dark:bg-slate-800 rounded border-l-4 ${
-                                  isComplexError(error) 
-                                    ? 'border-purple-500' 
-                                    : 'border-blue-500'
-                                } text-xs`}
-                              >
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className={`font-semibold ${
-                                    isComplexError(error)
-                                      ? 'text-purple-700 dark:text-purple-300'
-                                      : 'text-blue-700 dark:text-blue-300'
-                                  }`}>
-                                    Line {error.line}, Column {error.column}
-                                  </span>
-                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${
-                                    isComplexError(error)
-                                      ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300'
-                                      : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'
-                                  }`}>
-                                    {isComplexError(error) ? 'Complex' : 'Simple'}
-                                  </span>
-                                </div>
-                                <p className={`${
-                                  isComplexError(error)
-                                    ? 'text-purple-600 dark:text-purple-400'
-                                    : 'text-blue-600 dark:text-blue-400'
-                                } font-mono`}>
-                                  {error.message || 'Syntax error detected'}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-
-                          {/* Helper text for Fast mode with complex errors */}
-                          {formatterMode === 'fast' && errorLines.some(e => isComplexError(e)) && (
-                            <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg">
-                              <p className="text-sm text-purple-800 dark:text-purple-200 mb-2 flex items-center gap-2">
-                                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                                </svg>
-                                <span className="font-medium">Complex Errors Detected</span>
-                              </p>
-                              <p className="text-xs text-purple-700 dark:text-purple-300">
-                                Your JSON contains complex errors (like bracket mismatches or structural issues) that require AI-powered fixing. Please switch to <span className="font-semibold">Smart (AI)</span> mode for advanced error correction with bracket matching and context-aware repairs.
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Helper text for Smart (AI) mode */}
-                          {formatterMode === 'smart' && (
-                            <p className="text-xs text-purple-700 dark:text-purple-300">
-                              AI-powered error correction can handle all types of errors including bracket mismatches, structural issues, and complex syntax problems.
-                            </p>
-                          )}
-                        </div>
+                          );
+                        })()}
                       </div>
                     ) : (
                       /* For other languages or general errors */
