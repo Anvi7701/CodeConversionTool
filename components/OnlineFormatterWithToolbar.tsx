@@ -55,6 +55,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [outputError, setOutputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+    const [hasCommentsInInput, setHasCommentsInInput] = useState(false);
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [validationError, setValidationError] = useState<ValidationResult | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -556,6 +557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
     setIsValidating(true);
     resetState(true);
+    setHasCommentsInInput(false);
 
     try {
       // For JSON, use enhanced validation with error detection
@@ -579,6 +581,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           const singleLineMatches = Array.from(trimmedInput.matchAll(/\/\/.*$/gm));
           const multiLineMatches = Array.from(trimmedInput.matchAll(/\/\*[\s\S]*?\*\//g));
           const commentsCount = singleLineMatches.length + multiLineMatches.length;
+          setHasCommentsInInput(commentsCount > 0);
           if (commentsCount > 0) {
             commentInfo = `\n\n📝 **Comments Detected** (${commentsCount}):\n`;
             singleLineMatches.forEach(m => {
@@ -2767,7 +2770,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             {/* Action Buttons - Relocated next to error count */}
                             {formatterMode === 'fast' ? (
                               <div className="flex gap-2">
-                                {errorLines.every(e => !isComplexError(e)) ? (
+                                {errorLines.every(e => !isComplexError(e)) || hasCommentsInInput ? (
                                   <>
                                     <button
                                       onClick={errorSource === 'output' ? handleFixSimpleErrorsOutput : handleFixSimpleErrors}
