@@ -624,13 +624,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             
             if (hasComplexErrors) {
               // Has complex errors - suggest Smart mode
-              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
+              let fastError = `**Invalid JSON Syntax**\n\n${err.message}\n\n**Error Locations:**\n`;
               allErrors.forEach(error => {
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
               
               // Add comment info if present
               fastError += commentInfo;
+              
+              fastError += `\n**Note:** Your JSON contains complex errors that require AI-powered fixing. Please switch to Smart (AI) mode for advanced error correction.`;
               
               setValidationError({
                 isValid: false,
@@ -640,13 +642,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               });
             } else {
               // Only simple errors - can be fixed
-              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
+              let fastError = `**Invalid JSON Syntax**\n\n${err.message}\n\n**Error Locations:**\n`;
               allErrors.forEach(error => {
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
               
               // Add comment info if present
               fastError += commentInfo;
+              
+              fastError += `\n**Tip:** These are simple errors that can be automatically fixed. Click the "Auto Fix" button below.`;
               
               setValidationError({
                 isValid: false,
@@ -2767,25 +2771,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                               {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
                             </h3>
-                            <div className="text-sm text-red-600 dark:text-red-400 mb-4 whitespace-pre-wrap">
+                            <div className="text-sm text-red-600 dark:text-red-400 mb-4 space-y-2">
                               {validationError.reason.split('\n').map((line, idx) => {
                                 // Parse markdown-style formatting
                                 if (line.startsWith('### ')) {
                                   return <h4 key={idx} className="text-base font-bold text-red-700 dark:text-red-300 mt-3 mb-2">{line.replace('### ', '')}</h4>;
                                 } else if (line.startsWith('## ')) {
                                   return <h4 key={idx} className="text-lg font-bold text-red-700 dark:text-red-300 mt-4 mb-2">{line.replace('## ', '')}</h4>;
-                                } else if (line.startsWith('**') && line.endsWith('**')) {
-                                  return <p key={idx} className="font-bold mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
+                                } else if (line.match(/^\*\*.+\*\*$/)) {
+                                  // Bold text: **text**
+                                  return <p key={idx} className="font-bold text-red-700 dark:text-red-300 mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
+                                } else if (line.includes('**')) {
+                                  // Inline bold: text **bold** text
+                                  const parts = line.split(/(\*\*[^*]+\*\*)/g);
+                                  return (
+                                    <p key={idx} className="mb-1">
+                                      {parts.map((part, i) => 
+                                        part.startsWith('**') && part.endsWith('**') 
+                                          ? <strong key={i} className="font-bold text-red-700 dark:text-red-300">{part.replace(/\*\*/g, '')}</strong>
+                                          : part
+                                      )}
+                                    </p>
+                                  );
                                 } else if (line.startsWith('- ')) {
                                   return <li key={idx} className="ml-4 list-disc">{line.replace('- ', '')}</li>;
-                                } else if (line.startsWith('📝 **')) {
-                                  return <p key={idx} className="font-bold text-blue-700 dark:text-blue-300 mt-3 mb-1">{line.replace(/\*\*/g, '')}</p>;
-                                } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
-                                  return <p key={idx} className="italic text-xs mt-1">{line.replace(/\*/g, '')}</p>;
+                                } else if (line.startsWith('📝 ')) {
+                                  return <p key={idx} className="font-bold text-blue-700 dark:text-blue-300 mt-3 mb-1 flex items-center gap-1">{line}</p>;
+                                } else if (line.match(/^\*.+\*$/) && !line.startsWith('**')) {
+                                  // Italic text: *text*
+                                  return <p key={idx} className="italic text-xs mt-1 text-red-500 dark:text-red-400">{line.replace(/\*/g, '')}</p>;
                                 } else if (line.trim()) {
                                   return <p key={idx} className="mb-1">{line}</p>;
+                                } else {
+                                  return <div key={idx} className="h-2"></div>;
                                 }
-                                return null;
                               })}
                             </div>
                             
