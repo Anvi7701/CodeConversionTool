@@ -9,27 +9,93 @@ export interface ErrorPosition {
   message?: string;
 }
 
+export interface CommentInfo {
+  line: number;
+  text: string;
+  type: 'single' | 'multi';
+}
+
+export interface StripCommentsResult {
+  cleaned: string;
+  comments: CommentInfo[];
+  hasComments: boolean;
+}
+
+/**
+ * Strip comments from JSON text before validation
+ * Returns cleaned text and info about removed comments
+ */
+export function stripComments(jsonText: string): StripCommentsResult {
+  const comments: CommentInfo[] = [];
+  let cleaned = jsonText;
+  
+  // Helper to get line number
+  const getLineNumber = (text: string, index: number): number => {
+    return text.substring(0, index).split('\n').length;
+  };
+  
+  // Remove single-line comments: // ... (until end of line)
+  const singleLineMatches = Array.from(cleaned.matchAll(/\/\/.*$/gm));
+  if (singleLineMatches.length > 0) {
+    singleLineMatches.forEach(match => {
+      if (match.index !== undefined) {
+        comments.push({
+          line: getLineNumber(cleaned, match.index),
+          text: match[0],
+          type: 'single'
+        });
+      }
+    });
+    cleaned = cleaned.replace(/\/\/.*$/gm, '');
+  }
+  
+  // Remove multi-line comments: /* ... */
+  const multiLineMatches = Array.from(cleaned.matchAll(/\/\*[\s\S]*?\*\//g));
+  if (multiLineMatches.length > 0) {
+    multiLineMatches.forEach(match => {
+      if (match.index !== undefined) {
+        comments.push({
+          line: getLineNumber(cleaned, match.index),
+          text: match[0],
+          type: 'multi'
+        });
+      }
+    });
+    cleaned = cleaned.replace(/\/\*[\s\S]*?\*\//g, '');
+  }
+  
+  return {
+    cleaned,
+    comments,
+    hasComments: comments.length > 0
+  };
+}
+
 /**
  * Validate JSON and find all syntax errors
  * Returns array of error positions for all lines with errors
+ * Automatically strips comments before validation to avoid false "complex error" classifications
  */
 export function validateJsonSyntax(jsonText: string): ErrorPosition[] {
   const errors: ErrorPosition[] = [];
   
+  // Strip comments first to avoid false complex errors
+  const { cleaned } = stripComments(jsonText);
+  
   // First, try standard JSON.parse to get the first error
   try {
-    JSON.parse(jsonText);
+    JSON.parse(cleaned);
     return []; // No errors
   } catch (err: any) {
-    const firstError = extractErrorPosition(err.message, jsonText);
+    const firstError = extractErrorPosition(err.message, cleaned);
     if (firstError) {
       firstError.message = err.message;
       errors.push(firstError);
     }
   }
   
-  // Additional comprehensive checks for all syntax issues
-  const lines = jsonText.split('\n');
+  // Additional comprehensive checks for all syntax issues (use cleaned text without comments)
+  const lines = cleaned.split('\n');
   
   // Track bracket/brace matching
   const bracketStack: { char: string; line: number; column: number }[] = [];

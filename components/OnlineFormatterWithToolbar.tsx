@@ -121,6 +121,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Ref for TableView component to access its helper functions
   const tableViewRef = useRef<TableViewRef>(null);
 
+  // Reset output history when view format changes (so undo/redo starts disabled in new view)
+  useEffect(() => {
+    // Clear output history and reset index when switching views
+    setOutputHistory([]);
+    setOutputHistoryIndex(-1);
+  }, [viewFormat]);
+
   // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -553,11 +560,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     try {
       // For JSON, use enhanced validation with error detection
       if (activeLanguage === 'json') {
+        // Import stripComments to check for comments
+        const { stripComments } = await import('../utils/errorHighlighter');
+        const strippedResult = stripComments(trimmedInput);
+        
         try {
           JSON.parse(trimmedInput);
           // Valid JSON
           setErrorLines([]);
-          setSuccessMessage("✅ JSON is valid! You can now format the code.");
+          
+          // If comments were found, mention they'll be removed during fixing
+          if (strippedResult.hasComments) {
+            setSuccessMessage(`✅ JSON is valid! Note: ${strippedResult.comments.length} comment${strippedResult.comments.length > 1 ? 's' : ''} detected (will be removed during Auto Fix).`);
+          } else {
+            setSuccessMessage("✅ JSON is valid! You can now format the code.");
+          }
+          
           setIsValidated(true);
           setIsValidating(false);
           return;
@@ -566,6 +584,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           const allErrors = validateJsonSyntax(trimmedInput);
           setErrorLines(allErrors);
           setErrorSource('input');
+          
+          // Prepare comment info for error message
+          let commentInfo = '';
+          if (strippedResult.hasComments) {
+            commentInfo = `\n\n📝 **Comments Detected** (${strippedResult.comments.length}):\n`;
+            strippedResult.comments.forEach(comment => {
+              const preview = comment.text.substring(0, 50).replace(/\n/g, ' ');
+              commentInfo += `- Line ${comment.line}: ${comment.type === 'single' ? '//' : '/*'} ${preview}${comment.text.length > 50 ? '...' : ''}\n`;
+            });
+            commentInfo += `\n*Note: Comments are not valid in JSON and will be automatically removed during Auto Fix.*\n`;
+          }
           
           if (formatterMode === 'smart') {
             // Smart mode: Always offer AI-powered correction
@@ -577,6 +606,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
             }
+            
+            // Add comment info if present
+            errorAnalysis += commentInfo;
 
             errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
             
@@ -597,6 +629,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
               
+              // Add comment info if present
+              fastError += commentInfo;
+              
               setValidationError({
                 isValid: false,
                 reason: fastError,
@@ -609,6 +644,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               allErrors.forEach(error => {
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
+              
+              // Add comment info if present
+              fastError += commentInfo;
               
               setValidationError({
                 isValid: false,
@@ -2587,9 +2625,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span className="text-xs">▼</span>
                     </button>
                     {showViewDropdown && (
-                      <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[120px]">
+                      <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-lg shadow-xl z-20 min-w-[160px] overflow-hidden">
                         {(['code', 'form', 'text', 'tree', 'table', 'view'] as ViewFormat[]).map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
+                          
+                          // Define emoji and colors for each format
+                          const formatConfig = {
+                            code: { emoji: '💻', color: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30' },
+                            form: { emoji: '📄', color: 'text-green-600 dark:text-green-400', gradient: 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30' },
+                            text: { emoji: '📝', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30' },
+                            tree: { emoji: '🌳', color: 'text-teal-600 dark:text-teal-400', gradient: 'from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30' },
+                            table: { emoji: '▦', color: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30' },
+                            view: { emoji: '👁️', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' }
+                          };
+                          
+                          const config = formatConfig[format];
+                          
                           return (
                             <button
                               key={format}
@@ -2614,19 +2665,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                   setTimeout(() => setExpandAllTrigger(false), 100);
                                 }
                                 
+                                // Reset output history when switching views (undo/redo will be disabled initially)
+                                setOutputHistory([]);
+                                setOutputHistoryIndex(-1);
+                                
                                 setViewFormat(format);
                                 setShowViewDropdown(false);
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm transition-colors ${
+                              className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-200 flex items-center gap-3 ${
                                 isDisabled 
                                   ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-500' 
-                                  : 'hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer'
+                                  : `hover:bg-gradient-to-r hover:${config.gradient} cursor-pointer hover:shadow-sm hover:scale-[1.02]`
                               } ${
-                                viewFormat === format ? 'bg-slate-100 dark:bg-slate-700 font-semibold' : ''
+                                viewFormat === format 
+                                  ? `bg-gradient-to-r ${config.gradient} font-bold shadow-sm border-l-4 ${config.color.replace('text-', 'border-').replace(' dark:', ' dark:border-')}` 
+                                  : 'text-slate-700 dark:text-slate-300'
                               }`}
                               disabled={isDisabled}
                             >
-                              {format.charAt(0).toUpperCase() + format.slice(1)}
+                              <span className="text-lg">{config.emoji}</span>
+                              <span className={viewFormat === format ? config.color : ''}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
                             </button>
                           );
                         })}
