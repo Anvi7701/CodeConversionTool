@@ -560,22 +560,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     try {
       // For JSON, use enhanced validation with error detection
       if (activeLanguage === 'json') {
-        // Import stripComments to check for comments
-        const { stripComments } = await import('../utils/errorHighlighter');
-        const strippedResult = stripComments(trimmedInput);
-        
         try {
           JSON.parse(trimmedInput);
           // Valid JSON
           setErrorLines([]);
-          
-          // If comments were found, mention they'll be removed during fixing
-          if (strippedResult.hasComments) {
-            setSuccessMessage(`✅ JSON is valid! Note: ${strippedResult.comments.length} comment${strippedResult.comments.length > 1 ? 's' : ''} detected (will be removed during Auto Fix).`);
-          } else {
-            setSuccessMessage("✅ JSON is valid! You can now format the code.");
-          }
-          
+          setSuccessMessage("✅ JSON is valid! You can now format the code.");
           setIsValidated(true);
           setIsValidating(false);
           return;
@@ -584,18 +573,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           const allErrors = validateJsonSyntax(trimmedInput);
           setErrorLines(allErrors);
           setErrorSource('input');
-          
-          // Prepare comment info for error message
-          let commentInfo = '';
-          if (strippedResult.hasComments) {
-            commentInfo = `\n\n📝 **Comments Detected** (${strippedResult.comments.length}):\n`;
-            strippedResult.comments.forEach(comment => {
-              const preview = comment.text.substring(0, 50).replace(/\n/g, ' ');
-              commentInfo += `- Line ${comment.line}: ${comment.type === 'single' ? '//' : '/*'} ${preview}${comment.text.length > 50 ? '...' : ''}\n`;
-            });
-            commentInfo += `\n*Note: Comments are not valid in JSON and will be automatically removed during Auto Fix.*\n`;
-          }
-          
+
           if (formatterMode === 'smart') {
             // Smart mode: Always offer AI-powered correction
             let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${err.message}`;
@@ -606,9 +584,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
             }
-            
-            // Add comment info if present
-            errorAnalysis += commentInfo;
 
             errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
             
@@ -624,16 +599,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             
             if (hasComplexErrors) {
               // Has complex errors - suggest Smart mode
-              let fastError = `**Invalid JSON Syntax**\n\n${err.message}\n\n**Error Locations:**\n`;
+              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
               allErrors.forEach(error => {
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
-              
-              // Add comment info if present
-              fastError += commentInfo;
-              
-              fastError += `\n**Note:** Your JSON contains complex errors that require AI-powered fixing. Please switch to Smart (AI) mode for advanced error correction.`;
-              
+
               setValidationError({
                 isValid: false,
                 reason: fastError,
@@ -642,16 +612,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               });
             } else {
               // Only simple errors - can be fixed
-              let fastError = `**Invalid JSON Syntax**\n\n${err.message}\n\n**Error Locations:**\n`;
+              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
               allErrors.forEach(error => {
                 fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
               });
-              
-              // Add comment info if present
-              fastError += commentInfo;
-              
-              fastError += `\n**Tip:** These are simple errors that can be automatically fixed. Click the "Auto Fix" button below.`;
-              
+
               setValidationError({
                 isValid: false,
                 reason: fastError,
@@ -2771,42 +2736,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                               {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
                             </h3>
-                            <div className="text-sm text-red-600 dark:text-red-400 mb-4 space-y-2">
-                              {validationError.reason.split('\n').map((line, idx) => {
-                                // Parse markdown-style formatting
-                                if (line.startsWith('### ')) {
-                                  return <h4 key={idx} className="text-base font-bold text-red-700 dark:text-red-300 mt-3 mb-2">{line.replace('### ', '')}</h4>;
-                                } else if (line.startsWith('## ')) {
-                                  return <h4 key={idx} className="text-lg font-bold text-red-700 dark:text-red-300 mt-4 mb-2">{line.replace('## ', '')}</h4>;
-                                } else if (line.match(/^\*\*.+\*\*$/)) {
-                                  // Bold text: **text**
-                                  return <p key={idx} className="font-bold text-red-700 dark:text-red-300 mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
-                                } else if (line.includes('**')) {
-                                  // Inline bold: text **bold** text
-                                  const parts = line.split(/(\*\*[^*]+\*\*)/g);
-                                  return (
-                                    <p key={idx} className="mb-1">
-                                      {parts.map((part, i) => 
-                                        part.startsWith('**') && part.endsWith('**') 
-                                          ? <strong key={i} className="font-bold text-red-700 dark:text-red-300">{part.replace(/\*\*/g, '')}</strong>
-                                          : part
-                                      )}
-                                    </p>
-                                  );
-                                } else if (line.startsWith('- ')) {
-                                  return <li key={idx} className="ml-4 list-disc">{line.replace('- ', '')}</li>;
-                                } else if (line.startsWith('📝 ')) {
-                                  return <p key={idx} className="font-bold text-blue-700 dark:text-blue-300 mt-3 mb-1 flex items-center gap-1">{line}</p>;
-                                } else if (line.match(/^\*.+\*$/) && !line.startsWith('**')) {
-                                  // Italic text: *text*
-                                  return <p key={idx} className="italic text-xs mt-1 text-red-500 dark:text-red-400">{line.replace(/\*/g, '')}</p>;
-                                } else if (line.trim()) {
-                                  return <p key={idx} className="mb-1">{line}</p>;
-                                } else {
-                                  return <div key={idx} className="h-2"></div>;
-                                }
-                              })}
-                            </div>
+                            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+                              {validationError.reason.split('\n')[0]}
+                            </p>
                             
                             {/* Action Buttons - Relocated next to error count */}
                             {formatterMode === 'fast' ? (

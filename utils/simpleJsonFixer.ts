@@ -10,7 +10,7 @@ export interface FixResult {
 }
 
 export interface FixChange {
-  type: 'missing-comma' | 'trailing-comma' | 'single-quotes' | 'unquoted-key' | 'comment';
+  type: 'missing-comma' | 'trailing-comma' | 'single-quotes' | 'unquoted-key';
   line: number;
   description: string;
 }
@@ -28,43 +28,6 @@ export function fixSimpleJsonErrors(jsonText: string): FixResult {
   const getLineNumber = (text: string, index: number): number => {
     return text.substring(0, index).split('\n').length;
   };
-
-  // 0. Remove comments (single-line // and multi-line /* */)
-  // Comments are not valid in JSON and break parsing for all structured views
-  
-  // Remove single-line comments: // ... (until end of line)
-  const singleLineCommentMatches = Array.from(fixed.matchAll(/\/\/.*$/gm));
-  if (singleLineCommentMatches.length > 0) {
-    singleLineCommentMatches.forEach(match => {
-      if (match.index !== undefined) {
-        const commentText = match[0].substring(0, 50); // First 50 chars for display
-        changes.push({
-          type: 'comment',
-          line: getLineNumber(fixed, match.index),
-          description: `Removed single-line comment: ${commentText}${match[0].length > 50 ? '...' : ''}`
-        });
-      }
-    });
-    fixed = fixed.replace(/\/\/.*$/gm, '');
-    changesMade = true;
-  }
-
-  // Remove multi-line comments: /* ... */
-  const multiLineCommentMatches = Array.from(fixed.matchAll(/\/\*[\s\S]*?\*\//g));
-  if (multiLineCommentMatches.length > 0) {
-    multiLineCommentMatches.forEach(match => {
-      if (match.index !== undefined) {
-        const commentText = match[0].substring(0, 50).replace(/\n/g, ' '); // First 50 chars, remove newlines
-        changes.push({
-          type: 'comment',
-          line: getLineNumber(fixed, match.index),
-          description: `Removed multi-line comment: ${commentText}${match[0].length > 50 ? '...' : ''}`
-        });
-      }
-    });
-    fixed = fixed.replace(/\/\*[\s\S]*?\*\//g, '');
-    changesMade = true;
-  }
 
   // 1. Fix trailing commas (95%+ success rate)
   // Pattern: , followed by optional whitespace and then } or ]
