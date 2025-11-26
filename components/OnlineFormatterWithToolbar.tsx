@@ -229,96 +229,75 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setErrorLines([]);
     setAppliedFixes([]);
     setShowFixSummary(false);
-    
-    // Automatically validate and copy JSON to output when input changes (paste or upload)
+    setHasCommentsInInput(false);
+
     if (activeLanguage === 'json' && value.trim()) {
       try {
-        // Try to parse JSON
         JSON.parse(value);
-        // Valid JSON - copy to output
         setOutputCode(value);
         setErrorLines([]);
       } catch (jsonErr: any) {
-        // Invalid JSON - show error handling (same as Validate button)
         const allErrors = validateJsonSyntax(value);
         setErrorLines(allErrors);
         setErrorSource('input');
         setOutputCode(null);
-        
-        if (formatterMode === 'smart') {
-          // Smart mode: Always offer AI-powered correction
-          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${jsonErr.message}`;
 
+        // Comment detection for auto-validation path
+        const singleLineMatches = Array.from(value.matchAll(/\/\/.*$/gm));
+        const multiLineMatches = Array.from(value.matchAll(/\/\*[\s\S]*?\*\//g));
+        const commentsCount = singleLineMatches.length + multiLineMatches.length;
+        let commentInfo = '';
+        if (commentsCount > 0) {
+          setHasCommentsInInput(true);
+          commentInfo = `\n\n📝 **Comments Detected** (${commentsCount}):\n`;
+          singleLineMatches.forEach(m => {
+            if (m.index !== undefined) {
+              const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
+              const line = value.substring(0, m.index).split('\n').length;
+              commentInfo += `- Line ${line}: // ${preview}${m[0].length > 50 ? '...' : ''}\n`;
+            }
+          });
+          multiLineMatches.forEach(m => {
+            if (m.index !== undefined) {
+              const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
+              const line = value.substring(0, m.index).split('\n').length;
+              commentInfo += `- Line ${line}: /* ${preview}${m[0].length > 50 ? '...' : ''}\n`;
+            }
+          });
+          commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
+        }
+
+        if (formatterMode === 'smart') {
+          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${jsonErr.message}`;
           if (allErrors.length > 0) {
             errorAnalysis += `\n\n**Error Locations:**\n`;
             allErrors.forEach(error => {
               errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
             });
           }
-
           errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
-          
           setValidationError({
             isValid: false,
-            reason: errorAnalysis,
+            reason: errorAnalysis + commentInfo,
             isFixableSyntaxError: true,
             suggestedLanguage: undefined
           });
         } else {
-          // Fast mode: Check if errors are simple or complex
           const hasComplexErrors = allErrors.some(isComplexError);
-          
-          if (hasComplexErrors) {
-            // Has complex errors - suggest Smart mode
-            let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
-            allErrors.forEach(error => {
-              fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
-            });
-            
-            setValidationError({
-              isValid: false,
-              reason: fastError,
-              isFixableSyntaxError: true,
-              suggestedLanguage: undefined
-            });
-          } else {
-            // Only simple errors - can be fixed
-            let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
-            allErrors.forEach(error => {
-              fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
-            });
-            
-            setValidationError({
-              isValid: false,
-              reason: fastError,
-              isFixableSyntaxError: true,
-              suggestedLanguage: undefined
-            });
-          }
+          let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          allErrors.forEach(error => {
+            fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+          setValidationError({
+            isValid: false,
+            reason: fastError + commentInfo,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
         }
       }
-    } else {
-      setOutputCode(null);
     }
   };
-  
-  // Add to history with debounce for manual edits
-  useEffect(() => {
-    if (activeLanguage !== 'json' || !inputCode.trim()) return;
-    
-    // Only add to history if the value has actually changed significantly
-    if (inputCode !== lastSavedToHistoryRef.current) {
-      const timeoutId = setTimeout(() => {
-        const currentHistoryValue = history[historyIndex];
-        if (inputCode !== currentHistoryValue) {
-          addToHistory(inputCode);
-          lastSavedToHistoryRef.current = inputCode;
-        }
-      }, 1000); // Debounce for 1 second after user stops typing
-      
-      return () => clearTimeout(timeoutId);
-    }
-  }, [inputCode, activeLanguage]);
 
   // Add output edits to history (Code/Text/Tree views) with debounce
   useEffect(() => {
@@ -2769,8 +2748,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                               {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
                             </h3>
-                            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                              {validationError.reason.split('\n')[0]}
+                            <p className="text-sm text-red-600 dark:text-red-400 mb-4 whitespace-pre-wrap">
+                              {validationError.reason}
                             </p>
                             
                             {/* Action Buttons - Relocated next to error count */}
