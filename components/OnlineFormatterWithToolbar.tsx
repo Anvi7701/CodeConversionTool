@@ -2767,9 +2767,27 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                               {errorLines.length} Syntax Error{errorLines.length > 1 ? 's' : ''} Found
                             </h3>
-                            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
-                              {validationError.reason.split('\n')[0]}
-                            </p>
+                            <div className="text-sm text-red-600 dark:text-red-400 mb-4 whitespace-pre-wrap">
+                              {validationError.reason.split('\n').map((line, idx) => {
+                                // Parse markdown-style formatting
+                                if (line.startsWith('### ')) {
+                                  return <h4 key={idx} className="text-base font-bold text-red-700 dark:text-red-300 mt-3 mb-2">{line.replace('### ', '')}</h4>;
+                                } else if (line.startsWith('## ')) {
+                                  return <h4 key={idx} className="text-lg font-bold text-red-700 dark:text-red-300 mt-4 mb-2">{line.replace('## ', '')}</h4>;
+                                } else if (line.startsWith('**') && line.endsWith('**')) {
+                                  return <p key={idx} className="font-bold mt-2 mb-1">{line.replace(/\*\*/g, '')}</p>;
+                                } else if (line.startsWith('- ')) {
+                                  return <li key={idx} className="ml-4 list-disc">{line.replace('- ', '')}</li>;
+                                } else if (line.startsWith('📝 **')) {
+                                  return <p key={idx} className="font-bold text-blue-700 dark:text-blue-300 mt-3 mb-1">{line.replace(/\*\*/g, '')}</p>;
+                                } else if (line.startsWith('*') && line.endsWith('*') && !line.startsWith('**')) {
+                                  return <p key={idx} className="italic text-xs mt-1">{line.replace(/\*/g, '')}</p>;
+                                } else if (line.trim()) {
+                                  return <p key={idx} className="mb-1">{line}</p>;
+                                }
+                                return null;
+                              })}
+                            </div>
                             
                             {/* Action Buttons - Relocated next to error count */}
                             {formatterMode === 'fast' ? (
