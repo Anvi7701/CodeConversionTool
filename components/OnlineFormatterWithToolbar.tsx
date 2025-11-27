@@ -1,4 +1,5 @@
 ﻿import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import { jsonToToon } from '../utils/jsonToToon';
 import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
@@ -131,6 +132,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Structure analysis mode - when active, only "View" format is available
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState(false);
+
+  // TOON view settings
+  const [toonFlattenDepth, setToonFlattenDepth] = useState<number>(1);
+  const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
+  const [toonNullToken, setToonNullToken] = useState<string>('-');
+  const [toonPath, setToonPath] = useState<string>('');
+  const [showToonSettings, setShowToonSettings] = useState<boolean>(false);
 
   // Ref for TableView component to access its helper functions
   const tableViewRef = useRef<TableViewRef>(null);
@@ -1779,22 +1787,92 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const parsedData = JSON.parse(outputCode);
       switch (viewFormat) {
         case 'toon': {
-          // Lazy import to avoid circulars
-          const { jsonToToon } = require('../utils/jsonToToon');
           const toonText: string = jsonToToon(parsedData, {
-            flattenDepth: 1,
-            arrayJoin: '|',
-            nullToken: '-',
-            headerName: 'item'
+            flattenDepth: Math.max(0, Number.isFinite(toonFlattenDepth) ? toonFlattenDepth : 1),
+            arrayJoin: toonArrayJoin || '|',
+            nullToken: toonNullToken || '-',
+            headerName: 'item',
+            path: toonPath.trim() ? toonPath.trim() : undefined
           });
+          const handleCopyToon = async () => {
+            try {
+              await navigator.clipboard.writeText(toonText);
+              setCopySuccess(true);
+              setTimeout(() => setCopySuccess(false), 2000);
+            } catch (e) {
+              console.error('Copy TOON failed:', e);
+            }
+          };
           return (
-            <CodeMirrorViewer
-              code={toonText}
-              language="text"
-              readOnly
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
-            />
+            <div className="absolute inset-0 overflow-hidden">
+              {/* Local TOON toolbar */}
+              <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
+                <button
+                  onClick={handleCopyToon}
+                  className="px-2 py-1 text-xs rounded-md bg-pink-500 hover:bg-pink-600 text-white shadow-sm cursor-pointer"
+                  title="Copy TOON output"
+                  aria-label="Copy TOON"
+                >
+                  Copy TOON
+                </button>
+                <button
+                  onClick={() => setShowToonSettings(v => !v)}
+                  className="px-2 py-1 text-xs rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 cursor-pointer"
+                  title="TOON settings"
+                  aria-label="TOON settings"
+                >
+                  Settings
+                </button>
+              </div>
+              {/* Settings drawer */}
+              {showToonSettings && (
+                <div className="absolute top-10 right-2 z-20 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="font-medium text-sm">TOON Settings</div>
+                    <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
+                  </div>
+                  <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={6}
+                    value={toonFlattenDepth}
+                    onChange={(e) => setToonFlattenDepth(Math.max(0, Math.min(6, Number(e.target.value) || 0)))}
+                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <label className="block text-xs text-slate-600 dark:text-slate-300">Array join token</label>
+                  <input
+                    type="text"
+                    value={toonArrayJoin}
+                    onChange={(e) => setToonArrayJoin(e.target.value)}
+                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <label className="block text-xs text-slate-600 dark:text-slate-300">Null token</label>
+                  <input
+                    type="text"
+                    value={toonNullToken}
+                    onChange={(e) => setToonNullToken(e.target.value)}
+                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <label className="block text-xs text-slate-600 dark:text-slate-300">Root path (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. data.items[]"
+                    value={toonPath}
+                    onChange={(e) => setToonPath(e.target.value)}
+                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                  />
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">Examples: <code>data.items[]</code>, <code>payload.records[0]</code></div>
+                </div>
+              )}
+              <CodeMirrorViewer
+                code={toonText}
+                language="text"
+                readOnly
+                expandAll={expandAllTrigger}
+                collapseAll={collapseAllTrigger}
+              />
+            </div>
           );
         }
         case 'tree':
