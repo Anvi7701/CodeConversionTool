@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
+import { GlobalNavDropdown } from './components/GlobalNavDropdown';
 
 // Lazy load components
 const JsonExplainerPage = lazy(() => import('./components/JsonExplainerPage.tsx').then(m => ({ default: m.JsonExplainerPage })));
@@ -21,6 +22,9 @@ const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter'
 
 // SEO-optimized formatter pages
 const JsonFormatterPage = lazy(() => import('./components/formatters/JsonFormatterPage.tsx').then(m => ({ default: m.JsonFormatterPage })));
+const JsonBeautifierPage = lazy(() => import('./components/formatters/JsonBeautifierPage').then(m => ({ default: m.JsonBeautifierPage })));
+const JsonEditorPage = lazy(() => import('./components/formatters/JsonEditorPage').then(m => ({ default: m.JsonEditorPage })));
+const JsonParserPage = lazy(() => import('./components/formatters/JsonParserPage').then(m => ({ default: m.JsonParserPage })));
 const XmlFormatterPage = lazy(() => import('./components/formatters/XmlFormatterPage.tsx').then(m => ({ default: m.XmlFormatterPage })));
 const HtmlFormatterPage = lazy(() => import('./components/formatters/HtmlFormatterPage.tsx').then(m => ({ default: m.HtmlFormatterPage })));
 const CssFormatterPage = lazy(() => import('./components/formatters/CssFormatterPage.tsx').then(m => ({ default: m.CssFormatterPage })));
@@ -79,25 +83,31 @@ const App: React.FC = () => {
               <span className="text-slate-400">|</span>
               <Link to="/code-to-js" onClick={(e) => handleNavLinkClick(e, '/code-to-js')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Convert To JavaScript</Link>
               <span className="text-slate-400">|</span>
-              <Link to="/json-to-python-pretty" onClick={(e) => handleNavLinkClick(e, '/json-to-python-pretty')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON To Python Pretty</Link>
-              <span className="text-slate-400">|</span>
+              
               <Link to="/xml-inspector" onClick={(e) => handleNavLinkClick(e, '/xml-inspector')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">XML Inspector</Link>
               <span className="text-slate-400">|</span>
               <Link to="/data-to-class" onClick={(e) => handleNavLinkClick(e, '/data-to-class')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Data To Class</Link>
+              {/* Hybrid new dropdown: JSON Tools */}
+              <span className="inline-flex ml-2">
+                <GlobalNavDropdown
+                  label="🧰 JSON Tools"
+                  items={[
+                    { label: 'JSON Beautifier', to: '/json-beautifier', icon: '🎨' },
+                    { label: 'JSON Editor', to: '/json-editor', icon: '✏️' },
+                    { label: 'JSON Formatter', to: '/json-formatter', icon: '🧹' },
+                    { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
+                    { label: 'JSON Structure Analyzer', to: '/json-structure-analyzer', icon: '🕸️' },
+                    { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
+                    { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
+                    { label: 'JSON Parser', to: '/json-parser', icon: '🧪' }
+                  ]}
+                />
+              </span>
             </div>
           </div>
 
           {/* JSON Visualization & Analysis Section */}
-          <div className="mt-4">
-            <h2 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">JSON Visualization & Analysis</h2>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm">
-              <Link to="/json-graph-viewer" onClick={(e) => handleNavLinkClick(e, '/json-graph-viewer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Graph Viewer</Link>
-              <span className="text-slate-400">|</span>
-              <Link to="/json-structure-analyzer" onClick={(e) => handleNavLinkClick(e, '/json-structure-analyzer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Structure Analyzer</Link>
-              <span className="text-slate-400">|</span>
-              <Link to="/json-to-toon" onClick={(e) => handleNavLinkClick(e, '/json-to-toon')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON to TOON</Link>
-            </div>
-          </div>
+            {/* (Moved JSON Visualization & Analysis links to footer) */}
         </div>
       </nav>
 
@@ -121,6 +131,9 @@ const App: React.FC = () => {
             
             {/* SEO-optimized formatter routes */}
             <Route path="/json-formatter" element={<JsonFormatterPage />} />
+            <Route path="/json-beautifier" element={<JsonBeautifierPage />} />
+            <Route path="/json-editor" element={<JsonEditorPage />} />
+            <Route path="/json-parser" element={<JsonParserPage />} />
             <Route path="/xml-formatter" element={<XmlFormatterPage />} />
             <Route path="/html-formatter" element={<HtmlFormatterPage />} />
             <Route path="/css-formatter" element={<CssFormatterPage />} />

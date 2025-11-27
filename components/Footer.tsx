@@ -172,6 +172,42 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
 
         </div>
 
+        {/* JSON Visualization & Analysis (moved from header) */}
+        <div className="mt-10">
+          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+            JSON Visualization & Analysis
+          </h3>
+          <ul className="space-y-2">
+            <li>
+              <Link
+                to="/json-graph-viewer"
+                onClick={(e) => handleLinkClick(e, '/json-graph-viewer')}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                JSON Graph Viewer
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/json-structure-analyzer"
+                onClick={(e) => handleLinkClick(e, '/json-structure-analyzer')}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                JSON Structure Analyzer
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/json-to-toon"
+                onClick={(e) => handleLinkClick(e, '/json-to-toon')}
+                className="text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                JSON to TOON
+              </Link>
+            </li>
+          </ul>
+        </div>
+
         {/* Code Formatters & Beautifiers Section */}
         <div className="mt-10 pt-8 border-t border-slate-200 dark:border-slate-700">
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6 text-center">

@@ -374,11 +374,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       if (showViewDropdown && !target.closest('.view-dropdown-container')) {
         setShowViewDropdown(false);
       }
+      // Close TOON settings when clicking outside its popover
+      if (showToonSettings && !target.closest('.toon-settings-popover')) {
+        setShowToonSettings(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showViewDropdown]);
+  }, [showViewDropdown, showToonSettings]);
 
   // Build a per-line style map for gutter markers in the input editor
   const inputLineStyleMap = useMemo(() => {
@@ -495,6 +499,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setInputCode(result.fixed);
       setAppliedFixes(result.changes);
       addToHistory(result.fixed);
+      // Clear any existing input highlight after applying fixes
+      clearHighlight();
       
       // Re-validate to check for remaining errors
       const remainingErrors = validateJsonSyntax(result.fixed);
@@ -513,7 +519,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       } else {
         // All errors fixed! Mark as validated and ready to format
         setValidationError(null);
-        setSuccessMessage(`✅ All syntax errors have been fixed! Applied ${result.changes.length} fix${result.changes.length > 1 ? 'es' : ''}. You can now format your JSON.`);
         setShowFixSummary(true);
         setIsValidated(true);
       }
@@ -840,6 +845,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             setInputCode(correctedCode);
             addToHistory(correctedCode);
             setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
+            // Clear any existing input highlight after AI correction
+            clearHighlight();
           }
           
           setIsValidated(true);
@@ -1340,6 +1347,107 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       return;
     }
     
+    // TOON view: offer saving TOON text as .txt or .doc (Word-compatible)
+    if (activeLanguage === 'json' && viewFormat === 'toon' && outputCode) {
+      try {
+        // Compute TOON text from current output JSON
+        let toonText = '';
+        try {
+          const data = JSON.parse(outputCode);
+          toonText = jsonToToon(data, {
+            flattenDepth: Math.max(0, Number.isFinite(toonFlattenDepth) ? toonFlattenDepth : 1),
+            arrayJoin: toonArrayJoin || '|',
+            nullToken: toonNullToken || '-',
+            headerName: 'item',
+            path: toonPath.trim() ? toonPath.trim() : undefined
+          });
+        } catch (e) {
+          toonText = outputCode; // Fallback to raw content if parsing fails
+        }
+
+        // Prepare a minimal HTML document for .doc that Word opens nicely
+        const makeDocHtml = (txt: string) => `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TOON</title><style>pre{font-family:Consolas,Monaco,monospace;font-size:11pt;white-space:pre-wrap;}</style></head><body><pre>${txt
+          .replace(/&/g,'&amp;')
+          .replace(/</g,'&lt;')
+          .replace(/>/g,'&gt;')}</pre></body></html>`;
+
+        // Prepare basic RTF content for rich-text editors like Word/WordPad
+        const makeRtf = (txt: string) => {
+          const esc = (s: string) => s
+            .replace(/\\/g, "\\\\")
+            .replace(/\{/g, "\\{")
+            .replace(/\}/g, "\\}")
+            .replace(/\r?\n/g, "\n");
+          const rtfBody = esc(txt).replace(/\n/g, "\\line ");
+          return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Consolas;}}\\fs22\\pard\\f0 ${rtfBody}}`;
+        };
+
+        // @ts-ignore
+        if (window.showSaveFilePicker) {
+          try {
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker({
+              suggestedName: 'toon.txt',
+              types: [
+                {
+                  description: 'Text File',
+                  accept: { 'text/plain': ['.txt'] },
+                },
+                {
+                  description: 'TOON File',
+                  accept: { 'text/plain': ['.toon'] },
+                },
+                {
+                  description: 'Rich Text Format',
+                  accept: { 'application/rtf': ['.rtf'] },
+                },
+                {
+                  description: 'Word Document (legacy)',
+                  accept: { 'application/msword': ['.doc'] },
+                },
+              ],
+            });
+            const fileName = handle.name || '';
+            const lower = fileName.toLowerCase();
+            const isDoc = lower.endsWith('.doc');
+            const isRtf = lower.endsWith('.rtf');
+            const writable = await handle.createWritable();
+            if (isDoc) {
+              await writable.write(new Blob([makeDocHtml(toonText)], { type: 'application/msword' }));
+            } else if (isRtf) {
+              await writable.write(new Blob([makeRtf(toonText)], { type: 'application/rtf' }));
+            } else {
+              await writable.write(new Blob([toonText], { type: 'text/plain' }));
+            }
+            await writable.close();
+            return;
+          } catch (err: any) {
+            if (err.name === 'AbortError') {
+              console.log('Save dialog was cancelled by user');
+              return;
+            }
+            console.warn('Save As dialog error (TOON):', err);
+            // Fall through to fallback download
+          }
+        }
+
+        // Fallback: download as .txt (browser cannot choose folder)
+        const blob = new Blob([toonText], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'toon.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      } catch (e) {
+        console.error('TOON save failed:', e);
+        // Continue to generic flow as last resort
+      }
+    }
+
     // Check if we're in Structure Analysis mode
     if (isStructureAnalysisMode && outputCode) {
       try {
@@ -1564,8 +1672,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         return;
       }
     }
-    // If File System Access API is not supported, show alert
-    alert('Save dialog is not supported in your browser. Please use Download instead.');
+    // If File System Access API is not supported, fallback to simple download
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const handlePrint = () => {
@@ -1813,69 +1929,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             headerName: 'item',
             path: toonPath.trim() ? toonPath.trim() : undefined
           });
-          const handleCopyToon = async () => {
-            try {
-              await navigator.clipboard.writeText(toonText);
-              setCopySuccess(true);
-              setTimeout(() => setCopySuccess(false), 2000);
-            } catch (e) {
-              console.error('Copy TOON failed:', e);
-            }
-          };
           return (
             <div className="absolute inset-0 overflow-hidden">
-              {/* TOON settings toggle */}
-              <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
-                <button
-                  onClick={() => setShowToonSettings(v => !v)}
-                  className="px-2 py-1 text-xs rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 cursor-pointer"
-                  title="TOON settings"
-                  aria-label="TOON settings"
-                >
-                  Settings
-                </button>
-              </div>
-              {/* Settings drawer */}
-              {showToonSettings && (
-                <div className="absolute top-10 right-2 z-20 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium text-sm">TOON Settings</div>
-                    <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
-                  </div>
-                  <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={6}
-                    value={toonFlattenDepth}
-                    onChange={(e) => setToonFlattenDepth(Math.max(0, Math.min(6, Number(e.target.value) || 0)))}
-                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  />
-                  <label className="block text-xs text-slate-600 dark:text-slate-300">Array join token</label>
-                  <input
-                    type="text"
-                    value={toonArrayJoin}
-                    onChange={(e) => setToonArrayJoin(e.target.value)}
-                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  />
-                  <label className="block text-xs text-slate-600 dark:text-slate-300">Null token</label>
-                  <input
-                    type="text"
-                    value={toonNullToken}
-                    onChange={(e) => setToonNullToken(e.target.value)}
-                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  />
-                  <label className="block text-xs text-slate-600 dark:text-slate-300">Root path (optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. data.items[]"
-                    value={toonPath}
-                    onChange={(e) => setToonPath(e.target.value)}
-                    className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                  />
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400">Examples: <code>data.items[]</code>, <code>payload.records[0]</code></div>
-                </div>
-              )}
               <CodeMirrorViewer
                 code={toonText}
                 language="text"
@@ -2646,6 +2701,61 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       📋
                     </button>
                   </Tooltip>
+                  {/* TOON Settings in header toolbar to avoid overlapping content controls */}
+                  {activeLanguage === 'json' && viewFormat === 'toon' && (
+                    <div className="relative toon-settings-popover">
+                      <Tooltip content="TOON settings">
+                        <button
+                          onClick={() => setShowToonSettings(v => !v)}
+                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                          aria-label="TOON Settings"
+                          title="TOON settings"
+                        >
+                          ⚙️
+                        </button>
+                      </Tooltip>
+                      {showToonSettings && (
+                        <div className="absolute right-0 mt-2 z-50 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="font-medium text-sm">TOON Settings</div>
+                            <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
+                          </div>
+                          <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
+                          <input
+                            type="number"
+                            min={0}
+                            max={6}
+                            value={toonFlattenDepth}
+                            onChange={(e) => setToonFlattenDepth(Math.max(0, Math.min(6, Number(e.target.value) || 0)))}
+                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                          />
+                          <label className="block text-xs text-slate-600 dark:text-slate-300">Array join token</label>
+                          <input
+                            type="text"
+                            value={toonArrayJoin}
+                            onChange={(e) => setToonArrayJoin(e.target.value)}
+                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                          />
+                          <label className="block text-xs text-slate-600 dark:text-slate-300">Null token</label>
+                          <input
+                            type="text"
+                            value={toonNullToken}
+                            onChange={(e) => setToonNullToken(e.target.value)}
+                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                          />
+                          <label className="block text-xs text-slate-600 dark:text-slate-300">Root path (optional)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. data.items[]"
+                            value={toonPath}
+                            onChange={(e) => setToonPath(e.target.value)}
+                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                          />
+                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Examples: <code>data.items[]</code>, <code>payload.records[0]</code></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                   {/* Undo/Redo for OUTPUT (Formatted JSON) */}
                   <Tooltip content="Undo last change">
@@ -2720,7 +2830,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span className="text-xs">▼</span>
                     </button>
                     {showViewDropdown && (
-                      <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-lg shadow-xl z-20 min-w-[160px] overflow-hidden">
+                      <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
                         {(['code', 'form', 'text', 'tree', 'table', 'view', 'toon'] as ViewFormat[]).map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
                           
@@ -2768,19 +2878,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 setViewFormat(format);
                                 setShowViewDropdown(false);
                               }}
-                              className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-200 flex items-center gap-3 ${
+                              className={`w-full text-left px-3 py-2 text-[13px] transition-all duration-150 flex items-center gap-2 ${
                                 isDisabled 
                                   ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-500' 
-                                  : `hover:bg-gradient-to-r hover:${config.gradient} cursor-pointer hover:shadow-sm hover:scale-[1.02]`
+                                  : `hover:bg-gradient-to-r hover:${config.gradient} cursor-pointer`
                               } ${
                                 viewFormat === format 
-                                  ? `bg-gradient-to-r ${config.gradient} font-bold shadow-sm border-l-4 ${config.color.replace('text-', 'border-').replace(' dark:', ' dark:border-')}` 
-                                  : 'text-slate-700 dark:text-slate-300'
+                                  ? `bg-gradient-to-r ${config.gradient} font-semibold border-l-2 ${config.color.replace('text-', 'border-').replace(' dark:', ' dark:border-')}` 
+                                  : 'text-slate-800 dark:text-slate-200'
                               }`}
                               disabled={isDisabled}
                             >
-                              <span className="text-lg">{config.emoji}</span>
-                              <span className={viewFormat === format ? config.color : ''}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
+                              <span className="text-base">{config.emoji}</span>
+                              <span className={`${viewFormat === format ? config.color : 'text-slate-800 dark:text-slate-200'} tracking-tight`}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
                             </button>
                           );
                         })}
