@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef, useMemo, useEffect } from 'react';
+﻿import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeEditor } from './CodeEditor';
@@ -75,9 +75,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
   const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
+  const [commentLines, setCommentLines] = useState<number[]>([]);
   const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
   const [showFixSummary, setShowFixSummary] = useState(false);
   const [errorSource, setErrorSource] = useState<'input' | 'output'>('input');
+  // Highlighted line targeting in input editor
+  const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
+  const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
+  const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
+
+  const clearHighlight = useCallback(() => {
+    setHighlightedLine(null);
+    setHighlightedType(null);
+    setHighlightPulse(false);
+  }, []);
 
   // History for undo/redo (only for JSON)
   const [history, setHistory] = useState<string[]>([]);
@@ -232,13 +243,33 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setAppliedFixes([]);
     setShowFixSummary(false);
     setHasCommentsInInput(false);
+    // Heavy parsing is debounced in an effect to keep paste responsive
+  };
 
-    if (activeLanguage === 'json' && value.trim()) {
-      const res = parseJsonSafe(value);
-      setHasCommentsInInput(res.hasComments);
-      if (res.ok) {
-        setOutputCode(value);
+  // Debounced parse & classification for JSON input
+  useEffect(() => {
+    if (activeLanguage !== 'json') {
+      setHasCommentsInInput(false);
+      setCommentLines([]);
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      const trimmed = inputCode.trim();
+      if (!trimmed) {
+        setHasCommentsInInput(false);
+        setCommentLines([]);
         setErrorLines([]);
+        setOutputCode(null);
+        clearHighlight();
+        return;
+      }
+      const res = parseJsonSafe(trimmed);
+      setHasCommentsInInput(res.hasComments);
+      setCommentLines(res.hasComments ? res.comments.map(c => c.line) : []);
+      if (res.ok) {
+        setOutputCode(trimmed);
+        setErrorLines([]);
+        setValidationError(null);
       } else {
         const { errors: allErrors, error: parseError } = res as ParseResultErr;
         setErrorLines(allErrors);
@@ -283,8 +314,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           });
         }
       }
-    }
-  };
+    }, 150);
+
+    return () => window.clearTimeout(timer);
+  }, [inputCode, activeLanguage, formatterMode]);
 
   // Add output edits to history (Code/Text/Tree views) with debounce
   useEffect(() => {
@@ -339,6 +372,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showViewDropdown]);
 
+  // Build a per-line style map for gutter markers in the input editor
+  const inputLineStyleMap = useMemo(() => {
+    if (activeLanguage !== 'json') return undefined;
+    if (errorSource !== 'input') return undefined;
+    const map: Record<number, 'simple' | 'complex' | 'comment'> = {};
+    // Start with comments (lowest precedence)
+    for (const line of commentLines) {
+      map[line] = 'comment';
+    }
+    // Overlay error-based styles with precedence: complex > simple > comment
+    for (const err of errorLines) {
+      const type: 'simple' | 'complex' = isComplexError(err) ? 'complex' : 'simple';
+      const prev = map[err.line];
+      if (prev === 'complex') continue;
+      if (prev === 'simple' && type === 'simple') continue;
+      map[err.line] = type;
+    }
+    return map;
+  }, [activeLanguage, errorSource, commentLines, errorLines]);
+
 
   // Add to history
   const addToHistory = (value: string) => {
@@ -351,7 +404,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   // Check if error is complex (not fixable by simple auto-fix) - only for JSON
-  const isComplexError = (error: ErrorPosition): boolean => {
+  function isComplexError(error: ErrorPosition): boolean {
     const message = error.message || '';
     
     // First check if it's a bracket/structural error (always complex)
@@ -386,7 +439,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     // If it matches simple patterns, it's simple
     // Otherwise it's complex
     return !simplePatterns.some(pattern => message.includes(pattern));
-  };
+  }
   
   const processFile = (file: File) => {
     const reader = new FileReader();
@@ -530,6 +583,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       if (activeLanguage === 'json') {
         const res = parseJsonSafe(trimmedInput);
         setHasCommentsInInput(res.hasComments);
+        setCommentLines(res.hasComments ? res.comments.map(c => c.line) : []);
         if (res.ok) {
           setErrorLines([]);
           setSuccessMessage("✅ JSON is valid! You can now format the code.");
@@ -1145,6 +1199,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     resetState();
     setHistory([]);
     setHistoryIndex(-1);
+    clearHighlight();
   };
 
   // Clear Output: clear all output data
@@ -2397,7 +2452,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-hidden">
               {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box */}
-              <div className="absolute top-2 right-6 z-10 flex items-center gap-1.5">
+              <div className="absolute top-2 right-6 z-20 flex items-center gap-1.5 pointer-events-auto">
                 <Tooltip content="Upload a code file">
                   <button
                     onClick={() => fileInputRef.current?.click()}
@@ -2426,6 +2481,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 language={activeLanguage}
                 placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
                 errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
+                lineStyleMap={inputLineStyleMap}
+                highlightLine={highlightedLine ?? null}
+                highlightStyle={highlightedType ?? null}
+                highlightPulse={highlightPulse}
               />
               
               {/* Character count - positioned at bottom right */}
@@ -2711,7 +2770,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           const complexCount = nonCommentErrors.filter(e => isComplexError(e)).length;
 
                           return (
-                            <div className="rounded-lg border border-red-300 dark:border-red-700 bg-red-50/40 dark:bg-red-900/10">
+                            <div className="rounded-lg border border-red-300 dark:border-red-700 bg-white dark:bg-slate-900">
                               <div className="p-4 flex items-start gap-3">
                                 <svg className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
@@ -2774,10 +2833,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                                   {/* Quick chips */}
                                   <div className="mt-2 flex flex-wrap gap-2 text-xs">
-                                    <span className="px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Simple: {simpleCount}</span>
-                                    <span className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Complex: {complexCount}</span>
+                                    <span className="px-2 py-0.5 rounded bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">Simple: {simpleCount}</span>
+                                    <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">Complex: {complexCount}</span>
                                     {commentsCount > 0 && (
-                                      <span className="px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900 text-amber-800 dark:text-amber-300">Comments: {commentsCount}</span>
+                                      <span className="px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Comments: {commentsCount}</span>
+                                    )}
+                                    {(highlightedLine != null) && (
+                                      <button
+                                        type="button"
+                                        onClick={() => { setHighlightedLine(null); setHighlightedType(null); setHighlightPulse(false); }}
+                                        className="ml-auto px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                        title="Clear highlight"
+                                        aria-label="Clear highlight"
+                                      >
+                                        ✖ Clear highlight
+                                      </button>
                                     )}
                                   </div>
 
@@ -2791,16 +2861,42 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <div className="px-4 pb-4 space-y-3">
                                 {/* Collapsible: Simple Errors */}
                                 {simpleCount > 0 && (
-                                  <details className="rounded border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900">
-                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-blue-800 dark:text-blue-200">Simple Errors ({simpleCount})</summary>
+                                  <details className="rounded border border-green-200 dark:border-green-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-green-700 dark:text-green-300">Simple Errors ({simpleCount})</summary>
                                     <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
                                       {errorLines.filter(e => !isComplexError(e)).map((error, idx) => (
-                                        <div key={`simple-${idx}`} className="p-2 rounded border-l-4 text-xs bg-blue-50 dark:bg-slate-800 border-blue-300 dark:border-blue-700">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-semibold text-blue-800 dark:text-blue-200">Line {error.line}, Column {error.column}</span>
-                                            <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Simple</span>
+                                        <div
+                                          key={`simple-${idx}`}
+                                          className="p-2 rounded border-l-4 text-xs bg-green-50 dark:bg-slate-800 border-green-300 dark:border-green-700"
+                                          tabIndex={0}
+                                          title={`Press Alt+G to jump to line ${error.line}`}
+                                          onKeyDown={(e) => {
+                                            if (e.altKey && e.key.toLowerCase() === 'g') {
+                                              setHighlightedLine(error.line);
+                                              setHighlightedType('simple');
+                                              setHighlightPulse(true);
+                                              setTimeout(() => setHighlightPulse(false), 600);
+                                              e.preventDefault();
+                                            }
+                                          }}
+                                        >
+                                          <div className="flex items-center justify-between gap-2 mb-1">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <span className="font-semibold text-green-800 dark:text-green-200">Line {error.line}, Column {error.column}</span>
+                                              <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">Simple</span>
+                                            </div>
+                                            <button
+                                              type="button"
+                                              onClick={() => { setHighlightedLine(error.line); setHighlightedType('simple'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                              className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
+                                              aria-label={`Go to line ${error.line}`}
+                                              title={`Go to line ${error.line}`}
+                                            >
+                                              <span>🎯</span>
+                                              <span>Go</span>
+                                            </button>
                                           </div>
-                                          <p className="text-blue-700 dark:text-blue-300 font-mono">{error.message || 'Syntax error detected'}</p>
+                                          <p className="text-green-700 dark:text-green-300 font-mono">{error.message || 'Syntax error detected'}</p>
                                         </div>
                                       ))}
                                     </div>
@@ -2809,16 +2905,42 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                                 {/* Collapsible: Complex Errors */}
                                 {complexCount > 0 && (
-                                  <details className="rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-900">
-                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-purple-800 dark:text-purple-200">Complex Errors ({complexCount})</summary>
+                                  <details className="rounded border border-red-200 dark:border-red-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-red-700 dark:text-red-300">Complex Errors ({complexCount})</summary>
                                     <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
                                       {errorLines.filter(e => isComplexError(e)).map((error, idx) => (
-                                        <div key={`complex-${idx}`} className="p-2 rounded border-l-4 text-xs bg-purple-50 dark:bg-slate-800 border-purple-300 dark:border-purple-700">
-                                          <div className="flex items-center gap-2 mb-1">
-                                            <span className="font-semibold text-purple-800 dark:text-purple-200">Line {error.line}, Column {error.column}</span>
-                                            <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Complex</span>
+                                        <div
+                                          key={`complex-${idx}`}
+                                          className="p-2 rounded border-l-4 text-xs bg-red-50 dark:bg-slate-800 border-red-300 dark:border-red-700"
+                                          tabIndex={0}
+                                          title={`Press Alt+G to jump to line ${error.line}`}
+                                          onKeyDown={(e) => {
+                                            if (e.altKey && e.key.toLowerCase() === 'g') {
+                                              setHighlightedLine(error.line);
+                                              setHighlightedType('complex');
+                                              setHighlightPulse(true);
+                                              setTimeout(() => setHighlightPulse(false), 600);
+                                              e.preventDefault();
+                                            }
+                                          }}
+                                        >
+                                          <div className="flex items-center justify-between gap-2 mb-1">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                              <span className="font-semibold text-red-800 dark:text-red-200">Line {error.line}, Column {error.column}</span>
+                                              <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">Complex</span>
+                                            </div>
+                                            <button
+                                              type="button"
+                                              onClick={() => { setHighlightedLine(error.line); setHighlightedType('complex'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                              className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
+                                              aria-label={`Go to line ${error.line}`}
+                                              title={`Go to line ${error.line}`}
+                                            >
+                                              <span>🎯</span>
+                                              <span>Go</span>
+                                            </button>
                                           </div>
-                                          <p className="text-purple-700 dark:text-purple-300 font-mono">{error.message || 'Syntax error detected'}</p>
+                                          <p className="text-red-700 dark:text-red-300 font-mono">{error.message || 'Syntax error detected'}</p>
                                         </div>
                                       ))}
                                     </div>
@@ -2827,29 +2949,85 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                                 {/* Collapsible: Comments detected */}
                                 {commentsCount > 0 && (
-                                  <details className="rounded border border-amber-200 dark:border-amber-800 bg-white dark:bg-slate-900">
-                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-amber-800 dark:text-amber-300">Comments Detected ({commentsCount})</summary>
-                                    <div className="px-3 py-2 text-xs text-amber-900 dark:text-amber-300 space-y-1">
+                                  <details className="rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-purple-700 dark:text-purple-300">Comments Detected ({commentsCount})</summary>
+                                    <div className="px-3 py-2 text-xs text-purple-800 dark:text-purple-200 space-y-1">
                                       {singleLineMatches.map((m, idx) => {
                                         const idxPos = m.index ?? 0;
                                         const line = inputStr.substring(0, idxPos).split('\n').length;
                                         const preview = m[0].substring(0, 80).replace(/\n/g, ' ');
-                                        return <div key={`sl-${idx}`}>• Line {line}: // {preview}{m[0].length > 80 ? '…' : ''}</div>;
+                                        return (
+                                          <div
+                                            key={`sl-${idx}`}
+                                            className="flex items-start justify-between gap-2 flex-nowrap"
+                                            tabIndex={0}
+                                            title={`Press Alt+G to jump to line ${line}`}
+                                            onKeyDown={(e) => {
+                                              if (e.altKey && e.key.toLowerCase() === 'g') {
+                                                setHighlightedLine(line);
+                                                setHighlightedType('comment');
+                                                setHighlightPulse(true);
+                                                setTimeout(() => setHighlightPulse(false), 600);
+                                                e.preventDefault();
+                                              }
+                                            }}
+                                          >
+                                            <span className="min-w-0">• Line {line}: // {preview}{m[0].length > 80 ? '…' : ''}</span>
+                                            <button
+                                              type="button"
+                                              onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                              className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                              aria-label={`Go to line ${line}`}
+                                              title={`Go to line ${line}`}
+                                            >
+                                              <span>🎯</span>
+                                              <span>Go</span>
+                                            </button>
+                                          </div>
+                                        );
                                       })}
                                       {multiLineMatches.map((m, idx) => {
                                         const idxPos = m.index ?? 0;
                                         const line = inputStr.substring(0, idxPos).split('\n').length;
                                         const preview = m[0].substring(0, 80).replace(/\n/g, ' ');
-                                        return <div key={`ml-${idx}`}>• Line {line}: /* {preview}{m[0].length > 80 ? '…' : ''}</div>;
+                                        return (
+                                          <div
+                                            key={`ml-${idx}`}
+                                            className="flex items-start justify-between gap-2 flex-nowrap"
+                                            tabIndex={0}
+                                            title={`Press Alt+G to jump to line ${line}`}
+                                            onKeyDown={(e) => {
+                                              if (e.altKey && e.key.toLowerCase() === 'g') {
+                                                setHighlightedLine(line);
+                                                setHighlightedType('comment');
+                                                setHighlightPulse(true);
+                                                setTimeout(() => setHighlightPulse(false), 600);
+                                                e.preventDefault();
+                                              }
+                                            }}
+                                          >
+                                            <span className="min-w-0">• Line {line}: /* {preview}{m[0].length > 80 ? '…' : ''}</span>
+                                            <button
+                                              type="button"
+                                              onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                              className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                              aria-label={`Go to line ${line}`}
+                                              title={`Go to line ${line}`}
+                                            >
+                                              <span>🎯</span>
+                                              <span>Go</span>
+                                            </button>
+                                          </div>
+                                        );
                                       })}
-                                      <p className="mt-2 text-[11px] text-amber-700 dark:text-amber-400">Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.</p>
+                                      <p className="mt-2 text-[11px] text-purple-700 dark:text-purple-300">Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.</p>
                                     </div>
                                   </details>
                                 )}
 
                                 {/* Contextual tip */}
                                 {formatterMode === 'fast' && complexCount > 0 && (
-                                  <div className="p-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg">
+                                  <div className="p-3 bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 rounded-lg">
                                     <p className="text-xs text-purple-800 dark:text-purple-200">
                                       Complex issues detected. Auto Fix will remove comments and simple issues; for remaining structural problems, switch to Smart (AI).
                                     </p>
