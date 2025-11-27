@@ -18,6 +18,8 @@ import { JsonToolbar } from './JsonToolbar';
 import { GraphViewer } from './GraphViewer';
 import { convertJsonToGraphData } from '../utils/graphUtils';
 import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
+import { parseJsonSafe } from '../utils/parseJsonSafe';
+import type { ParseResultErr } from '../utils/parseJsonSafe';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
 import { TreeView, FormView, TextView, ConsoleView, TableView, type TableViewRef } from './UnifiedJsonViewRenderer';
@@ -55,7 +57,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [outputError, setOutputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
-    const [hasCommentsInInput, setHasCommentsInInput] = useState(false);
+  const [hasCommentsInInput, setHasCommentsInInput] = useState(false);
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [validationError, setValidationError] = useState<ValidationResult | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -75,7 +77,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
   const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
   const [showFixSummary, setShowFixSummary] = useState(false);
-  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input'); // Track if errors are from input or output
+  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input');
 
   // History for undo/redo (only for JSON)
   const [history, setHistory] = useState<string[]>([]);
@@ -106,7 +108,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view' | 'table';
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
-  const [previousView, setPreviousView] = useState<ViewFormat>('code'); // Track the view before error
+  const [previousView, setPreviousView] = useState<ViewFormat>('code');
 
   // Pending action after error fix (view switch, save, or download)
   type PendingAction = { type: 'view-switch', targetView: ViewFormat } | { type: 'save' } | { type: 'download' } | null;
@@ -129,7 +131,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setOutputHistoryIndex(-1);
   }, [viewFormat]);
 
-  // Test mode keyboard shortcuts (Ctrl+Shift+E for 503, Ctrl+Shift+S for 500, Ctrl+Shift+R for 429)
+  
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'E') {
@@ -232,50 +234,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHasCommentsInInput(false);
 
     if (activeLanguage === 'json' && value.trim()) {
-      try {
-        JSON.parse(value);
+      const res = parseJsonSafe(value);
+      setHasCommentsInInput(res.hasComments);
+      if (res.ok) {
         setOutputCode(value);
         setErrorLines([]);
-      } catch (jsonErr: any) {
-        const allErrors = validateJsonSyntax(value);
+      } else {
+        const { errors: allErrors, error: parseError } = res as ParseResultErr;
         setErrorLines(allErrors);
         setErrorSource('input');
         setOutputCode(null);
 
-        // Comment detection for auto-validation path
-        const singleLineMatches = Array.from(value.matchAll(/\/\/.*$/gm));
-        const multiLineMatches = Array.from(value.matchAll(/\/\*[\s\S]*?\*\//g));
-        const commentsCount = singleLineMatches.length + multiLineMatches.length;
         let commentInfo = '';
-        if (commentsCount > 0) {
-          setHasCommentsInInput(true);
-          commentInfo = `\n\n📝 **Comments Detected** (${commentsCount}):\n`;
-          singleLineMatches.forEach(m => {
-            if (m.index !== undefined) {
-              const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
-              const line = value.substring(0, m.index).split('\n').length;
-              commentInfo += `- Line ${line}: // ${preview}${m[0].length > 50 ? '...' : ''}\n`;
-            }
-          });
-          multiLineMatches.forEach(m => {
-            if (m.index !== undefined) {
-              const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
-              const line = value.substring(0, m.index).split('\n').length;
-              commentInfo += `- Line ${line}: /* ${preview}${m[0].length > 50 ? '...' : ''}\n`;
-            }
+        if (res.hasComments) {
+          commentInfo = `\n\n📝 **Comments Detected** (${res.comments.length}):\n`;
+          res.comments.forEach(m => {
+            const prefix = m.kind === 'single' ? '// ' : '/* ';
+            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '…' : ''}\n`;
           });
           commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
         }
 
         if (formatterMode === 'smart') {
-          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${jsonErr.message}`;
+          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${parseError.message}`;
           if (allErrors.length > 0) {
             errorAnalysis += `\n\n**Error Locations:**\n`;
             allErrors.forEach(error => {
               errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
             });
           }
-          errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+          errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the \"Fix Complex Errors with AI\" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
           setValidationError({
             isValid: false,
             reason: errorAnalysis + commentInfo,
@@ -283,8 +271,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             suggestedLanguage: undefined
           });
         } else {
-          const hasComplexErrors = allErrors.some(isComplexError);
-          let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n📍 Error Locations:\n`;
           allErrors.forEach(error => {
             fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
           });
@@ -539,107 +526,67 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHasCommentsInInput(false);
 
     try {
-      // For JSON, use enhanced validation with error detection
+      // For JSON, use centralized parsing + detection
       if (activeLanguage === 'json') {
-        // Early comment detection so Fast mode Auto Fix can enable even if complex errors occur
-        const earlySingle = Array.from(trimmedInput.matchAll(/\/\/.*$/gm));
-        const earlyMulti = Array.from(trimmedInput.matchAll(/\/\*[\s\S]*?\*\//g));
-        if (earlySingle.length + earlyMulti.length > 0) {
-          setHasCommentsInInput(true);
-        }
-        try {
-          JSON.parse(trimmedInput);
-          // Valid JSON
+        const res = parseJsonSafe(trimmedInput);
+        setHasCommentsInInput(res.hasComments);
+        if (res.ok) {
           setErrorLines([]);
           setSuccessMessage("✅ JSON is valid! You can now format the code.");
           setIsValidated(true);
           setIsValidating(false);
           return;
-        } catch (err: any) {
-          // JSON has syntax error - validate and find all errors
-          const allErrors = validateJsonSyntax(trimmedInput);
-          setErrorLines(allErrors);
-          setErrorSource('input');
-
-          // Detect comments for documentation (do not modify validation flow)
-          let commentInfo = '';
-          const singleLineMatches = Array.from(trimmedInput.matchAll(/\/\/.*$/gm));
-          const multiLineMatches = Array.from(trimmedInput.matchAll(/\/\*[\s\S]*?\*\//g));
-          const commentsCount = singleLineMatches.length + multiLineMatches.length;
-          setHasCommentsInInput(commentsCount > 0);
-          if (commentsCount > 0) {
-            commentInfo = `\n\n📝 **Comments Detected** (${commentsCount}):\n`;
-            singleLineMatches.forEach(m => {
-              if (m.index !== undefined) {
-                const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
-                const line = trimmedInput.substring(0, m.index).split('\n').length;
-                commentInfo += `- Line ${line}: // ${preview}${m[0].length > 50 ? '...' : ''}\n`;
-              }
-            });
-            multiLineMatches.forEach(m => {
-              if (m.index !== undefined) {
-                const preview = m[0].substring(0, 50).replace(/\n/g, ' ');
-                const line = trimmedInput.substring(0, m.index).split('\n').length;
-                commentInfo += `- Line ${line}: /* ${preview}${m[0].length > 50 ? '...' : ''}\n`;
-              }
-            });
-            commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
-          }
-
-          if (formatterMode === 'smart') {
-            // Smart mode: Always offer AI-powered correction
-            let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${err.message}`;
-
-            if (allErrors.length > 0) {
-              errorAnalysis += `\n\n**Error Locations:**\n`;
-              allErrors.forEach(error => {
-                errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
-              });
-            }
-
-            errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the "Fix Complex Errors with AI" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
-            
-            setValidationError({
-              isValid: false,
-              reason: errorAnalysis + commentInfo,
-              isFixableSyntaxError: true,
-              suggestedLanguage: undefined
-            });
-          } else {
-            // Fast mode: Check if errors are simple or complex
-            const hasComplexErrors = allErrors.some(isComplexError);
-            
-            if (hasComplexErrors) {
-              // Has complex errors - suggest Smart mode
-              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
-              allErrors.forEach(error => {
-                fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
-              });
-
-              setValidationError({
-                isValid: false,
-                reason: fastError + commentInfo,
-                isFixableSyntaxError: true,
-                suggestedLanguage: undefined
-              });
-            } else {
-              // Only simple errors - can be fixed
-              let fastError = `Invalid JSON syntax: ${err.message}\n\n📍 Error Locations:\n`;
-              allErrors.forEach(error => {
-                fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
-              });
-
-              setValidationError({
-                isValid: false,
-                reason: fastError + commentInfo,
-                isFixableSyntaxError: true,
-                suggestedLanguage: undefined
-              });
-            }
-          }
-          setIsValidating(false);
-          return;
         }
+
+        const { errors: allErrors, error: parseError } = res as ParseResultErr;
+        setErrorLines(allErrors);
+        setErrorSource('input');
+
+        let commentInfo = '';
+        if (res.hasComments) {
+          commentInfo = `\n\n📝 **Comments Detected** (${res.comments.length}):\n`;
+          res.comments.forEach(m => {
+            const prefix = m.kind === 'single' ? '// ' : '/* ';
+            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '…' : ''}\n`;
+          });
+          commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
+        }
+
+        if (formatterMode === 'smart') {
+          // Smart mode: Always offer AI-powered correction
+          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${parseError.message}`;
+
+          if (allErrors.length > 0) {
+            errorAnalysis += `\n\n**Error Locations:**\n`;
+            allErrors.forEach(error => {
+              errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+            });
+          }
+
+          errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the \"Fix Complex Errors with AI\" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+          
+          setValidationError({
+            isValid: false,
+            reason: errorAnalysis + commentInfo,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
+        } else {
+          // Fast mode messaging
+          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n📍 Error Locations:\n`;
+          allErrors.forEach(error => {
+            fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+
+          setValidationError({
+            isValid: false,
+            reason: fastError + commentInfo,
+            isFixableSyntaxError: true,
+            suggestedLanguage: undefined
+          });
+        }
+        setIsValidating(false);
+        return;
       }
 
       // For other languages, use existing validation logic
@@ -2176,7 +2123,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   handleValidate();
                 }}
                 className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                title="Validate JSON"
+                title="Strict JSON syntax check (no changes). Shows all error locations and any // or block comments. Auto Fix will remove comments & simple issues; switch to Smart (AI) for complex repairs."
               >
                 <span>✓</span>
                 <span>Validate</span>
@@ -2842,23 +2789,41 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               </div>
 
                               <div className="px-4 pb-4 space-y-3">
-                                {/* Collapsible: Error locations */}
-                                <details className="rounded border border-red-200 dark:border-red-800 bg-white dark:bg-slate-900">
-                                  <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-red-800 dark:text-red-200">Error Locations</summary>
-                                  <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
-                                    {errorLines.map((error, idx) => (
-                                      <div key={idx} className="p-2 rounded border-l-4 text-xs bg-red-50 dark:bg-slate-800 border-red-300 dark:border-red-700">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <span className="font-semibold text-red-800 dark:text-red-200">Line {error.line}, Column {error.column}</span>
-                                          <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${isComplexError(error) ? 'bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300' : 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300'}`}>
-                                            {isComplexError(error) ? 'Complex' : 'Simple'}
-                                          </span>
+                                {/* Collapsible: Simple Errors */}
+                                {simpleCount > 0 && (
+                                  <details className="rounded border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-blue-800 dark:text-blue-200">Simple Errors ({simpleCount})</summary>
+                                    <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                                      {errorLines.filter(e => !isComplexError(e)).map((error, idx) => (
+                                        <div key={`simple-${idx}`} className="p-2 rounded border-l-4 text-xs bg-blue-50 dark:bg-slate-800 border-blue-300 dark:border-blue-700">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-semibold text-blue-800 dark:text-blue-200">Line {error.line}, Column {error.column}</span>
+                                            <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">Simple</span>
+                                          </div>
+                                          <p className="text-blue-700 dark:text-blue-300 font-mono">{error.message || 'Syntax error detected'}</p>
                                         </div>
-                                        <p className="text-red-700 dark:text-red-300 font-mono">{error.message || 'Syntax error detected'}</p>
-                                      </div>
-                                    ))}
-                                  </div>
-                                </details>
+                                      ))}
+                                    </div>
+                                  </details>
+                                )}
+
+                                {/* Collapsible: Complex Errors */}
+                                {complexCount > 0 && (
+                                  <details className="rounded border border-purple-200 dark:border-purple-800 bg-white dark:bg-slate-900">
+                                    <summary className="cursor-pointer select-none px-3 py-2 text-sm font-medium text-purple-800 dark:text-purple-200">Complex Errors ({complexCount})</summary>
+                                    <div className="px-3 py-2 space-y-2 max-h-64 overflow-y-auto">
+                                      {errorLines.filter(e => isComplexError(e)).map((error, idx) => (
+                                        <div key={`complex-${idx}`} className="p-2 rounded border-l-4 text-xs bg-purple-50 dark:bg-slate-800 border-purple-300 dark:border-purple-700">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <span className="font-semibold text-purple-800 dark:text-purple-200">Line {error.line}, Column {error.column}</span>
+                                            <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">Complex</span>
+                                          </div>
+                                          <p className="text-purple-700 dark:text-purple-300 font-mono">{error.message || 'Syntax error detected'}</p>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </details>
+                                )}
 
                                 {/* Collapsible: Comments detected */}
                                 {commentsCount > 0 && (
