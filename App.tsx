@@ -17,6 +17,7 @@ const DataToClassConverter = lazy(() => import('./components/DataToClassConverte
 const OnlineFormatter = lazy(() => import('./components/OnlineFormatterWithToolbar.tsx').then(m => ({ default: m.OnlineFormatterWithToolbar })));
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlConverter'));
+const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
 
 // SEO-optimized formatter pages
 const JsonFormatterPage = lazy(() => import('./components/formatters/JsonFormatterPage.tsx').then(m => ({ default: m.JsonFormatterPage })));
@@ -93,6 +94,8 @@ const App: React.FC = () => {
               <Link to="/json-graph-viewer" onClick={(e) => handleNavLinkClick(e, '/json-graph-viewer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Graph Viewer</Link>
               <span className="text-slate-400">|</span>
               <Link to="/json-structure-analyzer" onClick={(e) => handleNavLinkClick(e, '/json-structure-analyzer')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON Structure Analyzer</Link>
+              <span className="text-slate-400">|</span>
+              <Link to="/json-to-toon" onClick={(e) => handleNavLinkClick(e, '/json-to-toon')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">JSON to TOON</Link>
             </div>
           </div>
         </div>
@@ -114,6 +117,7 @@ const App: React.FC = () => {
             <Route path="/online-formatter" element={<OnlineFormatter />} />
             <Route path="/json-to-java" element={<JsonToJavaConverter />} />
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
+            <Route path="/json-to-toon" element={<JsonToToonConverter />} />
             
             {/* SEO-optimized formatter routes */}
             <Route path="/json-formatter" element={<JsonFormatterPage />} />

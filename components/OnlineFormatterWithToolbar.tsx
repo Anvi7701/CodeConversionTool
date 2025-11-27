@@ -116,7 +116,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showJMESPathModal, setShowJMESPathModal] = useState(false);
 
   // View format state for JSON output (Code, Form, Text, Tree, View, Table)
-  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view' | 'table';
+  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view' | 'table' | 'toon';
   const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [previousView, setPreviousView] = useState<ViewFormat>('code');
@@ -1778,6 +1778,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     try {
       const parsedData = JSON.parse(outputCode);
       switch (viewFormat) {
+        case 'toon': {
+          // Lazy import to avoid circulars
+          const { jsonToToon } = require('../utils/jsonToToon');
+          const toonText: string = jsonToToon(parsedData, {
+            flattenDepth: 1,
+            arrayJoin: '|',
+            nullToken: '-',
+            headerName: 'item'
+          });
+          return (
+            <CodeMirrorViewer
+              code={toonText}
+              language="text"
+              readOnly
+              expandAll={expandAllTrigger}
+              collapseAll={collapseAllTrigger}
+            />
+          );
+        }
         case 'tree':
           return (
             <TreeView
@@ -2613,7 +2632,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border-2 border-slate-300 dark:border-slate-600 rounded-lg shadow-xl z-20 min-w-[160px] overflow-hidden">
-                        {(['code', 'form', 'text', 'tree', 'table', 'view'] as ViewFormat[]).map((format) => {
+                        {(['code', 'form', 'text', 'tree', 'table', 'view', 'toon'] as ViewFormat[]).map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
                           
                           // Define emoji and colors for each format
@@ -2623,7 +2642,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             text: { emoji: '📝', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30' },
                             tree: { emoji: '🌳', color: 'text-teal-600 dark:text-teal-400', gradient: 'from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30' },
                             table: { emoji: '▦', color: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30' },
-                            view: { emoji: '👁️', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' }
+                            view: { emoji: '👁️', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' },
+                            toon: { emoji: '🎛️', color: 'text-pink-600 dark:text-pink-400', gradient: 'from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30' }
                           };
                           
                           const config = formatConfig[format];
