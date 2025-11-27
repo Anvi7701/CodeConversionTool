@@ -2636,12 +2636,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       💾
                     </button>
                   </Tooltip>
-                  <Tooltip content="Copy to clipboard">
+                  <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
                     <button
                       onClick={handleCopyOutput}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Copy"
-                      title="Copy to clipboard (Ctrl+C)"
+                      title={viewFormat === 'toon' ? 'Copy TOON to clipboard (Ctrl+C)' : 'Copy to clipboard (Ctrl+C)'}
                     >
                       📋
                     </button>
