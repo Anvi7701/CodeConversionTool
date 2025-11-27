@@ -1192,6 +1192,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       }
       return;
     }
+    // If in TOON view, copy TOON-rendered text instead of raw JSON
+    if (viewFormat === 'toon') {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        const toonText: string = jsonToToon(parsedData, {
+          flattenDepth: Math.max(0, Number.isFinite(toonFlattenDepth) ? toonFlattenDepth : 1),
+          arrayJoin: toonArrayJoin || '|',
+          nullToken: toonNullToken || '-',
+          headerName: 'item',
+          path: toonPath.trim() ? toonPath.trim() : undefined
+        });
+        await navigator.clipboard.writeText(toonText);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy TOON:', error);
+      }
+      return;
+    }
     
     try {
       await navigator.clipboard.writeText(outputCode);
@@ -1805,16 +1824,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           };
           return (
             <div className="absolute inset-0 overflow-hidden">
-              {/* Local TOON toolbar */}
+              {/* TOON settings toggle */}
               <div className="absolute top-2 right-2 z-20 flex items-center gap-2">
-                <button
-                  onClick={handleCopyToon}
-                  className="px-2 py-1 text-xs rounded-md bg-pink-500 hover:bg-pink-600 text-white shadow-sm cursor-pointer"
-                  title="Copy TOON output"
-                  aria-label="Copy TOON"
-                >
-                  Copy TOON
-                </button>
                 <button
                   onClick={() => setShowToonSettings(v => !v)}
                   className="px-2 py-1 text-xs rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-300 dark:hover:bg-slate-600 cursor-pointer"
