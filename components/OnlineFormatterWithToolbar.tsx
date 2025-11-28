@@ -49,9 +49,12 @@ const languageDetails: { [key in Language]: { label: string; icon: React.ReactNo
 
 interface OnlineFormatterWithToolbarProps {
   initialLanguage?: Language;
+  showLeftInputActions?: boolean;
+  inlineStructureAnalysisIcon?: boolean; // Move Structure Analysis into Input toolbar as emoji
+  inlineSortValidateIcons?: boolean; // Move Sort & Validate into Input toolbar as emoji icons
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json' }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -65,6 +68,54 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [isValidated, setIsValidated] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // UI dropdowns and fullscreen state
+  const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
+  const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
+  const [showViewDropdown, setShowViewDropdown] = useState(false);
+  const [showToonSettings, setShowToonSettings] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Input/output history tracking
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const lastSavedToHistoryRef = useRef<string>('');
+  const [outputHistory, setOutputHistory] = useState<string[]>([]);
+  const [outputHistoryIndex, setOutputHistoryIndex] = useState<number>(-1);
+  const isApplyingOutputHistoryRef = useRef<boolean>(false);
+
+  // View/pending actions
+  type ViewFormat = 'text' | 'tree' | 'form' | 'table' | 'view' | 'toon' | 'code';
+  const [viewFormat, setViewFormat] = useState<ViewFormat>('text');
+  const [previousView, setPreviousView] = useState<ViewFormat>('text');
+  type PendingAction = { type: 'view-switch'; targetView: ViewFormat } | { type: 'download' } | { type: 'save' };
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+
+  // Structure analysis mode
+  const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
+
+  // Expand/collapse triggers for structured views
+  const [expandAllTrigger, setExpandAllTrigger] = useState<boolean>(false);
+  const [collapseAllTrigger, setCollapseAllTrigger] = useState<boolean>(false);
+
+  // Table view ref for copy/export
+  const tableViewRef = useRef<TableViewRef | null>(null);
+
+  // TOON settings
+  const [toonFlattenDepth, setToonFlattenDepth] = useState<number>(1);
+  const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
+  const [toonNullToken, setToonNullToken] = useState<string>('-');
+  const [toonPath, setToonPath] = useState<string>('');
+
+  // Graph view state
+  const [showGraph, setShowGraph] = useState<boolean>(false);
+  const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
+  const [selectedNodePath, setSelectedNodePath] = useState<string>('');
+
+  // Modal state
+  const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
 
   // AI Error state
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
@@ -84,6 +135,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
   const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
   const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
+  const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -91,66 +143,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHighlightPulse(false);
   }, []);
 
-  // History for undo/redo (only for JSON)
-  const [history, setHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState(-1);
-  const lastSavedToHistoryRef = useRef<string>('');
-
-  // Output formatter history (tracks outputCode states for undo/redo independently of input JSON history)
-  const [outputHistory, setOutputHistory] = useState<string[]>([]);
-  const [outputHistoryIndex, setOutputHistoryIndex] = useState(-1);
-  const isApplyingOutputHistoryRef = useRef(false);
-
-  // Graph viewer state
-  const [showGraph, setShowGraph] = useState(false);
-  const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
-  const [selectedNodePath, setSelectedNodePath] = useState<string>('');
-  
-  // Dropdown states
-  const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
-  const [showSortDropdown, setShowSortDropdown] = useState(false);
-
-  // Fullscreen state
-  const [isFullscreen, setIsFullscreen] = useState(false);
-
-  // JMESPath Transform modal state
-  const [showJMESPathModal, setShowJMESPathModal] = useState(false);
-
-  // View format state for JSON output (Code, Form, Text, Tree, View, Table)
-  type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'view' | 'table' | 'toon';
-  const [viewFormat, setViewFormat] = useState<ViewFormat>('code');
-  const [showViewDropdown, setShowViewDropdown] = useState(false);
-  const [previousView, setPreviousView] = useState<ViewFormat>('code');
-
-  // Pending action after error fix (view switch, save, or download)
-  type PendingAction = { type: 'view-switch', targetView: ViewFormat } | { type: 'save' } | { type: 'download' } | null;
-  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
-
-  // Expand/Collapse state for Form, Tree, and View
-  const [expandAllTrigger, setExpandAllTrigger] = useState(false);
-  const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
-
-  // Structure analysis mode - when active, only "View" format is available
-  const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState(false);
-
-  // TOON view settings
-  const [toonFlattenDepth, setToonFlattenDepth] = useState<number>(1);
-  const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
-  const [toonNullToken, setToonNullToken] = useState<string>('-');
-  const [toonPath, setToonPath] = useState<string>('');
-  const [showToonSettings, setShowToonSettings] = useState<boolean>(false);
-
-  // Ref for TableView component to access its helper functions
-  const tableViewRef = useRef<TableViewRef>(null);
-
-  // Reset output history when view format changes (so undo/redo starts disabled in new view)
-  useEffect(() => {
-    // Clear output history and reset index when switching views
-    setOutputHistory([]);
-    setOutputHistoryIndex(-1);
-  }, [viewFormat]);
-
-  
+  // Keyboard shortcuts: Undo/Redo/Compact and test error toggles
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey && event.shiftKey && event.key === 'E') {
@@ -178,7 +171,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           console.log('✅ Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.key === 'z' && !event.shiftKey) {
-        // Undo on Ctrl+Z (but not Ctrl+Shift+Z)
         const target = event.target as HTMLElement;
         const isInTextarea = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
         if (!isInTextarea && historyIndex > 0 && activeLanguage === 'json') {
@@ -186,7 +178,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           handleUndo();
         }
       } else if (event.ctrlKey && event.key === 'y') {
-        // Redo on Ctrl+Y
         const target = event.target as HTMLElement;
         const isInTextarea = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
         if (!isInTextarea && historyIndex < history.length - 1 && activeLanguage === 'json') {
@@ -194,7 +185,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           handleRedo();
         }
       } else if (event.ctrlKey && event.shiftKey && event.key === 'L') {
-        // Compact on Ctrl+Shift+L
         event.preventDefault();
         if (activeLanguage === 'json' && inputCode.trim()) {
           handleCompact();
@@ -204,23 +194,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [testErrorMode, historyIndex, history.length, activeLanguage]);
+  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode]);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking outside (handles header + inline Sort separately)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
       if (!target.closest('.dropdown-container')) {
-        setShowBeautifyDropdown(false);
-        setShowSortDropdown(false);
+        if (showBeautifyDropdown) setShowBeautifyDropdown(false);
+        if (showSortDropdown) setShowSortDropdown(false);
+        if (showInlineSortDropdown) setShowInlineSortDropdown(false);
       }
     };
 
-    if (showBeautifyDropdown || showSortDropdown) {
+    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showBeautifyDropdown, showSortDropdown]);
+  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown]);
 
   const resetState = (keepInput = false) => {
     if (!keepInput) setInputCode('');
@@ -271,11 +262,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         clearHighlight();
         return;
       }
+
       const res = parseJsonSafe(trimmed);
       setHasCommentsInInput(res.hasComments);
       setCommentLines(res.hasComments ? res.comments.map(c => c.line) : []);
+
       if (res.ok) {
-        setOutputCode(trimmed);
         setErrorLines([]);
         setValidationError(null);
       } else {
@@ -1244,12 +1236,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setIsStructureAnalysisMode(false); // Reset structure analysis mode
   };
 
-  // Move: copy data from input box to output box
-  const handleMove = () => {
-    if (!inputCode.trim()) return; // Don't move if input is empty
-    setOutputCode(inputCode);
-    setIsStructureAnalysisMode(false); // Reset structure analysis mode
-  };
+  // Removed: Move handler (copy input to output) — button removed and handler unused
 
   // Expand All Fields: expand all nodes in Form and View
   const handleExpandAllFields = () => {
@@ -2271,84 +2258,88 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
               </div>
 
-              {/* Sort button with dropdown */}
-              <div className="relative dropdown-container overflow-visible">
-                <button
-                  onClick={() => {
-                    if (isActionDisabled || !inputCode.trim()) return;
-                    setShowSortDropdown(!showSortDropdown);
-                  }}
-                  className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="Sort JSON"
-                >
-                  <span>🔼</span>
-                  <span>Sort</span>
-                  <span className="text-xs">▼</span>
-                </button>
-                {/* Dropdown menu */}
-                {showSortDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleSort('asc', 'keys');
-                        setShowSortDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      Keys (A → Z)
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleSort('desc', 'keys');
-                        setShowSortDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      Keys (Z → A)
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleSort('asc', 'values');
-                        setShowSortDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      Values (A → Z)
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleSort('desc', 'values');
-                        setShowSortDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      Values (Z → A)
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Sort button with dropdown (hidden when inlineSortValidateIcons enabled) */}
+              {!inlineSortValidateIcons && (
+                <div className="relative dropdown-container overflow-visible">
+                  <button
+                    onClick={() => {
+                      if (isActionDisabled || !inputCode.trim()) return;
+                      setShowSortDropdown(!showSortDropdown);
+                    }}
+                    className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    title="Sort JSON"
+                  >
+                    <span>🔼</span>
+                    <span>Sort</span>
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {showSortDropdown && (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[160px]">
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleSort('asc', 'keys');
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        Keys (A → Z)
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleSort('desc', 'keys');
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        Keys (Z → A)
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleSort('asc', 'values');
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        Values (A → Z)
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleSort('desc', 'values');
+                          setShowSortDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        Values (Z → A)
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
 
-              {/* Validate button */}
-              <button
-                onClick={() => {
-                  if (isActionDisabled || !inputCode.trim()) return;
-                  handleValidate();
-                }}
-                className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                title="Strict JSON syntax check (no changes). Shows all error locations and any // or block comments. Auto Fix will remove comments & simple issues; switch to Smart (AI) for complex repairs."
-              >
-                <span>✓</span>
-                <span>Validate</span>
-              </button>
+              {/* Validate button (hidden when inlineSortValidateIcons enabled) */}
+              {!inlineSortValidateIcons && (
+                <button
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    handleValidate();
+                  }}
+                  className="px-3 py-1.5 text-sm bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Strict JSON syntax check (no changes). Shows all error locations and any // or block comments. Auto Fix will remove comments & simple issues; switch to Smart (AI) for complex repairs."
+                >
+                  <span>✓</span>
+                  <span>Validate</span>
+                </button>
+              )}
 
-              {/* Structure Analysis button - Only show for JSON */}
-              {activeLanguage === 'json' && (
+              {/* Structure Analysis button - Only show for JSON
+                  Hide when inlineStructureAnalysisIcon is enabled (Beautifier page) */}
+              {activeLanguage === 'json' && !inlineStructureAnalysisIcon && (
                 <button
                   onClick={() => {
                     if (isActionDisabled || !inputCode.trim()) return;
@@ -2449,51 +2440,55 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 relative z-10 h-[600px]">
+          <div className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg ${showLeftInputActions ? 'overflow-visible' : 'overflow-hidden'} p-6 gap-3 relative z-10 h-[600px]`}>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
-                  {/* GROUP 2: Save, Download, Copy */}
-                  <Tooltip content="Save to file">
-                    <button
-                      onClick={handleSave}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Save"
-                      title="Save to file (Ctrl+S)"
-                    >
-                      💾
-                    </button>
-                  </Tooltip>
-                  <Tooltip content="Download to file">
-                    <button
-                      onClick={handleDownload}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Download"
-                      title="Download to file"
-                    >
-                      📥
-                    </button>
-                  </Tooltip>
-                  <Tooltip content="Copy to clipboard">
-                    <button
-                      onClick={handleCopy}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Copy"
-                      title="Copy to clipboard (Ctrl+C)"
-                    >
-                      📋
-                    </button>
-                  </Tooltip>
-                  
-                  {/* Transform with JMESPath - only for JSON */}
-                  {isJsonLanguage && (
-                    <>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                      <Tooltip content="Transform with JMESPath">
-                        <button
-                          onClick={() => {
+                  <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
+                    {/* GROUP 2: Save, Download, Copy (hide when left rail is enabled to avoid duplication) */}
+                    {!showLeftInputActions && (
+                      <>
+                        <Tooltip content="Save to file">
+                          <button
+                            onClick={handleSave}
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            aria-label="Save"
+                            title="Save to file (Ctrl+S)"
+                          >
+                            💾
+                          </button>
+                        </Tooltip>
+                        <Tooltip content="Download to file">
+                          <button
+                            onClick={handleDownload}
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            aria-label="Download"
+                            title="Download to file"
+                          >
+                            📥
+                          </button>
+                        </Tooltip>
+                        <Tooltip content="Copy to clipboard">
+                          <button
+                            onClick={handleCopy}
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            aria-label="Copy"
+                            title="Copy to clipboard (Ctrl+C)"
+                          >
+                            📋
+                          </button>
+                        </Tooltip>
+                      </>
+                    )}
+                    
+                    {/* Transform with JMESPath - only for JSON */}
+                    {isJsonLanguage && (
+                      <>
+                        <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                        <Tooltip content="Transform with JMESPath">
+                          <button
+                            onClick={() => {
                             // Validate JSON before opening modal
                             try {
                               JSON.parse(inputCode);
@@ -2515,24 +2510,67 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           🔄
                         </button>
                       </Tooltip>
+                      {inlineSortValidateIcons && (
+                        <>
+                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                          <Tooltip content="Validate JSON syntax">
+                            <button
+                              onClick={() => {
+                                if (isActionDisabled || !inputCode.trim()) return;
+                                handleValidate();
+                              }}
+                              disabled={!inputCode.trim()}
+                              className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                              aria-label="Validate"
+                              title="Strict JSON syntax check (no changes). Shows all error locations and comments."
+                            >
+                              ✓
+                            </button>
+                          </Tooltip>
+                          <div className="relative inline-flex dropdown-container overflow-visible">
+                            <Tooltip content="Sort JSON (keys/values)">
+                              <button
+                                onClick={() => {
+                                  if (isActionDisabled || !inputCode.trim()) return;
+                                  setShowInlineSortDropdown(!showInlineSortDropdown);
+                                }}
+                                disabled={!inputCode.trim()}
+                                className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                aria-label="Sort"
+                                title="Sort JSON keys or values"
+                              >
+                                🔼
+                              </button>
+                            </Tooltip>
+                            {showInlineSortDropdown && (
+                              <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
+                                <button
+                                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleSort('asc','keys'); setShowInlineSortDropdown(false); }}
+                                  className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                                >Keys (A → Z)</button>
+                                <button
+                                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleSort('desc','keys'); setShowInlineSortDropdown(false); }}
+                                  className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                                >Keys (Z → A)</button>
+                                <button
+                                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleSort('asc','values'); setShowInlineSortDropdown(false); }}
+                                  className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                                >Values (A → Z)</button>
+                                <button
+                                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleSort('desc','values'); setShowInlineSortDropdown(false); }}
+                                  className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100"
+                                >Values (Z → A)</button>
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </>
                   )}
                   
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
-                  {/* GROUP 3: Move */}
-                  <Tooltip content="Move input to output">
-                    <button
-                      type="button"
-                      onClick={handleMove}
-                      className="p-1 rounded-md hover:bg-cyan-50 dark:hover:bg-cyan-900/20 transition-all text-xl cursor-pointer opacity-100 pointer-events-auto relative z-50"
-                      aria-label="Move to Output"
-                      title="Move input data to output"
-                    >
-                      ➡️
-                    </button>
-                  </Tooltip>
-                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                  
 
                   {/* GROUP 4: Undo and Redo (INPUT JSON) */}
                   <Tooltip content="Undo last change">
@@ -2559,7 +2597,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
-                  {/* GROUP 5: Compact and Graph - only for JSON */}
+                  {/* GROUP 5: Compact, Graph, (optional) Structure Analysis - only for JSON */}
                   {isJsonLanguage && (
                     <>
                       <Tooltip content="Compact JSON data, remove all whitespaces">
@@ -2582,6 +2620,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           📊
                         </button>
                       </Tooltip>
+                      {inlineStructureAnalysisIcon && (
+                        <Tooltip content="Structure Analysis">
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleStructureAnalysis();
+                            }}
+                            className="p-1 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-xl cursor-pointer"
+                            aria-label="Structure Analysis"
+                            title="Analyze JSON structure and generate statistics report"
+                          >
+                            📈
+                          </button>
+                        </Tooltip>
+                      )}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
@@ -2610,11 +2663,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
                 </div>
+                {/* Toolbar always rendered; hidden when left rail is enabled */}
               </div>
             </div>
 
-            <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-hidden">
-              {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box */}
+            <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-visible">
+              {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box (hidden when left actions enabled) */}
+              {!showLeftInputActions && (
               <div className="absolute top-2 right-6 z-20 flex items-center gap-1.5 pointer-events-auto">
                 <Tooltip content="Upload a code file">
                   <button
@@ -2637,18 +2692,84 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                 </Tooltip>
               </div>
+              )}
+
+              {/* Left-side action rail moved inside editor beside gutter */}
+              {/* Rail now rendered via CodeEditor.renderLeftRail to avoid outer overflow clipping */}
+              {/* Subtle divider removed to avoid visual split in textarea */}
               
-              <CodeEditor
-                value={inputCode}
-                onChange={handleInputChange}
-                language={activeLanguage}
-                placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
-                lineStyleMap={inputLineStyleMap}
-                highlightLine={highlightedLine ?? null}
-                highlightStyle={highlightedType ?? null}
-                highlightPulse={highlightPulse}
-              />
+              <div className="flex-grow min-h-0 flex flex-col">
+                <CodeEditor
+                  value={inputCode}
+                  onChange={handleInputChange}
+                  language={activeLanguage}
+                  placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
+                  errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
+                  lineStyleMap={inputLineStyleMap}
+                  highlightLine={highlightedLine ?? null}
+                  highlightStyle={highlightedType ?? null}
+                  highlightPulse={highlightPulse}
+                  disableAutoScroll={disableAutoScroll}
+                  onPaste={() => {
+                    setDisableAutoScroll(true);
+                    window.setTimeout(() => setDisableAutoScroll(false), 1500);
+                  }}
+                  renderLeftRail={showLeftInputActions ? (
+                    <>
+                      <Tooltip content="Upload a code file">
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm"
+                          aria-label="Upload File"
+                          title="Upload a code file"
+                        >
+                          📤
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Clear input">
+                        <button
+                          onClick={handleClear}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-sm"
+                          aria-label="Clear Input"
+                          title="Clear input"
+                        >
+                          🧹
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Download to file">
+                        <button
+                          onClick={handleDownload}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-sm"
+                          aria-label="Download"
+                          title="Download to file"
+                        >
+                          ⬇️
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Save to file">
+                        <button
+                          onClick={handleSave}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm"
+                          aria-label="Save"
+                          title="Save to file"
+                        >
+                          💾
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Copy to clipboard">
+                        <button
+                          onClick={handleCopy}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-sm"
+                          aria-label="Copy"
+                          title="Copy to clipboard"
+                        >
+                          📋
+                        </button>
+                      </Tooltip>
+                    </>
+                  ) : undefined}
+                />
+              </div>
               
               {/* Character count - positioned at bottom right */}
               <div className="absolute bottom-2 right-6 z-10 pointer-events-none">
