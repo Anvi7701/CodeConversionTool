@@ -348,8 +348,8 @@ export const CodeToJsonConverter: React.FC = () => {
         className="w-full h-64 bg-transparent resize-none p-2 border border-slate-200 dark:border-slate-700 rounded"
       />
       <div className="flex gap-2 mt-2 flex-wrap">
-        <button onClick={handleValidate} disabled={isActionDisabled} title={validateTooltip} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
-        <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} title={convertTooltip} className="px-3 py-1 bg-slate-100 rounded">Convert</button>
+        <button onClick={handleValidate} disabled={isActionDisabled} aria-label={validateTooltip} className="px-3 py-1 bg-slate-100 rounded">Validate</button>
+        <button onClick={handleConvert} disabled={!isValidated || isActionDisabled} aria-label={convertTooltip} className="px-3 py-1 bg-slate-100 rounded">Convert</button>
         <button onClick={handleCopyInput} disabled={!currentInput} className="px-3 py-1 bg-slate-100 rounded">{isCopied ? 'Copied' : 'Copy'}</button>
         <button onClick={handleClear} className="px-3 py-1 bg-slate-100 rounded">Clear</button>
       </div>

@@ -284,7 +284,6 @@ export const JMESPathTransform: React.FC<JMESPathTransformProps> = ({ inputJson,
                   onClick={() => setQuery('')}
                   className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
                   aria-label="Clear query"
-                  title="Clear query"
                   type="button"
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

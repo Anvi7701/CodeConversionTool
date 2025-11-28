@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { JsonFormatterPage } from './JsonFormatterPage';
+import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
 
 export const JsonBeautifierPage: React.FC = () => {
   return (
@@ -33,8 +33,8 @@ export const JsonBeautifierPage: React.FC = () => {
           })}
         </script>
       </Helmet>
-      {/* Reuse formatter functionality for now */}
-      <JsonFormatterPage />
+      {/* Reuse formatter with left rail and inline structure analysis icon */}
+      <OnlineFormatterWithToolbar initialLanguage="json" showLeftInputActions={true} inlineStructureAnalysisIcon={true} inlineSortValidateIcons={true} />
     </>
   );
 };

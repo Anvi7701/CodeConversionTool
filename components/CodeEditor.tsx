@@ -18,6 +18,8 @@ interface CodeEditorProps {
   highlightLine?: number | null;
   highlightStyle?: 'simple' | 'complex' | 'comment' | null;
   highlightPulse?: boolean;
+  disableAutoScroll?: boolean;
+  renderLeftRail?: React.ReactNode; // Optional vertical action rail inside editor
 }
 
 const LineNumbers: React.FC<{ 
@@ -72,7 +74,7 @@ const LineNumbers: React.FC<{
   );
 });
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
   const [gutterWidth, setGutterWidth] = useState<number>(72);
@@ -102,6 +104,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   }, [value]);
 
   useEffect(() => {
+    if (disableAutoScroll) return;
     const syncProgrammaticScroll = (targetTop: number) => {
       if (!textareaRef.current || !lineNumbersRef.current) return;
       const clamped = Math.max(0, targetTop);
@@ -127,7 +130,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
       const desired = (firstErrorLine - 1) * lineHeight - lineEl.clientHeight / 2;
       syncProgrammaticScroll(desired);
     }
-  }, [highlightLine, errorLine, errorLines]);
+  }, [highlightLine, errorLine, errorLines, disableAutoScroll]);
 
   const handleGutterWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (textareaRef.current) {
@@ -141,6 +144,30 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
       const pastedText = e.clipboardData.getData('text');
       onPaste(pastedText);
     }
+    // After default paste behavior, scroll back to top for visibility
+    requestAnimationFrame(() => {
+      if (textareaRef.current && lineNumbersRef.current) {
+        textareaRef.current.scrollTop = 0;
+        lineNumbersRef.current.scrollTop = 0;
+        setScrollTop(0);
+      }
+    });
+    // Some validators re-scroll to the first error shortly after paste.
+    // Nudge back to top again after parsing completes to keep top lines visible.
+    window.setTimeout(() => {
+      if (textareaRef.current && lineNumbersRef.current) {
+        textareaRef.current.scrollTop = 0;
+        lineNumbersRef.current.scrollTop = 0;
+        setScrollTop(0);
+      }
+    }, 300);
+    window.setTimeout(() => {
+      if (textareaRef.current && lineNumbersRef.current) {
+        textareaRef.current.scrollTop = 0;
+        lineNumbersRef.current.scrollTop = 0;
+        setScrollTop(0);
+      }
+    }, 600);
   };
 
   const lineCount = value.split('\n').length;
@@ -157,30 +184,42 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     return '';
   }, [highlightStyle]);
 
+  // Slightly widen rail (adds 2px toward the right side)
+  const railWidth = renderLeftRail ? 34 : 0;
   return (
-    <div className="flex-grow w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-brand-primary focus-within:border-brand-primary rounded-md min-h-0 relative">
-      <div
-        ref={lineNumbersRef}
-        onWheel={handleGutterWheel}
-        className="p-4 text-right bg-slate-50 dark:bg-slate-800/50 text-slate-400 select-none overflow-y-hidden font-mono text-sm"
-        aria-hidden="true"
-      >
-        <LineNumbers lineCount={lineCount} errorLine={errorLine ?? null} errorLines={errorLines} lineStyleMap={lineStyleMap} />
+    <div className={`flex-grow w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-1 focus-within:ring-slate-300 dark:focus-within:ring-slate-600 focus-within:border-slate-300 dark:focus-within:border-slate-600 rounded-md min-h-0 relative`}>
+      <div className="flex flex-grow min-h-0">
+        {renderLeftRail && (
+          <div className="flex flex-col gap-1.5 pt-2 pl-1.5 pr-1.5 items-center bg-slate-50/60 dark:bg-slate-800/40" style={{ width: `${railWidth}px` }}>
+            {renderLeftRail}
+          </div>
+        )}
+        {renderLeftRail && (
+          <div className="w-px self-stretch bg-slate-300 dark:bg-slate-600" aria-hidden="true" />
+        )}
+        <div
+          ref={lineNumbersRef}
+          onWheel={handleGutterWheel}
+          className="p-4 pl-1.5 pr-4 text-right bg-cyan-50/40 dark:bg-slate-900/30 text-slate-400 select-none overflow-y-hidden font-mono text-sm"
+          aria-hidden="true"
+        >
+          <LineNumbers lineCount={lineCount} errorLine={errorLine ?? null} errorLines={errorLines} lineStyleMap={lineStyleMap} />
+        </div>
+        <textarea
+          ref={textareaRef}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onScroll={syncScroll}
+          onPaste={handlePaste}
+          placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
+          spellCheck="false"
+          className="relative z-10 flex-grow p-4 font-mono text-sm bg-transparent dark:text-dark-text resize-none focus:outline-none w-full min-h-0 leading-5"
+        />
       </div>
-      <textarea
-        ref={textareaRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onScroll={syncScroll}
-        onPaste={onPaste ? handlePaste : undefined}
-        placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
-        spellCheck="false"
-        className="relative z-10 flex-grow p-4 font-mono text-sm bg-transparent dark:text-dark-text resize-none focus:outline-none w-full min-h-0 leading-5"
-      />
       {highlightLine && highlightTop !== null && highlightColor && (
         <div
           className={`absolute ${highlightColor} rounded-sm pointer-events-none transition-colors z-0 ${highlightPulse ? 'animate-pulse' : ''}`}
-          style={{ top: `${highlightTop}px`, height: `${lineHeight}px`, left: `${gutterWidth}px`, right: 0 }}
+          style={{ top: `${highlightTop}px`, height: `${lineHeight}px`, left: `${railWidth + gutterWidth}px`, right: 0 }}
         />
       )}
     </div>

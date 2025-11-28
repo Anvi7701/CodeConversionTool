@@ -250,6 +250,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (activeLanguage !== 'json') {
       setHasCommentsInInput(false);
       setCommentLines([]);
+      // Do not auto-populate output for non-JSON languages
       return;
     }
     const timer = window.setTimeout(() => {
@@ -270,6 +271,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       if (res.ok) {
         setErrorLines([]);
         setValidationError(null);
+        // Auto-populate formatted output when input JSON is valid
+        try {
+          const formatted = JSON.stringify(res.value, null, 2);
+          setOutputCode(formatted);
+          // Default to View mode for beautifier experience
+          setIsStructureAnalysisMode(false);
+          setViewFormat('view');
+          // Trigger expand-all for structured views by toggling expandAllTrigger
+          setExpandAllTrigger(true);
+          setTimeout(() => setExpandAllTrigger(false), 120);
+        } catch {
+          // Ignore formatting issues; keep existing output state
+        }
       } else {
         const { errors: allErrors, error: parseError } = res as ParseResultErr;
         setErrorLines(allErrors);
@@ -1282,6 +1296,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Save: open Save As dialog (File System Access API), no fallback on cancel
   const handleSave = async () => {
     if (!inputCode.trim()) return;
+
     const content = outputCode || inputCode;
     if (!content) return;
     
@@ -1902,6 +1917,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  // Auto expand nodes whenever user switches between structured JSON views
+  useEffect(() => {
+    if (!outputCode || activeLanguage !== 'json') return;
+    if (['tree','form','view'].includes(viewFormat)) {
+      setExpandAllTrigger(true);
+      const t = setTimeout(() => setExpandAllTrigger(false), 120);
+      return () => clearTimeout(t);
+    }
+  }, [viewFormat, outputCode, activeLanguage]);
+
   // Helper to render non-code views for formatted output
   const renderStructuredOutputView = () => {
     if (!outputCode) return null;
@@ -2205,7 +2230,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     setShowBeautifyDropdown(!showBeautifyDropdown);
                   }}
                   className="px-3 py-1.5 text-sm bg-purple-500 text-white rounded-md hover:bg-purple-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                  title="Beautify JSON"
                 >
                   <span>🎨</span>
                   <span>Beautify</span>
@@ -2266,8 +2290,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       setShowSortDropdown(!showSortDropdown);
                     }}
-                    className="px-3 py-1.5 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
-                    title="Sort JSON"
+                    className="px-3 py-1.5 text sm bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>🔼</span>
                     <span>Sort</span>
@@ -2454,7 +2477,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             onClick={handleSave}
                             className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                             aria-label="Save"
-                            title="Save to file (Ctrl+S)"
+                            
                           >
                             💾
                           </button>
@@ -2464,7 +2487,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             onClick={handleDownload}
                             className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                             aria-label="Download"
-                            title="Download to file"
+                            
                           >
                             📥
                           </button>
@@ -2474,7 +2497,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             onClick={handleCopy}
                             className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                             aria-label="Copy"
-                            title="Copy to clipboard (Ctrl+C)"
+                            
                           >
                             📋
                           </button>
@@ -2505,7 +2528,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           disabled={!inputCode.trim()}
                           className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                           aria-label="Transform"
-                          title="Transform JSON with JMESPath query"
                         >
                           🔄
                         </button>
@@ -2522,7 +2544,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               disabled={!inputCode.trim()}
                               className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                               aria-label="Validate"
-                              title="Strict JSON syntax check (no changes). Shows all error locations and comments."
                             >
                               ✓
                             </button>
@@ -2537,7 +2558,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 disabled={!inputCode.trim()}
                                 className="p-1 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all text-xl cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                                 aria-label="Sort"
-                                title="Sort JSON keys or values"
                               >
                                 🔼
                               </button>
@@ -2579,7 +2599,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       disabled={!canUndoInput}
                       className={`p-1 rounded-md transition-all text-xl ${canUndoInput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
-                      title="Undo last change (Ctrl+Z)"
                     >
                       ↩️
                     </button>
@@ -2590,7 +2609,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       disabled={!canRedoInput}
                       className={`p-1 rounded-md transition-all text-xl ${canRedoInput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
-                      title="Redo last change (Ctrl+Y)"
                     >
                       ↪️
                     </button>
@@ -2605,7 +2623,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleCompact}
                           className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer"
                           aria-label="Compact"
-                          title="Compact JSON data, remove all whitespaces (Ctrl+Shift+L)"
                         >
                           📦
                         </button>
@@ -2615,7 +2632,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleShowGraph}
                           className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                           aria-label="Graph"
-                          title="Visualize as graph"
                         >
                           📊
                         </button>
@@ -2629,7 +2645,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             }}
                             className="p-1 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all text-xl cursor-pointer"
                             aria-label="Structure Analysis"
-                            title="Analyze JSON structure and generate statistics report"
                           >
                             📈
                           </button>
@@ -2645,7 +2660,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handlePrint}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Print"
-                      title="Print JSON (Ctrl+P)"
                     >
                       🖨️
                     </button>
@@ -2656,7 +2670,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         onClick={handleToggleFullscreen}
                         className="p-1 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                         aria-label="Enter Fullscreen"
-                        title="Enter fullscreen (F11)"
                       >
                         ⛶
                       </button>
@@ -2676,7 +2689,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     onClick={() => fileInputRef.current?.click()}
                     className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-blue-600 dark:text-blue-400"
                     aria-label="Upload File"
-                    title="Upload a code file to input"
                   >
                     📤
                   </button>
@@ -2686,7 +2698,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     onClick={handleClear}
                     className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
                     aria-label="Clear Input"
-                    title="Clear all input content"
                   >
                     🧹
                   </button>
@@ -2807,7 +2818,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handleSave}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Save"
-                      title="Save to file (Ctrl+S)"
+                      
                     >
                       💾
                     </button>
@@ -2817,7 +2828,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handleCopyOutput}
                       className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                       aria-label="Copy"
-                      title={viewFormat === 'toon' ? 'Copy TOON to clipboard (Ctrl+C)' : 'Copy to clipboard (Ctrl+C)'}
+                      
                     >
                       📋
                     </button>
@@ -2830,7 +2841,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={() => setShowToonSettings(v => !v)}
                           className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
                           aria-label="TOON Settings"
-                          title="TOON settings"
+                          
                         >
                           ⚙️
                         </button>
@@ -3025,7 +3036,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handleToggleFullscreen}
                       className="px-3 py-1.5 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer flex items-center gap-1.5"
                       aria-label="Exit Fullscreen"
-                      title="Exit fullscreen (F11 or Esc)"
+                      
                     >
                       <span>⮾</span>
                       <span>Exit</span>
@@ -3045,7 +3056,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handleDownload}
                       className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-green-600 dark:text-green-400"
                       aria-label="Download"
-                      title="Download formatted file"
+                      
                     >
                       📥
                     </button>
@@ -3055,7 +3066,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       onClick={handleClearOutput}
                       className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-600 dark:text-red-400"
                       aria-label="Clear Output"
-                      title="Clear all output content"
+                      
                     >
                       🧹
                     </button>
@@ -3183,7 +3194,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                         type="button"
                                         onClick={() => { setHighlightedLine(null); setHighlightedType(null); setHighlightPulse(false); }}
                                         className="ml-auto px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                                        title="Clear highlight"
                                         aria-label="Clear highlight"
                                       >
                                         ✖ Clear highlight

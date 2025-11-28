@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { JsonFormatterPage } from './JsonFormatterPage';
+import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
 
 export const JsonEditorPage: React.FC = () => {
   return (
@@ -33,8 +33,8 @@ export const JsonEditorPage: React.FC = () => {
           })}
         </script>
       </Helmet>
-      {/* Reuse formatter functionality for now */}
-      <JsonFormatterPage />
+      {/* Use shared formatter with left input rail enabled for Editor too */}
+      <OnlineFormatterWithToolbar initialLanguage="json" showLeftInputActions={true} />
     </>
   );
 };

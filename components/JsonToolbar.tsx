@@ -87,7 +87,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn primary"
               onClick={() => onFormat(2)}
               disabled={disabled}
-              title="Beautify JSON (Ctrl+B)"
+              aria-label="Beautify JSON (Ctrl+B)"
             >
               <span className="icon">🎨</span>
               <span className="label">Beautify</span>
@@ -99,7 +99,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 setFormatDropdownOpen(!formatDropdownOpen);
               }}
               disabled={disabled}
-              title="Formatting options"
+              aria-label="Formatting options"
             >
               ▼
             </button>
@@ -123,7 +123,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             className="toolbar-btn primary"
             onClick={onMinify}
             disabled={disabled}
-            title="Minify JSON (Ctrl+M)"
+            aria-label="Minify JSON (Ctrl+M)"
           >
             <span className="icon">📦</span>
             <span className="label">Minify</span>
@@ -139,7 +139,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn"
               onClick={() => onSort('asc', 'keys')}
               disabled={disabled}
-              title="Sort keys ascending"
+              aria-label="Sort keys ascending"
             >
               <span className="icon">🔼</span>
               <span className="label">Sort</span>
@@ -151,7 +151,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 setSortDropdownOpen(!sortDropdownOpen);
               }}
               disabled={disabled}
-              title="Sort options"
+              aria-label="Sort options"
             >
               ▼
             </button>
@@ -184,7 +184,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn warning"
               onClick={onRepair}
               disabled={disabled}
-              title="Repair JSON errors"
+              aria-label="Repair JSON errors"
             >
               <span className="icon">🔧</span>
               <span className="label">Repair</span>
@@ -202,7 +202,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn icon-only"
               onClick={onUndo}
               disabled={!canUndo || disabled}
-              title="Undo (Ctrl+Z)"
+              aria-label="Undo (Ctrl+Z)"
             >
               <span className="icon">↶</span>
             </button>
@@ -214,7 +214,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn icon-only"
               onClick={onRedo}
               disabled={!canRedo || disabled}
-              title="Redo (Ctrl+Y)"
+              aria-label="Redo (Ctrl+Y)"
             >
               <span className="icon">↷</span>
             </button>
@@ -235,7 +235,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   setSampleDropdownOpen(!sampleDropdownOpen);
                 }}
                 disabled={disabled}
-                title="Generate sample JSON"
+                aria-label="Generate sample JSON"
               >
                 <span className="icon">🎲</span>
                 <span className="label">Sample</span>
@@ -268,7 +268,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             className="toolbar-btn success"
             onClick={onValidate}
             disabled={disabled}
-            title="Validate JSON"
+            aria-label="Validate JSON"
           >
             <span className="icon">✓</span>
             <span className="label">Validate</span>
@@ -284,7 +284,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               className="toolbar-btn icon-only"
               onClick={onFullscreen}
               disabled={disabled}
-              title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
+              aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
             >
               <span className="icon">{isFullscreen ? '⛶' : '⛶'}</span>
             </button>
@@ -293,7 +293,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             <button
               className="toolbar-btn icon-only"
               onClick={() => setShowKeyboardShortcuts(!showKeyboardShortcuts)}
-              title="Keyboard shortcuts (?)"
+              aria-label="Keyboard shortcuts (?)"
             >
               <span className="icon">⌨️</span>
             </button>
