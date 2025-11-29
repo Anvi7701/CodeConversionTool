@@ -2502,6 +2502,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             📋
                           </button>
                         </Tooltip>
+                        <Tooltip content="Print">
+                          <button
+                            onClick={handlePrint}
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            aria-label="Print"
+                          >
+                            🖨️
+                          </button>
+                        </Tooltip>
                       </>
                     )}
                     
@@ -2654,16 +2663,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </>
                   )}
 
-                  {/* GROUP 6: Print and Fullscreen */}
-                  <Tooltip content="Print">
-                    <button
-                      onClick={handlePrint}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Print"
-                    >
-                      🖨️
-                    </button>
-                  </Tooltip>
+                  {/* GROUP 6: Fullscreen only (Print moved to left rail / header mini toolbar) */}
                   {!isFullscreen && (
                     <Tooltip content="Enter fullscreen">
                       <button
@@ -2732,7 +2732,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={() => fileInputRef.current?.click()}
                           className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm"
                           aria-label="Upload File"
-                          title="Upload a code file"
                         >
                           📤
                         </button>
@@ -2742,7 +2741,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleClear}
                           className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-sm"
                           aria-label="Clear Input"
-                          title="Clear input"
                         >
                           🧹
                         </button>
@@ -2752,7 +2750,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleDownload}
                           className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-sm"
                           aria-label="Download"
-                          title="Download to file"
                         >
                           ⬇️
                         </button>
@@ -2762,7 +2759,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleSave}
                           className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm"
                           aria-label="Save"
-                          title="Save to file"
                         >
                           💾
                         </button>
@@ -2772,9 +2768,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           onClick={handleCopy}
                           className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-sm"
                           aria-label="Copy"
-                          title="Copy to clipboard"
                         >
                           📋
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Print">
+                        <button
+                          onClick={handlePrint}
+                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-sm"
+                          aria-label="Print"
+                        >
+                          🖨️
                         </button>
                       </Tooltip>
                     </>
@@ -2896,7 +2900,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       disabled={!canUndoOutput || isStructureAnalysisMode}
                       className={`p-1 rounded-md transition-all text-xl ${canUndoOutput && !isStructureAnalysisMode ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
-                      title="Undo last change (Ctrl+Z)"
                     >
                       ↩️
                     </button>
@@ -2907,7 +2910,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       disabled={!canRedoOutput}
                       className={`p-1 rounded-md transition-all text-xl ${canRedoOutput ? 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
-                      title="Redo last change (Ctrl+Y)"
                     >
                       ↪️
                     </button>
@@ -2923,7 +2925,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         onClick={handleExpandAllFields}
                         className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-xl cursor-pointer"
                         aria-label="Expand All"
-                        title="Expand all fields"
                       >
                         ⬇️
                       </button>
@@ -2933,7 +2934,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         onClick={handleCollapseAllFields}
                         className="p-1 rounded-md hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all text-xl cursor-pointer"
                         aria-label="Collapse All"
-                        title="Collapse all fields"
                       >
                         ⬆️
                       </button>
@@ -2956,7 +2956,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
                       } text-white`}
                       aria-label="Select View Format"
-                      title={isStructureAnalysisMode ? "View selector disabled in Structure Analysis mode" : "Select view format"}
                     >
                       <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
                       <span className="text-xs">▼</span>
@@ -3240,7 +3239,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               onClick={() => { setHighlightedLine(error.line); setHighlightedType('simple'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
                                               className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
                                               aria-label={`Go to line ${error.line}`}
-                                              title={`Go to line ${error.line}`}
                                             >
                                               <span>🎯</span>
                                               <span>Go</span>
@@ -3284,7 +3282,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               onClick={() => { setHighlightedLine(error.line); setHighlightedType('complex'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
                                               className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
                                               aria-label={`Go to line ${error.line}`}
-                                              title={`Go to line ${error.line}`}
                                             >
                                               <span>🎯</span>
                                               <span>Go</span>
@@ -3328,7 +3325,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
                                               className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
                                               aria-label={`Go to line ${line}`}
-                                              title={`Go to line ${line}`}
                                             >
                                               <span>🎯</span>
                                               <span>Go</span>
@@ -3362,7 +3358,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
                                               className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
                                               aria-label={`Go to line ${line}`}
-                                              title={`Go to line ${line}`}
                                             >
                                               <span>🎯</span>
                                               <span>Go</span>
