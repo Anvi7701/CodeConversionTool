@@ -2753,7 +2753,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Upload a code file">
                         <button
                           onClick={() => fileInputRef.current?.click()}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-base"
                           aria-label="Upload File"
                         >
                           📤
@@ -2762,7 +2762,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Clear input">
                         <button
                           onClick={handleClear}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-base"
                           aria-label="Clear Input"
                         >
                           🧹
@@ -2771,7 +2771,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Download to file">
                         <button
                           onClick={handleDownload}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-base"
                           aria-label="Download"
                         >
                           ⬇️
@@ -2780,7 +2780,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Save to file">
                         <button
                           onClick={handleSave}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base"
                           aria-label="Save"
                         >
                           💾
@@ -2789,7 +2789,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Copy to clipboard">
                         <button
                           onClick={handleCopy}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-base"
                           aria-label="Copy"
                         >
                           📋
@@ -2798,7 +2798,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Print">
                         <button
                           onClick={handlePrint}
-                          className="w-7 h-7 p-0.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-sm"
+                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-base"
                           aria-label="Print"
                         >
                           🖨️
@@ -2840,26 +2840,28 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-lg font-semibold">Formatted Output</h2>
                 {/* Icon Toolbar - positioned next to "Formatted Output" heading */}
                 <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
-                  <Tooltip content="Save to file">
-                    <button
-                      onClick={handleSave}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Save"
-                      
-                    >
-                      💾
-                    </button>
-                  </Tooltip>
-                  <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
-                    <button
-                      onClick={handleCopyOutput}
-                      className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
-                      aria-label="Copy"
-                      
-                    >
-                      📋
-                    </button>
-                  </Tooltip>
+                  {(validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
+                    <>
+                      <Tooltip content="Save to file">
+                        <button
+                          onClick={handleSave}
+                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                          aria-label="Save"
+                        >
+                          💾
+                        </button>
+                      </Tooltip>
+                      <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+                        <button
+                          onClick={handleCopyOutput}
+                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                          aria-label="Copy"
+                        >
+                          📋
+                        </button>
+                      </Tooltip>
+                    </>
+                  )}
                   {/* TOON Settings in header toolbar to avoid overlapping content controls */}
                   {activeLanguage === 'json' && viewFormat === 'toon' && (
                     <div className="relative toon-settings-popover">
@@ -3068,10 +3070,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
             </div>
 
-            <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
+            <div className="flex-grow w-full rounded-md overflow-visible flex flex-col border border-slate-200 dark:border-slate-700 min-h-0 relative">
               {/* Download and Clear icons - positioned at top right inside the output box */}
               {/* Hide these buttons when there's an error (validationError, outputError, or aiError) or in Structure Analysis mode or when showing success message or in Table view */}
-              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && !successMessage && viewFormat !== 'table' && (
+              {!validationError && !outputError && !aiError && !isStructureAnalysisMode && !successMessage && viewFormat !== 'table' && false && (
                 <div className={`absolute z-10 flex items-center gap-1.5 ${viewFormat === 'tree' ? 'top-[2px] right-2' : viewFormat === 'form' ? 'top-[17px] right-6' : 'top-2 right-6'}`}>
                   <Tooltip content="Download formatted file">
                     <button
@@ -3091,6 +3093,56 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       
                     >
                       🧹
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
+              {/* Right-side rail for Output (visible for all views when no errors/special states) */}
+              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
+                <div className="right-rail absolute top-2 right-[-18px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-l border-slate-300 dark:border-slate-600">
+                  <Tooltip content="Save to file">
+                    <button
+                      onClick={handleSave}
+                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base"
+                      aria-label="Save"
+                    >
+                      💾
+                    </button>
+                  </Tooltip>
+                  <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+                    <button
+                      onClick={handleCopyOutput}
+                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-base"
+                      aria-label="Copy"
+                    >
+                      📋
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Download formatted file">
+                    <button
+                      onClick={handleDownload}
+                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-green-600 dark:text-green-400 text-base"
+                      aria-label="Download"
+                    >
+                      📥
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Clear output">
+                    <button
+                      onClick={handleClearOutput}
+                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-base"
+                      aria-label="Clear Output"
+                    >
+                      🧹
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="Print">
+                    <button
+                      onClick={handlePrint}
+                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-base"
+                      aria-label="Print"
+                    >
+                      🖨️
                     </button>
                   </Tooltip>
                 </div>

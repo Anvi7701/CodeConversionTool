@@ -760,7 +760,7 @@ const ViewNode:React.FC<ViewNodeProps>=({ value,level,keyName,expandAll,collapse
         <div className="ml-6">
           {isArray? value.map((item:any,idx:number)=>(
             <div key={idx} className="flex items-start gap-2">
-              <span className="text-slate-500 dark:text-slate-500 text-xs">{idx}:</span>
+              {/* Removed array index label to avoid perceived line numbers in View mode */}
               <ViewNode value={item} level={level+1} expandAll={expandAll} collapseAll={collapseAll} />
             </div>
           )): Object.entries(value).map(([k,v])=> (

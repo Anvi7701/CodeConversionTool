@@ -16,3 +16,68 @@ html:-ms-fullscreen .fullscreen-hide {
 :root:-webkit-full-screen ~ body .fullscreen-hide {
   display: none !important;
 }
+
+/* Scoped left rail icon sizing (responsive) */
+.left-rail,
+.right-rail {
+  width: 42px; /* unified rail width */
+}
+
+.left-rail svg,
+.left-rail img {
+  width: 1.5rem !important; /* 24px ~ w-6 */
+  height: 1.5rem !important; /* 24px ~ h-6 */
+}
+
+/* Scoped right rail icon sizing (mirror of left rail) */
+.right-rail svg,
+.right-rail img {
+  width: 1.5rem !important; /* 24px ~ w-6 */
+  height: 1.5rem !important; /* 24px ~ h-6 */
+}
+
+/* Ensure icons are centered within rail items */
+.left-rail > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure icons are centered within right rail items */
+.right-rail > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Increase interactive target size for rail items */
+.left-rail button,
+.left-rail a,
+.left-rail .rail-item {
+  width: 2rem;   /* 32px container for breathing room */
+  height: 2rem;
+}
+
+/* Increase interactive target size for right rail items */
+.right-rail button,
+.right-rail a,
+.right-rail .rail-item {
+  width: 2rem;   /* 32px container for breathing room */
+  height: 2rem;
+}
+
+/* If icons use font glyphs, ensure font-size scales up */
+.left-rail i,
+.left-rail .icon,
+.left-rail [class*="icon-"] {
+  font-size: 1.5rem !important; /* 24px */
+  line-height: 1;
+}
+
+.right-rail i,
+.right-rail .icon,
+.right-rail [class*="icon-"] {
+  font-size: 1.5rem !important; /* 24px */
+  line-height: 1;
+}
+

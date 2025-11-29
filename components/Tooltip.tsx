@@ -37,6 +37,14 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, className }
         window.dispatchEvent(evt);
       }}
       onMouseLeave={() => setIsVisible(false)}
+      onMouseDown={() => {
+        // Hide tooltip immediately when user clicks to take action
+        setIsVisible(false);
+      }}
+      onClick={() => {
+        // Ensure tooltip does not linger after click actions
+        setIsVisible(false);
+      }}
       style={{ display: 'inline-flex' }}
     >
       {children}

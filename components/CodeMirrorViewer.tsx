@@ -11,13 +11,16 @@ import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language
 import { keymap } from '@codemirror/view';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 
-// Create custom fold gutter with solid arrow icons
+// Create custom fold gutter with solid arrow icons (matching Input editor)
 const customFoldGutter = foldGutter({
   markerDOM: (open) => {
     const marker = document.createElement('span');
     marker.textContent = open ? '▼' : '▶';
     marker.style.cursor = 'pointer';
     marker.style.userSelect = 'none';
+    marker.style.color = '#000';
+    marker.style.fontWeight = '700';
+    marker.style.fontSize = '14px';
     marker.title = open ? 'Fold' : 'Unfold';
     return marker;
   }
@@ -124,9 +127,25 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   onChange, 
   readOnly = false,
   expandAll: expandAllTrigger,
-  collapseAll: collapseAllTrigger
+  collapseAll: collapseAllTrigger,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+
+  // Local theme to match Input gutter styles (24px line numbers, 18px fold gutter)
+  const theme = useMemo(() => EditorView.theme({
+    '&': { height: '100%' },
+    '.cm-gutters': { border: 'none', gap: '0px' },
+    '.cm-gutter': { background: 'rgba(226, 232, 240, 0.6)', border: 'none' },
+    '.cm-gutter.cm-lineNumbers': { width: '24px', minWidth: '24px' },
+    '.cm-lineNumbers .cm-gutterElement': { padding: '0 3px 0 2px', color: '#000' },
+    '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
+    '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    '.cm-foldGutter .cm-gutterElement > span + span': { display: 'none' },
+    '.cm-scroller': { overflow: 'auto' },
+    '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
+    '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#fff' },
+  }), []);
 
   // Handle expand all
   useEffect(() => {
@@ -191,6 +210,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       keymap.of(foldKeymap), // Keyboard shortcuts for folding
       EditorView.lineWrapping, // Wrap long lines
       ...(readOnly ? [EditorView.editable.of(false)] : []), // Only add read-only if specified
+      theme,
     ];
     
     // Add boolean checkbox plugin for JSON when editable
@@ -218,7 +238,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           allowMultipleSelections: !readOnly,
           indentOnInput: !readOnly,
         }}
-        theme="light"
+        theme={undefined}
         style={{
           fontSize: '14px',
           height: '100%',
