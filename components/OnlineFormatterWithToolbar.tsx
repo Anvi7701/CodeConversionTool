@@ -136,6 +136,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
   const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
   const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
+  // Ref for input editor folding API
+  const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -2660,6 +2662,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </Tooltip>
                       )}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                      {/* GROUP 5.5: Input Collapse/Expand All (JSON only) */}
+                      <Tooltip content="Collapse all JSON blocks">
+                        <button
+                          onClick={() => inputEditorApiRef.current?.foldAll()}
+                          className="p-1 rounded-md hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all text-xl cursor-pointer"
+                          aria-label="Collapse All Input"
+                        >
+                          ➖
+                        </button>
+                      </Tooltip>
+                      <Tooltip content="Expand all JSON blocks">
+                        <button
+                          onClick={() => inputEditorApiRef.current?.unfoldAll()}
+                          className="p-1 rounded-md hover:bg-green-50 dark:hover:bg-green-900/20 transition-all text-xl cursor-pointer"
+                          aria-label="Expand All Input"
+                        >
+                          ➕
+                        </button>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
 
@@ -2725,6 +2747,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     setDisableAutoScroll(true);
                     window.setTimeout(() => setDisableAutoScroll(false), 1500);
                   }}
+                  editorApiRef={inputEditorApiRef}
                   renderLeftRail={showLeftInputActions ? (
                     <>
                       <Tooltip content="Upload a code file">

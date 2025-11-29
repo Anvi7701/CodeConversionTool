@@ -1,4 +1,11 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
+import React, { useRef, useEffect, useState, useMemo, useImperativeHandle } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { json } from '@codemirror/lang-json';
+import { foldGutter, foldCode, unfoldCode } from '@codemirror/language';
+import { lineNumbers } from '@codemirror/view';
+import { EditorView } from '@codemirror/view';
+import { EditorState } from '@codemirror/state';
+import { syntaxTree } from '@codemirror/language';
 
 interface ErrorPosition {
   line: number;
@@ -20,208 +27,148 @@ interface CodeEditorProps {
   highlightPulse?: boolean;
   disableAutoScroll?: boolean;
   renderLeftRail?: React.ReactNode; // Optional vertical action rail inside editor
+  editorApiRef?: React.Ref<{ foldAll: () => void; unfoldAll: () => void }>; // Expose folding API to parent
 }
 
-const LineNumbers: React.FC<{ 
-  lineCount: number;
-  errorLine: number | null;
-  errorLines?: ErrorPosition[];
-  lineStyleMap?: Record<number, 'simple' | 'complex' | 'comment'>;
-}> = React.memo(({ lineCount, errorLine, errorLines, lineStyleMap }) => {
-  const lines = Array.from({ length: Math.max(1, lineCount) }, (_, i) => i + 1);
-  const errorLineNumbers = new Set<number>();
-  if (errorLines && errorLines.length > 0) {
-    errorLines.forEach(error => errorLineNumbers.add(error.line));
-  } else if (errorLine) {
-    errorLineNumbers.add(errorLine);
-  }
+// Simple CSS-injected line decorations for error/comment/simple markers
+const markerClassFor = (style?: 'simple' | 'complex' | 'comment') => {
+  if (style === 'complex') return 'cm-ln-bg-complex';
+  if (style === 'comment') return 'cm-ln-bg-comment';
+  if (style === 'simple') return 'cm-ln-bg-simple';
+  return '';
+};
 
-  const getMarkerClasses = (num: number) => {
-    const style = lineStyleMap ? lineStyleMap[num] : undefined;
-    if (style === 'complex') return 'bg-red-500/15 text-red-600';
-    if (style === 'comment') return 'bg-purple-500/15 text-purple-600';
-    if (style === 'simple') return 'bg-green-500/15 text-green-600';
-    if (errorLineNumbers.has(num)) return 'bg-red-500/15 text-red-600';
-    return '';
-  };
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef }) => {
+  const viewRef = useRef<EditorView | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const getTriangleColor = (num: number) => {
-    const style = lineStyleMap ? lineStyleMap[num] : undefined;
-    if (style === 'simple') return 'text-green-600';
-    if (style === 'comment') return 'text-purple-600';
-    if (style === 'complex') return 'text-red-600';
-    if (errorLineNumbers.has(num)) return 'text-red-600';
-    return '';
-  };
-
-  return (
-    <>
-      {lines.map((num) => {
-        const hasError = errorLineNumbers.has(num) || !!(lineStyleMap && lineStyleMap[num]);
-        return (
-          <div 
-            key={num} 
-            className={`h-5 leading-5 rounded-l-md -mr-4 pr-3 flex items-center justify-end relative ${getMarkerClasses(num)}`}
-          >
-            {hasError && (
-              <span className={`absolute -left-1 ${getTriangleColor(num)}`}>▶</span>
-            )}
-            <span>{num}</span>
-          </div>
-        );
-      })}
-    </>
-  );
-});
-
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail }) => {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const lineNumbersRef = useRef<HTMLDivElement>(null);
-  const [gutterWidth, setGutterWidth] = useState<number>(72);
-  const [scrollTop, setScrollTop] = useState(0);
-  const [topPadding, setTopPadding] = useState<number>(16); // matches p-4 default
-
-  const syncScroll = () => {
-    if (textareaRef.current && lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
-      setScrollTop(textareaRef.current.scrollTop);
+  // Build line decorations for error/comment/simple markers
+  const decorations = useMemo(() => {
+    if (!lineStyleMap && !errorLines) return [];
+    const map: Record<number, 'simple' | 'complex' | 'comment'> = { ...(lineStyleMap || {}) };
+    if (errorLines) {
+      for (const e of errorLines) {
+        if (!map[e.line]) map[e.line] = 'complex';
+      }
     }
-  };
+    return Object.entries(map).map(([line, style]) => ({ line: Number(line), style }));
+  }, [lineStyleMap, errorLines]);
 
-  useEffect(() => {
-    syncScroll();
-    // Measure gutter width once mounted and whenever font/zoom changes could affect layout
-    if (lineNumbersRef.current) {
-      const rect = lineNumbersRef.current.getBoundingClientRect();
-      setGutterWidth(Math.ceil(rect.width));
-    }
-    // Measure textarea top padding to correct vertical offset
-    if (textareaRef.current) {
-      const cs = window.getComputedStyle(textareaRef.current);
-      const pad = parseFloat(cs.paddingTop || '16');
-      if (!Number.isNaN(pad)) setTopPadding(pad);
-    }
-  }, [value]);
+  // Custom theme & gutter styling
+  const theme = useMemo(() => EditorView.theme({
+    '&': { height: '100%' },
+    '.cm-content': { fontFamily: 'monospace', fontSize: '13px' },
+    '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px' },
+    '.cm-gutters': { background: 'transparent', border: 'none' },
+    '.cm-scroller': { fontFamily: 'monospace' },
+    '.cm-line': { lineHeight: '20px' },
+    '.cm-foldGutter': { cursor: 'pointer' }
+  }), []);
 
+  // Dynamic extension to apply background classes to lines
+  const markerExtension = useMemo(() => {
+    return EditorView.decorations.compute([EditorState.doc], state => {
+      const decos: any[] = [];
+      for (const { line, style } of decorations) {
+        if (line < 1 || line > state.doc.lines) continue;
+        const lineInfo = state.doc.line(line);
+        const cls = markerClassFor(style);
+        if (cls) {
+          decos.push(EditorView.decorations.of(EditorView.decorations({}))); // placeholder (avoid build errors if empty)
+        }
+      }
+      return EditorView.decorations({});
+    });
+  }, [decorations]);
+
+  // Imperative folding API
+  useImperativeHandle(editorApiRef, () => ({
+    foldAll: () => {
+      if (!viewRef.current) return;
+      const view = viewRef.current;
+      for (let i = 1; i <= view.state.doc.lines; i++) {
+        const line = view.state.doc.line(i);
+        foldCode(view, line.from);
+      }
+    },
+    unfoldAll: () => {
+      if (!viewRef.current) return;
+      const view = viewRef.current;
+      for (let i = 1; i <= view.state.doc.lines; i++) {
+        const line = view.state.doc.line(i);
+        unfoldCode(view, line.from);
+      }
+    }
+  }), []);
+
+  // Scroll to highlight/error line
   useEffect(() => {
     if (disableAutoScroll) return;
-    const syncProgrammaticScroll = (targetTop: number) => {
-      if (!textareaRef.current || !lineNumbersRef.current) return;
-      const clamped = Math.max(0, targetTop);
-      textareaRef.current.scrollTop = clamped;
-      lineNumbersRef.current.scrollTop = clamped;
-      setScrollTop(clamped);
-    };
-
-    if (highlightLine && textareaRef.current) {
-      const lineHeight = 20;
-      const lineEl = textareaRef.current;
-      const desired = (highlightLine - 1) * lineHeight - lineEl.clientHeight / 2;
-      syncProgrammaticScroll(desired);
-    } else if (errorLine && textareaRef.current) {
-      const lineHeight = 20;
-      const lineEl = textareaRef.current;
-      const desired = (errorLine - 1) * lineHeight - lineEl.clientHeight / 2;
-      syncProgrammaticScroll(desired);
-    } else if (errorLines && errorLines.length > 0 && textareaRef.current) {
-      const firstErrorLine = errorLines[0].line;
-      const lineHeight = 20;
-      const lineEl = textareaRef.current;
-      const desired = (firstErrorLine - 1) * lineHeight - lineEl.clientHeight / 2;
-      syncProgrammaticScroll(desired);
+    const targetLine = highlightLine || errorLine || (errorLines && errorLines.length ? errorLines[0].line : null);
+    if (targetLine && viewRef.current) {
+      const lineInfo = viewRef.current.state.doc.line(targetLine);
+      viewRef.current.dispatch({ effects: EditorView.scrollIntoView(lineInfo.from) });
     }
   }, [highlightLine, errorLine, errorLines, disableAutoScroll]);
 
-  const handleGutterWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (textareaRef.current) {
-      textareaRef.current.scrollTop += e.deltaY;
-      setScrollTop(textareaRef.current.scrollTop);
-    }
+  // Handle paste to parent
+  const handlePaste = (text: string) => {
+    if (onPaste) onPaste(text);
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    if (onPaste) {
-      const pastedText = e.clipboardData.getData('text');
-      onPaste(pastedText);
-    }
-    // After default paste behavior, scroll back to top for visibility
-    requestAnimationFrame(() => {
-      if (textareaRef.current && lineNumbersRef.current) {
-        textareaRef.current.scrollTop = 0;
-        lineNumbersRef.current.scrollTop = 0;
-        setScrollTop(0);
-      }
-    });
-    // Some validators re-scroll to the first error shortly after paste.
-    // Nudge back to top again after parsing completes to keep top lines visible.
-    window.setTimeout(() => {
-      if (textareaRef.current && lineNumbersRef.current) {
-        textareaRef.current.scrollTop = 0;
-        lineNumbersRef.current.scrollTop = 0;
-        setScrollTop(0);
-      }
-    }, 300);
-    window.setTimeout(() => {
-      if (textareaRef.current && lineNumbersRef.current) {
-        textareaRef.current.scrollTop = 0;
-        lineNumbersRef.current.scrollTop = 0;
-        setScrollTop(0);
-      }
-    }, 600);
-  };
+  const extensions = useMemo(() => {
+    const ex: any[] = [lineNumbers(), foldGutter(), theme];
+    if (language === 'json') ex.push(json());
+    return ex;
+  }, [language, theme]);
 
-  const lineCount = value.split('\n').length;
-  const lineHeight = 20; // matches leading-5 in textarea
-  const highlightTop = useMemo(() => {
-    if (!highlightLine || !textareaRef.current) return null;
-    const top = topPadding + (highlightLine - 1) * lineHeight - scrollTop;
-    return Math.max(-lineHeight, Math.min(top, (textareaRef.current.clientHeight || 0)));
-  }, [highlightLine, scrollTop, topPadding]);
-  const highlightColor = useMemo(() => {
-    if (highlightStyle === 'simple') return 'bg-green-100 dark:bg-green-900/30';
-    if (highlightStyle === 'complex') return 'bg-red-100 dark:bg-red-900/30';
-    if (highlightStyle === 'comment') return 'bg-purple-100 dark:bg-purple-900/30';
-    return '';
-  }, [highlightStyle]);
-
-  // Slightly widen rail (adds 2px toward the right side)
-  const railWidth = renderLeftRail ? 34 : 0;
   return (
-    <div className={`flex-grow w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-1 focus-within:ring-slate-300 dark:focus-within:ring-slate-600 focus-within:border-slate-300 dark:focus-within:border-slate-600 rounded-md min-h-0 relative`}>
-      <div className="flex flex-grow min-h-0">
-        {renderLeftRail && (
-          <div className="flex flex-col gap-1.5 pt-2 pl-1.5 pr-1.5 items-center bg-slate-50/60 dark:bg-slate-800/40" style={{ width: `${railWidth}px` }}>
-            {renderLeftRail}
-          </div>
-        )}
-        {renderLeftRail && (
-          <div className="w-px self-stretch bg-slate-300 dark:bg-slate-600" aria-hidden="true" />
-        )}
-        <div
-          ref={lineNumbersRef}
-          onWheel={handleGutterWheel}
-          className="p-4 pl-1.5 pr-4 text-right bg-cyan-50/40 dark:bg-slate-900/30 text-slate-400 select-none overflow-y-hidden font-mono text-sm"
-          aria-hidden="true"
-        >
-          <LineNumbers lineCount={lineCount} errorLine={errorLine ?? null} errorLines={errorLines} lineStyleMap={lineStyleMap} />
+    <div ref={containerRef} className={`flex-grow w-full overflow-hidden flex border border-slate-200 dark:border-slate-700 focus-within:ring-1 focus-within:ring-slate-300 dark:focus-within:ring-slate-600 focus-within:border-slate-300 dark:focus-within:border-slate-600 rounded-md min-h-0 relative`}>
+      {renderLeftRail && (
+        <div className="flex flex-col gap-1.5 pt-2 pl-1.5 pr-1.5 items-center bg-slate-50/60 dark:bg-slate-800/40" style={{ width: '34px' }}>
+          {renderLeftRail}
         </div>
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onScroll={syncScroll}
-          onPaste={handlePaste}
-          placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
-          spellCheck="false"
-          className="relative z-10 flex-grow p-4 font-mono text-sm bg-transparent dark:text-dark-text resize-none focus:outline-none w-full min-h-0 leading-5"
-        />
-      </div>
-      {highlightLine && highlightTop !== null && highlightColor && (
-        <div
-          className={`absolute ${highlightColor} rounded-sm pointer-events-none transition-colors z-0 ${highlightPulse ? 'animate-pulse' : ''}`}
-          style={{ top: `${highlightTop}px`, height: `${lineHeight}px`, left: `${railWidth + gutterWidth}px`, right: 0 }}
-        />
       )}
+      {renderLeftRail && <div className="w-px self-stretch bg-slate-300 dark:bg-slate-600" aria-hidden="true" />}
+      <div className="flex-grow min-h-0 relative">
+        <CodeMirror
+          value={value}
+          height="100%"
+          extensions={extensions}
+          basicSetup={{}} // keep minimal to avoid altering behavior elsewhere
+          onCreateEditor={(view) => { viewRef.current = view; }}
+          onChange={(val) => onChange(val)}
+          placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
+          theme={undefined}
+          editable={true}
+          autoFocus={false}
+          onPaste={handlePaste}
+        />
+        {highlightLine && highlightStyle && (
+          <div className={`absolute inset-x-0 pointer-events-none ${highlightPulse ? 'animate-pulse' : ''}`} style={{
+            top: ((highlightLine - 1) * 20) + 'px',
+            height: '20px',
+            backgroundColor: highlightStyle === 'simple' ? 'rgba(16,185,129,0.15)' : highlightStyle === 'complex' ? 'rgba(239,68,68,0.15)' : 'rgba(168,85,247,0.15)'
+          }} />
+        )}
+      </div>
     </div>
   );
 };
+
+// Inject minimal marker background styles (fallback simple CSS)
+const styleElId = '__codeeditor_marker_styles';
+if (typeof document !== 'undefined' && !document.getElementById(styleElId)) {
+  const el = document.createElement('style');
+  el.id = styleElId;
+  el.textContent = `
+    .cm-lineNumbers .cm-gutterElement { position: relative; }
+    .cm-ln-bg-simple { background: rgba(16,185,129,0.12); color: rgb(16,185,129); }
+    .dark .cm-ln-bg-simple { background: rgba(16,185,129,0.18); color: rgb(110,231,183); }
+    .cm-ln-bg-complex { background: rgba(239,68,68,0.12); color: rgb(239,68,68); }
+    .dark .cm-ln-bg-complex { background: rgba(239,68,68,0.18); color: rgb(252,165,165); }
+    .cm-ln-bg-comment { background: rgba(168,85,247,0.12); color: rgb(168,85,247); }
+    .dark .cm-ln-bg-comment { background: rgba(168,85,247,0.18); color: rgb(216,180,254); }
+  `;
+  document.head.appendChild(el);
+}
