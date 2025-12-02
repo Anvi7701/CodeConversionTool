@@ -26,6 +26,7 @@ import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay
 import { TreeView, FormView, TextView, ConsoleView, TableView, type TableViewRef } from './UnifiedJsonViewRenderer';
 import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import { StatisticsDetailViewer } from './StatisticsDetailViewer';
+import { ValidationModal } from './ValidationModal';
 import type { Selection } from '../types';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -140,6 +141,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
   // Input line numbers are always on to match output gutter
   const [showInputLineNumbers] = useState<boolean>(true);
+
+  // Modal: JSON validation success (popup instead of banner)
+  const [showValidationSuccess, setShowValidationSuccess] = useState<boolean>(false);
+  const [validationSuccessText, setValidationSuccessText] = useState<string>('JSON is valid');
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -609,7 +614,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         setCommentLines(res.hasComments ? res.comments.map(c => c.line) : []);
         if (res.ok) {
           setErrorLines([]);
-          setSuccessMessage("✅ JSON is valid! You can now format the code.");
+          // Show success modal instead of banner in output box
+          setValidationSuccessText('JSON is valid');
+          setShowValidationSuccess(true);
           setIsValidated(true);
           setIsValidating(false);
           return;
@@ -3667,6 +3674,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           />
         )}
       </div>
+
+      {/* JSON Validation Success Modal */}
+      <ValidationModal
+        open={showValidationSuccess}
+        message={validationSuccessText}
+        onClose={() => setShowValidationSuccess(false)}
+        variant="success"
+      />
     </>
   );
 };

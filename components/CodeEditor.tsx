@@ -59,11 +59,10 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   const theme = useMemo(() => EditorView.theme({
     '&': { height: '100%' },
     '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px' },
-    '.cm-lineNumbers .cm-gutterElement': { padding: '0 3px 0 2px', color: '#000' },
+    '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
     // Match Output formatter gutter background (slate tone) and sizing per individual gutters
     '.cm-gutters': { border: 'none', gap: '0px' },
     '.cm-gutter': { background: 'rgba(226, 232, 240, 0.6)', border: 'none' },
-    '.cm-gutter.cm-lineNumbers': { width: '24px', minWidth: '24px' },
     '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
     '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },

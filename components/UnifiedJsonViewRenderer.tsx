@@ -694,6 +694,21 @@ export const FormView:React.FC<{ data:any; expandAll?:boolean; collapseAll?:bool
 export const TextView:React.FC<{ code:string; onChange?:(v:string)=>void; expandAll?:boolean; collapseAll?:boolean; }>=({ code,onChange,expandAll:expandAllTrigger,collapseAll:collapseAllTrigger })=>{
   const editorRef=useRef<ReactCodeMirrorRef>(null);
   
+  // Match Code view gutter styling (auto-sized line numbers, fixed 18px fold gutter)
+  const theme = React.useMemo(() => EditorView.theme({
+    '&': { height: '100%' },
+    '.cm-gutters': { border: 'none', gap: '0px' },
+    '.cm-gutter': { background: 'rgba(226, 232, 240, 0.6)', border: 'none' },
+    '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
+    '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
+    '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    '.cm-foldGutter .cm-gutterElement > span + span': { display: 'none' },
+    '.cm-scroller': { overflow: 'auto' },
+    '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
+    '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#fff' },
+  }), []);
+  
   useEffect(()=>{ if(expandAllTrigger && editorRef.current?.view) unfoldAll(editorRef.current.view); },[expandAllTrigger]);
   useEffect(()=>{ if(collapseAllTrigger && editorRef.current?.view) foldAll(editorRef.current.view); },[collapseAllTrigger]);
   
@@ -728,10 +743,11 @@ export const TextView:React.FC<{ code:string; onChange?:(v:string)=>void; expand
           EditorView.lineWrapping, 
           customFoldGutter, 
           keymap.of(foldKeymap),
-          ...(onChange ? [booleanDecorationsPlugin(handleBooleanToggle)] : [])
+          ...(onChange ? [booleanDecorationsPlugin(handleBooleanToggle)] : []),
+          theme,
         ]} 
         basicSetup={{ lineNumbers:true, highlightActiveLine:true, highlightActiveLineGutter:true, foldGutter:false }} 
-        theme="light" 
+        theme={undefined}
         style={{ fontSize:'14px', height:'100%', fontFamily:'ui-monospace, Menlo, Monaco, Consolas, "Courier New", monospace' }} 
       />
     </div>
