@@ -28,6 +28,7 @@ interface CodeEditorProps {
   disableAutoScroll?: boolean;
   renderLeftRail?: React.ReactNode; // Optional vertical action rail inside editor
   editorApiRef?: React.Ref<{ foldAll: () => void; unfoldAll: () => void }>; // Expose folding API to parent
+  showLineNumbers?: boolean; // Toggle input line numbers
 }
 
 // Simple CSS-injected line decorations for error/comment/simple markers
@@ -38,7 +39,7 @@ const markerClassFor = (style?: 'simple' | 'complex' | 'comment') => {
   return '';
 };
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef, showLineNumbers = true }) => {
   const viewRef = useRef<EditorView | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +58,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   // Custom theme & gutter styling
   const theme = useMemo(() => EditorView.theme({
     '&': { height: '100%' },
-    '.cm-content': { fontFamily: 'monospace', fontSize: '13px' },
+    '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px' },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 3px 0 2px', color: '#000' },
     // Match Output formatter gutter background (slate tone) and sizing per individual gutters
     '.cm-gutters': { border: 'none', gap: '0px' },
@@ -66,7 +67,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
     '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
-    '.cm-scroller': { fontFamily: 'monospace', overflow: 'auto' },
+    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
+    '.cm-editor': { backgroundColor: 'transparent', height: '100%' },
     '.cm-line': { lineHeight: '20px' },
     // Single solid arrow styling
     '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },
@@ -123,7 +125,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     });
 
     const ex: any[] = [
-      lineNumbers(),
       customFold,
       theme
     ];
@@ -132,20 +133,13 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   }, [language, theme]);
 
   return (
-    <div ref={containerRef} className={`flex-grow w-full flex border border-slate-200 dark:border-slate-700 focus-within:ring-1 focus-within:ring-slate-300 dark:focus-within:ring-slate-600 focus-within:border-slate-300 dark:focus-within:border-slate-600 rounded-md min-h-0 relative`}>
-      {renderLeftRail && (
-        <div className="left-rail flex flex-col gap-2 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 -ml-5">
-          {renderLeftRail}
-        </div>
-      )}
-      {renderLeftRail && <div className="w-px self-stretch bg-slate-300 dark:bg-slate-600" aria-hidden="true" />}
-      <div className="flex-grow min-h-0 relative overflow-auto">
+    <div ref={containerRef} className="absolute inset-0 overflow-auto">
         <CodeMirror
           value={value}
           height="100%"
           extensions={extensions}
           basicSetup={{
-            lineNumbers: false,
+          lineNumbers: true,
             highlightActiveLineGutter: false,
             foldGutter: false,
             highlightActiveLine: true,
@@ -155,6 +149,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
           }}
           onCreateEditor={(view) => { viewRef.current = view; }}
           onChange={(val) => onChange(val)}
+          style={{ height: '100%', fontSize: '14px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}
           placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
           theme={undefined}
           editable={true}
@@ -171,7 +166,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
             backgroundColor: highlightStyle === 'simple' ? 'rgba(16,185,129,0.15)' : highlightStyle === 'complex' ? 'rgba(239,68,68,0.15)' : 'rgba(168,85,247,0.15)'
           }} />
         )}
-      </div>
     </div>
   );
 };

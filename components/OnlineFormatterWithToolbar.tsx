@@ -138,6 +138,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
   // Ref for input editor folding API
   const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
+  // Input line numbers are always on to match output gutter
+  const [showInputLineNumbers] = useState<boolean>(true);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -2697,6 +2699,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                     </Tooltip>
                   )}
+                  {/* Line numbers toggle removed per requirement (input always matches output) */}
                 </div>
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
               </div>
@@ -2727,86 +2730,87 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
               )}
 
-              {/* Left-side action rail moved inside editor beside gutter */}
-              {/* Rail now rendered via CodeEditor.renderLeftRail to avoid outer overflow clipping */}
-              {/* Subtle divider removed to avoid visual split in textarea */}
-              
-              <div className="flex-grow min-h-0 flex flex-col">
-                <CodeEditor
-                  value={inputCode}
-                  onChange={handleInputChange}
-                  language={activeLanguage}
-                  placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
-                  errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
-                  lineStyleMap={inputLineStyleMap}
-                  highlightLine={highlightedLine ?? null}
-                  highlightStyle={highlightedType ?? null}
-                  highlightPulse={highlightPulse}
-                  disableAutoScroll={disableAutoScroll}
-                  onPaste={() => {
-                    setDisableAutoScroll(true);
-                    window.setTimeout(() => setDisableAutoScroll(false), 1500);
-                  }}
-                  editorApiRef={inputEditorApiRef}
-                  renderLeftRail={showLeftInputActions ? (
-                    <>
-                      <Tooltip content="Upload a code file">
-                        <button
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-base"
-                          aria-label="Upload File"
-                        >
-                          📤
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Clear input">
-                        <button
-                          onClick={handleClear}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-base"
-                          aria-label="Clear Input"
-                        >
-                          🧹
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Download to file">
-                        <button
-                          onClick={handleDownload}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-base"
-                          aria-label="Download"
-                        >
-                          ⬇️
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Save to file">
-                        <button
-                          onClick={handleSave}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base"
-                          aria-label="Save"
-                        >
-                          💾
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Copy to clipboard">
-                        <button
-                          onClick={handleCopy}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-base"
-                          aria-label="Copy"
-                        >
-                          📋
-                        </button>
-                      </Tooltip>
-                      <Tooltip content="Print">
-                        <button
-                          onClick={handlePrint}
-                          className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-base"
-                          aria-label="Print"
-                        >
-                          🖨️
-                        </button>
-                      </Tooltip>
-                    </>
-                  ) : undefined}
-                />
+              {/* Dedicated left rail column and reserved content area */}
+              <div className="flex-grow min-h-0 flex flex-col relative">
+                {showLeftInputActions && (
+                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-r border-slate-300 dark:border-slate-600">
+                    <Tooltip content="Upload a code file">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-blue-600 dark:text-blue-400 text-base"
+                        aria-label="Upload File"
+                      >
+                        📤
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Clear input">
+                      <button
+                        onClick={handleClear}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-base"
+                        aria-label="Clear Input"
+                      >
+                        🧹
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Download to file">
+                      <button
+                        onClick={handleDownload}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-emerald-600 dark:text-emerald-400 text-base"
+                        aria-label="Download"
+                      >
+                        ⬇️
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Save to file">
+                      <button
+                        onClick={handleSave}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base"
+                        aria-label="Save"
+                      >
+                        💾
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Copy to clipboard">
+                      <button
+                        onClick={handleCopy}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-base"
+                        aria-label="Copy"
+                      >
+                        📋
+                      </button>
+                    </Tooltip>
+                    <Tooltip content="Print">
+                      <button
+                        onClick={handlePrint}
+                        className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-base"
+                        aria-label="Print"
+                      >
+                        🖨️
+                      </button>
+                    </Tooltip>
+                  </div>
+                )}
+
+                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[34px]" : "relative h-full min-h-0"}>
+                  <CodeEditor
+                    value={inputCode}
+                    onChange={handleInputChange}
+                    language={activeLanguage}
+                    placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
+                    errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
+                    lineStyleMap={inputLineStyleMap}
+                    highlightLine={highlightedLine ?? null}
+                    highlightStyle={highlightedType ?? null}
+                    highlightPulse={highlightPulse}
+                    disableAutoScroll={disableAutoScroll}
+                    onPaste={() => {
+                      setDisableAutoScroll(true);
+                      window.setTimeout(() => setDisableAutoScroll(false), 1500);
+                    }}
+                    editorApiRef={inputEditorApiRef}
+                  showLineNumbers={showInputLineNumbers}
+                  />
+                </div>
               </div>
               
               {/* Character count - positioned at bottom right */}
@@ -3099,7 +3103,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
               {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
-                <div className="right-rail absolute top-2 right-[-18px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-l border-slate-300 dark:border-slate-600">
+                <div className="right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-l border-slate-300 dark:border-slate-600">
                   <Tooltip content="Save to file">
                     <button
                       onClick={handleSave}
@@ -3485,19 +3489,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                     {/* Output Content - shown below success message if present */}
                     {outputCode && (
-                      <div className="flex-1 min-h-0">
-                        {/* Render different views based on viewFormat for JSON */}
-                        {activeLanguage === 'json' && viewFormat !== 'code'
-                          ? renderStructuredOutputView()
-                          : (
-                            <CodeMirrorViewer
-                              code={outputCode || ''}
-                              language={activeLanguage}
-                              onChange={(value) => setOutputCode(value)}
-                              expandAll={expandAllTrigger}
-                              collapseAll={collapseAllTrigger}
-                            />
-                          )}
+                      <div className="flex-1 min-h-0 relative">
+                        <div className="relative h-full mr-[42px]">
+                          {/* Render different views based on viewFormat for JSON */}
+                          {activeLanguage === 'json' && viewFormat !== 'code'
+                            ? renderStructuredOutputView()
+                            : (
+                              <CodeMirrorViewer
+                                code={outputCode || ''}
+                                language={activeLanguage}
+                                onChange={(value) => setOutputCode(value)}
+                                expandAll={expandAllTrigger}
+                                collapseAll={collapseAllTrigger}
+                              />
+                            )}
+                        </div>
                       </div>
                     )}
                     {/* Show placeholder if only success message without output */}
