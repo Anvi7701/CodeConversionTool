@@ -1021,6 +1021,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           break;
       }
       setOutputCode(formattedCode);
+      // Force Output to show in Code view after Beautify/Format
+      setIsStructureAnalysisMode(false);
+      setViewFormat('code');
     } catch (err: any) {
       setValidationError({
           isValid: false,
