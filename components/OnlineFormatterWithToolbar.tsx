@@ -262,6 +262,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     // Heavy parsing is debounced in an effect to keep paste responsive
   };
 
+  // Initialize input history baseline when input becomes non-empty
+  useEffect(() => {
+    const trimmed = inputCode.trim();
+    if (activeLanguage !== 'json') return;
+    if (!trimmed) return;
+    if (historyIndex === -1) {
+      const initial = [inputCode];
+      setHistory(initial);
+      setHistoryIndex(0);
+      lastSavedToHistoryRef.current = inputCode;
+    }
+  }, [inputCode, activeLanguage, historyIndex]);
+
+  // Track subsequent input edits to build input history (ignore duplicates)
+  useEffect(() => {
+    const trimmed = inputCode.trim();
+    if (activeLanguage !== 'json') return;
+    if (!trimmed) return;
+    if (historyIndex >= 0 && inputCode !== history[historyIndex]) {
+      const newHist = [...history.slice(0, historyIndex + 1), inputCode];
+      setHistory(newHist);
+      setHistoryIndex(newHist.length - 1);
+      lastSavedToHistoryRef.current = inputCode;
+    }
+  }, [inputCode, activeLanguage, history, historyIndex]);
+
   // Debounced parse & classification for JSON input
   useEffect(() => {
     if (activeLanguage !== 'json') {
@@ -355,24 +381,84 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     return () => window.clearTimeout(timer);
   }, [inputCode, activeLanguage, formatterMode]);
 
-  // Add output edits to history (Code/Text/Tree views) with debounce
+  // Removed incorrect effect that added Output edits to Input history
+  // Output history tracking is handled in a dedicated effect further below
+  // Global keyboard shortcuts: route Undo/Redo to Input or Output based on focus
   useEffect(() => {
-    if (activeLanguage !== 'json') return;
-    if (!outputCode || !outputCode.trim()) return;
-
-    // Prevent duplicate history entries when programmatic changes already added
-    if (outputCode !== lastSavedToHistoryRef.current) {
-      const timeoutId = setTimeout(() => {
-        const currentHistoryValue = history[historyIndex];
-        if (outputCode !== currentHistoryValue) {
-          addToHistory(outputCode);
-          lastSavedToHistoryRef.current = outputCode;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+        event.preventDefault();
+        setTestErrorMode(prev => prev === '503' ? null : '503');
+        if (testErrorMode !== '503') {
+          console.log('🧪 Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
         }
-      }, 1000);
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+        event.preventDefault();
+        setTestErrorMode(prev => prev === '500' ? null : '500');
+        if (testErrorMode !== '500') {
+          console.log('🧪 Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+        }
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+        event.preventDefault();
+        setTestErrorMode(prev => prev === '429' ? null : '429');
+        if (testErrorMode !== '429') {
+          console.log('🧪 Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
+        } else {
+          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+        }
+      } else if (event.ctrlKey && !event.shiftKey && (event.key === 'z' || event.key === 'Z')) {
+        const target = event.target as HTMLElement;
+        const isInTextInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+        if (isInTextInput) return;
 
-      return () => clearTimeout(timeoutId);
-    }
-  }, [outputCode, activeLanguage, history, historyIndex]);
+        const activeEl = (document.activeElement as Node | null);
+        const isInOutput = !!(outputContainerRef.current && activeEl && outputContainerRef.current.contains(activeEl));
+
+        if (isInOutput) {
+          if (outputHistoryIndex > 0) {
+            event.preventDefault();
+            handleOutputUndo();
+          }
+        } else {
+          if (historyIndex > 0 && activeLanguage === 'json') {
+            event.preventDefault();
+            handleUndo();
+          }
+        }
+      } else if (event.ctrlKey && (event.key === 'y' || event.key === 'Y' || (event.shiftKey && (event.key === 'z' || event.key === 'Z')))) {
+        const target = event.target as HTMLElement;
+        const isInTextInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+        if (isInTextInput) return;
+
+        const activeEl = (document.activeElement as Node | null);
+        const isInOutput = !!(outputContainerRef.current && activeEl && outputContainerRef.current.contains(activeEl));
+
+        if (isInOutput) {
+          if (outputHistoryIndex >= 0 && outputHistoryIndex < outputHistory.length - 1) {
+            event.preventDefault();
+            handleOutputRedo();
+          }
+        } else {
+          if (historyIndex < history.length - 1 && activeLanguage === 'json') {
+            event.preventDefault();
+            handleRedo();
+          }
+        }
+      } else if (event.ctrlKey && event.shiftKey && event.key === 'L') {
+        event.preventDefault();
+        if (activeLanguage === 'json' && inputCode.trim()) {
+          handleCompact();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode, outputHistoryIndex, outputHistory]);
 
   // Sync fullscreen state with actual fullscreen status
   useEffect(() => {
@@ -397,33 +483,33 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     };
   }, []);
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking outside (header + inline Sort)
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (showViewDropdown && !target.closest('.view-dropdown-container')) {
-        setShowViewDropdown(false);
-      }
-      // Close TOON settings when clicking outside its popover
-      if (showToonSettings && !target.closest('.toon-settings-popover')) {
-        setShowToonSettings(false);
+      if (!target.closest('.dropdown-container')) {
+        if (showBeautifyDropdown) setShowBeautifyDropdown(false);
+        if (showSortDropdown) setShowSortDropdown(false);
+        if (showInlineSortDropdown) setShowInlineSortDropdown(false);
+        if (showOutputSortDropdown) setShowOutputSortDropdown(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showViewDropdown, showToonSettings]);
+    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+
+  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown]);
 
   // Build a per-line style map for gutter markers in the input editor
   const inputLineStyleMap = useMemo(() => {
     if (activeLanguage !== 'json') return undefined;
     if (errorSource !== 'input') return undefined;
     const map: Record<number, 'simple' | 'complex' | 'comment'> = {};
-    // Start with comments (lowest precedence)
     for (const line of commentLines) {
       map[line] = 'comment';
     }
-    // Overlay error-based styles with precedence: complex > simple > comment
     for (const err of errorLines) {
       const type: 'simple' | 'complex' = isComplexError(err) ? 'complex' : 'simple';
       const prev = map[err.line];
@@ -498,6 +584,42 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     };
     reader.readAsText(file);
   };
+
+  // Format Input JSON with indentation and line feeds (Ctrl+L)
+  const handleFormatInputJson = () => {
+    if (activeLanguage !== 'json') return;
+    const trimmed = inputCode.trim();
+    if (!trimmed) return;
+    try {
+      const obj = JSON.parse(trimmed);
+      const formatted = JSON.stringify(obj, null, 2);
+      // Input-only action: prevent auto sync to Output
+      suppressOutputSyncRef.current = true;
+      setInputCode(formatted);
+      addToHistory(formatted);
+    } catch (err) {
+      setValidationError({
+        isValid: false,
+        reason: `Format failed: ${(err as any)?.message || 'Invalid JSON'}`,
+        isFixableSyntaxError: true,
+        suggestedLanguage: undefined
+      });
+    }
+  };
+
+  // Keyboard shortcut: Ctrl+L to format Input JSON
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      // Ctrl+L (or Cmd+L on macOS)
+      const isModifier = e.ctrlKey || e.metaKey;
+      if (isModifier && (e.key === 'l' || e.key === 'L')) {
+        e.preventDefault();
+        handleFormatInputJson();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeLanguage, inputCode]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -2180,27 +2302,28 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
-  // Track outputCode changes to build output history (ignore changes triggered by undo/redo application)
+  // Initialize output history baseline as soon as outputCode becomes available
+  useEffect(() => {
+    if (!outputCode || !outputCode.trim()) return;
+    if (outputHistoryIndex === -1) {
+      setOutputHistory([outputCode]);
+      setOutputHistoryIndex(0);
+    }
+  }, [outputCode, outputHistoryIndex]);
+
+  // Track subsequent output edits to build history (ignore entries applied by undo/redo)
   useEffect(() => {
     if (!outputCode || !outputCode.trim()) return;
     if (isApplyingOutputHistoryRef.current) {
-      // Skip adding history entry when we are applying an existing one
       isApplyingOutputHistoryRef.current = false;
       return;
     }
-    // First entry
-    if (outputHistoryIndex === -1) {
-      const initial = [outputCode];
-      setOutputHistory(initial);
-      setOutputHistoryIndex(0);
-      return;
+    if (outputHistoryIndex >= 0 && outputCode !== outputHistory[outputHistoryIndex]) {
+      const newHist = [...outputHistory.slice(0, outputHistoryIndex + 1), outputCode];
+      setOutputHistory(newHist);
+      setOutputHistoryIndex(newHist.length - 1);
     }
-    // Avoid duplicates
-    if (outputCode === outputHistory[outputHistoryIndex]) return;
-    const newHist = [...outputHistory.slice(0, outputHistoryIndex + 1), outputCode];
-    setOutputHistory(newHist);
-    setOutputHistoryIndex(newHist.length - 1);
-  }, [outputCode]);
+  }, [outputCode, outputHistory, outputHistoryIndex]);
 
   // Reset output history when clearing
   useEffect(() => {
@@ -2359,6 +2482,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {isJsonLanguage && (
           <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20">
             <div className="flex items-center gap-2 overflow-visible">
+              {/* Format (Input JSON) - placed before Beautify */}
+              <div className="relative dropdown-container overflow-visible">
+                <button
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    handleFormatInputJson();
+                  }}
+                  className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Format Input JSON (Ctrl+L)"
+                >
+                  <span>🧩</span>
+                  <span>Format</span>
+                </button>
+              </div>
+
               {/* Beautify button with dropdown */}
               <div className="relative dropdown-container overflow-visible">
                 <button
