@@ -603,7 +603,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
 
     setIsValidating(true);
-    resetState(true);
+    // Do not clear output/view on Validate; only reset error states
+    setOutputError(null);
+    setValidationError(null);
+    setSuccessMessage(null);
+    setIsValidated(false);
+    setErrorLines([]);
+    setAppliedFixes([]);
+    setShowFixSummary(false);
+    setAiError(null);
     setHasCommentsInInput(false);
 
     try {
@@ -1758,6 +1766,33 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setTimeout(() => setExpandAllTrigger(false), 100);
     }
     setViewFormat(previousView);
+  };
+
+  // Validate Output JSON (explicit action via Output header toolbar)
+  const handleValidateOutput = () => {
+    if (activeLanguage !== 'json') return;
+    const content = outputCode || '';
+    if (!content.trim()) return;
+
+    try {
+      JSON.parse(content);
+      // Valid: show success modal, do not alter output/view
+      setValidationError(null);
+      setErrorLines([]);
+      setValidationSuccessText('JSON is valid');
+      setShowValidationSuccess(true);
+    } catch (jsonErr: any) {
+      // Invalid: show detailed errors in Output box (current behavior)
+      const allErrors = validateJsonSyntax(content);
+      setErrorLines(allErrors);
+      setErrorSource('output');
+      setValidationError({
+        isValid: false,
+        reason: `Invalid JSON syntax in output: ${jsonErr.message}`,
+        isFixableSyntaxError: true,
+        suggestedLanguage: undefined
+      });
+    }
   };
 
   const isActionDisabled = isLoading || isValidating || isCorrecting;
@@ -2975,6 +3010,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                     </Tooltip>
                   </>
+                )}
+                {/* Validate Output (JSON) - next to view controls */}
+                {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && (
+                  <Tooltip content="Validate Output JSON">
+                    <button
+                      onClick={handleValidateOutput}
+                      disabled={!outputCode || !outputCode.trim()}
+                      className={`p-1 rounded-md transition-all text-xl ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer'}`}
+                      aria-label="Validate Output"
+                      title="Validate Output JSON"
+                    >
+                      ✅
+                    </button>
+                  </Tooltip>
                 )}
                 {/* View Format Dropdown - visible by default for JSON */}
                 {activeLanguage === 'json' && (
