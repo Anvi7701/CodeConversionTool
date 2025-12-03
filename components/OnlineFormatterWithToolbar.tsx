@@ -78,6 +78,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [showToonSettings, setShowToonSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // Output-only fullscreen state and ref
+  const [isOutputFullscreen, setIsOutputFullscreen] = useState<boolean>(false);
+  const outputContainerRef = useRef<HTMLDivElement | null>(null);
 
   // Input/output history tracking
   const [history, setHistory] = useState<string[]>([]);
@@ -366,6 +369,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const handleFullscreenChange = () => {
       const isInFullscreen = !!document.fullscreenElement;
       setIsFullscreen(isInFullscreen);
+      // Track output-only fullscreen by comparing the fullscreen element
+      setIsOutputFullscreen(document.fullscreenElement === outputContainerRef.current);
       
       // Add/remove class on body to control visibility of navigation
       if (isInFullscreen) {
@@ -1736,6 +1741,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  // Toggle fullscreen specifically for Output container
+  const handleToggleOutputFullscreen = () => {
+    const el = outputContainerRef.current;
+    if (!el) return;
+    if (document.fullscreenElement === el) {
+      document.exitFullscreen().catch(() => {});
+    } else if (!document.fullscreenElement) {
+      el.requestFullscreen().catch((err) => {
+        console.error('Error enabling output fullscreen:', err);
+      });
+    } else {
+      // If some other element is in fullscreen, exit first then request on output
+      document.exitFullscreen().then(() => {
+        el.requestFullscreen().catch((err) => console.error('Error enabling output fullscreen:', err));
+      }).catch(() => {});
+    }
+  };
+
   // AI Error handlers
   const handleRetryAiRequest = async () => {
     if (lastAiRequest) {
@@ -2874,7 +2897,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 h-[600px]">
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -3020,6 +3043,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   </Tooltip>
                 )}
+                {/* Output Fullscreen toggle - immediately after Validate icon */}
+                <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+                  <button
+                    onClick={handleToggleOutputFullscreen}
+                    className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                    aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                    title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                  >
+                    ⛶
+                  </button>
+                </Tooltip>
                 {/* View Format Dropdown - visible by default for JSON */}
                 {activeLanguage === 'json' && (
                   <div className="relative view-dropdown-container">
