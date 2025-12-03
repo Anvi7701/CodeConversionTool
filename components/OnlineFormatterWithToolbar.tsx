@@ -3364,15 +3364,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               <span className="font-semibold text-green-800 dark:text-green-200">Line {error.line}, Column {error.column}</span>
                                               <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300">Simple</span>
                                             </div>
-                                            <button
-                                              type="button"
-                                              onClick={() => { setHighlightedLine(error.line); setHighlightedType('simple'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                              className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
-                                              aria-label={`Go to line ${error.line}`}
-                                            >
-                                              <span>🎯</span>
-                                              <span>Go</span>
-                                            </button>
+                                            {errorSource !== 'output' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => { setHighlightedLine(error.line); setHighlightedType('simple'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                                className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
+                                                aria-label={`Go to line ${error.line}`}
+                                              >
+                                                <span>🎯</span>
+                                                <span>Go</span>
+                                              </button>
+                                            )}
                                           </div>
                                           <p className="text-green-700 dark:text-green-300 font-mono">{error.message || 'Syntax error detected'}</p>
                                         </div>
@@ -3407,15 +3409,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               <span className="font-semibold text-red-800 dark:text-red-200">Line {error.line}, Column {error.column}</span>
                                               <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300">Complex</span>
                                             </div>
-                                            <button
-                                              type="button"
-                                              onClick={() => { setHighlightedLine(error.line); setHighlightedType('complex'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                              className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
-                                              aria-label={`Go to line ${error.line}`}
-                                            >
-                                              <span>🎯</span>
-                                              <span>Go</span>
-                                            </button>
+                                            {errorSource !== 'output' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => { setHighlightedLine(error.line); setHighlightedType('complex'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                                className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                aria-label={`Go to line ${error.line}`}
+                                              >
+                                                <span>🎯</span>
+                                                <span>Go</span>
+                                              </button>
+                                            )}
                                           </div>
                                           <p className="text-red-700 dark:text-red-300 font-mono">{error.message || 'Syntax error detected'}</p>
                                         </div>
@@ -3450,15 +3454,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                             }}
                                           >
                                             <span className="min-w-0">• Line {line}: // {preview}{m[0].length > 80 ? '…' : ''}</span>
-                                            <button
-                                              type="button"
-                                              onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                              className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                                              aria-label={`Go to line ${line}`}
-                                            >
-                                              <span>🎯</span>
-                                              <span>Go</span>
-                                            </button>
+                                            {errorSource !== 'output' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                                className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                                aria-label={`Go to line ${line}`}
+                                              >
+                                                <span>🎯</span>
+                                                <span>Go</span>
+                                              </button>
+                                            )}
                                           </div>
                                         );
                                       })}
@@ -3483,15 +3489,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                             }}
                                           >
                                             <span className="min-w-0">• Line {line}: /* {preview}{m[0].length > 80 ? '…' : ''}</span>
-                                            <button
-                                              type="button"
-                                              onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                              className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
-                                              aria-label={`Go to line ${line}`}
-                                            >
-                                              <span>🎯</span>
-                                              <span>Go</span>
-                                            </button>
+                                            {errorSource !== 'output' && (
+                                              <button
+                                                type="button"
+                                                onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
+                                                className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                                aria-label={`Go to line ${line}`}
+                                              >
+                                                <span>🎯</span>
+                                                <span>Go</span>
+                                              </button>
+                                            )}
                                           </div>
                                         );
                                       })}
