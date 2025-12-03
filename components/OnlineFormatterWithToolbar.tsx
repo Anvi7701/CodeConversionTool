@@ -1045,6 +1045,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const jsonObj = JSON.parse(trimmedInput);
       const minified = JSON.stringify(jsonObj);
       setOutputCode(minified);
+      // Force Output to show in Code view after Minify
+      setIsStructureAnalysisMode(false);
+      setViewFormat('code');
       addToHistory(minified);
       setValidationError(null);
       setOutputError(null);
@@ -1067,6 +1070,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const jsonObj = JSON.parse(trimmedInput);
       const compacted = JSON.stringify(jsonObj); // Remove all whitespaces
       setOutputCode(compacted);
+      // Force Output to show in Code view after Compact
+      setIsStructureAnalysisMode(false);
+      setViewFormat('code');
       addToHistory(compacted);
       setValidationError(null);
       setOutputError(null);
