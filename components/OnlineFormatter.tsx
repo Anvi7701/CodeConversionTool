@@ -285,7 +285,7 @@ export const OnlineFormatter: React.FC = () => {
         </div>
 
         <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
-          <h2 className="text-xl font-semibold">Formatted Output</h2>
+          <h2 className="text-xl font-semibold">Output</h2>
 
           <div className="flex-grow w-full rounded-md overflow-hidden flex flex-col border border-slate-200 dark:border-slate-700">
             <div className="flex-grow relative overflow-hidden bg-slate-50 dark:bg-slate-900/50">

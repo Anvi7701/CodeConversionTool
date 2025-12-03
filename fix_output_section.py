@@ -8,7 +8,7 @@ with open('components/OnlineFormatterWithToolbar.tsx', 'r', encoding='utf-8') as
 old_heading = '''            {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Formatted Output</h2>
+                <h2 className="text-lg font-semibold">Output</h2>
                 <Tooltip content="Clear output">
                   <button
                     onClick={handleClearOutput}
@@ -24,8 +24,8 @@ old_heading = '''            {/* Output heading with View selector and Exit full
 new_heading = '''            {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Formatted Output</h2>
-                {/* Icon Toolbar - positioned next to "Formatted Output" heading */}
+                <h2 className="text-lg font-semibold">Output</h2>
+                {/* Icon Toolbar - positioned next to "Output" heading */}
                 <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
                   <Tooltip content="Save to file">
                     <button
@@ -118,6 +118,6 @@ content = content.replace(old_textarea, new_textarea)
 with open('components/OnlineFormatterWithToolbar.tsx', 'w', encoding='utf-8') as f:
     f.write(content)
 
-print("✓ Output section heading updated - Save (💾) and Copy (📋) moved next to 'Formatted Output'")
+print("✓ Output section heading updated - Save (💾) and Copy (📋) moved next to 'Output'")
 print("✓ Output textarea icons updated - Download (📥) and Clear (🧹) now in textarea")
 print("All changes applied successfully!")
