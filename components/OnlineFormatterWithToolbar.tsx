@@ -75,6 +75,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
+  const [showOutputSortDropdown, setShowOutputSortDropdown] = useState(false);
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [showToonSettings, setShowToonSettings] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -216,6 +217,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (showBeautifyDropdown) setShowBeautifyDropdown(false);
         if (showSortDropdown) setShowSortDropdown(false);
         if (showInlineSortDropdown) setShowInlineSortDropdown(false);
+        if (showOutputSortDropdown) setShowOutputSortDropdown(false);
       }
     };
 
@@ -223,7 +225,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown]);
+  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown]);
 
   const resetState = (keepInput = false) => {
     if (!keepInput) setInputCode('');
@@ -238,6 +240,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setAiError(null);
     setLastAiRequest(null);
   };
+
+  // Prevent auto-syncing Input -> Output for specific Input-only actions (e.g., Sort)
+  const suppressOutputSyncRef = useRef(false);
   
   const handleLanguageChange = (lang: Language) => {
     setActiveLanguage(lang);
@@ -284,18 +289,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         setErrorLines([]);
         setValidationError(null);
         // Auto-populate formatted output when input JSON is valid
-        try {
-          const formatted = JSON.stringify(res.value, null, 2);
-          setOutputCode(formatted);
-          // Default to View mode for beautifier experience
-          setIsStructureAnalysisMode(false);
-          setViewFormat('view');
-          // Trigger expand-all for structured views by toggling expandAllTrigger
-          setExpandAllTrigger(true);
-          setTimeout(() => setExpandAllTrigger(false), 120);
-        } catch {
-          // Ignore formatting issues; keep existing output state
+        // Skip auto-sync if this input change comes from an Input-only action (e.g., Sort)
+        if (!suppressOutputSyncRef.current) {
+          try {
+            const formatted = JSON.stringify(res.value, null, 2);
+            setOutputCode(formatted);
+            // Default to View mode for beautifier experience
+            setIsStructureAnalysisMode(false);
+            setViewFormat('view');
+            // Trigger expand-all for structured views by toggling expandAllTrigger
+            setExpandAllTrigger(true);
+            setTimeout(() => setExpandAllTrigger(false), 120);
+          } catch {
+            // Ignore formatting issues; keep existing output state
+          }
         }
+        // Reset suppression flag after processing this input change
+        if (suppressOutputSyncRef.current) suppressOutputSyncRef.current = false;
       } else {
         const { errors: allErrors, error: parseError } = res as ParseResultErr;
         setErrorLines(allErrors);
@@ -1109,14 +1119,66 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       
       const sorted = sortObject(parsed);
       const formatted = JSON.stringify(sorted, null, 2);
-      setOutputCode(formatted);
+      // Sort action is Input-only; prevent Input->Output auto-sync for this change
+      suppressOutputSyncRef.current = true;
+      setInputCode(formatted);
       addToHistory(formatted);
-      setValidationError(null);
-      setOutputError(null);
     } catch (err: any) {
       setValidationError({
         isValid: false,
         reason: `Sort failed: ${err.message}`,
+        isFixableSyntaxError: true,
+        suggestedLanguage: undefined
+      });
+    }
+  };
+
+  // Sort Output JSON independently via Output toolbar
+  const handleSortOutput = (direction: 'asc' | 'desc', sortBy: 'keys' | 'values') => {
+    const trimmedOutput = outputCode?.trim();
+    if (!trimmedOutput || activeLanguage !== 'json') return;
+
+    setIsStructureAnalysisMode(false);
+    try {
+      const parsedJson = JSON.parse(trimmedOutput);
+      const sortObject = (obj: any): any => {
+        if (Array.isArray(obj)) {
+          return obj.map(sortObject);
+        }
+        if (obj !== null && typeof obj === 'object') {
+          const keys = Object.keys(obj);
+          const comparator = (a: string, b: string) => direction === 'asc' ? a.localeCompare(b) : b.localeCompare(a);
+          const sortedObj: any = {};
+          if (sortBy === 'keys') {
+            keys.sort(comparator).forEach((key) => {
+              sortedObj[key] = sortObject(obj[key]);
+            });
+          } else {
+            keys
+              .sort((a, b) => {
+                const va = String(obj[a]);
+                const vb = String(obj[b]);
+                return direction === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+              })
+              .forEach((key) => {
+                sortedObj[key] = sortObject(obj[key]);
+              });
+          }
+          return sortedObj;
+        }
+        return obj;
+      };
+      const sorted = sortObject(parsedJson);
+      const formatted = JSON.stringify(sorted, null, 2);
+      setOutputCode(formatted);
+      // Keep output history consistent with other output edits
+      setOutputHistory((prev) => [...prev.slice(0, outputHistoryIndex + 1), formatted]);
+      setOutputHistoryIndex((idx) => idx + 1);
+      setOutputError(null);
+    } catch (err: any) {
+      setValidationError({
+        isValid: false,
+        reason: `Sort Output failed: ${err.message}`,
         isFixableSyntaxError: true,
         suggestedLanguage: undefined
       });
@@ -1164,8 +1226,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const newIndex = historyIndex - 1;
       setHistoryIndex(newIndex);
       const previousCode = history[newIndex];
+      // Input-only action: prevent auto sync to Output
+      suppressOutputSyncRef.current = true;
       setInputCode(previousCode);
-      setOutputCode(previousCode);
     }
   };
 
@@ -1174,8 +1237,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const newIndex = historyIndex + 1;
       setHistoryIndex(newIndex);
       const nextCode = history[newIndex];
+      // Input-only action: prevent auto sync to Output
+      suppressOutputSyncRef.current = true;
       setInputCode(nextCode);
-      setOutputCode(nextCode);
     }
   };
 
@@ -2346,7 +2410,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
               </div>
 
-              {/* Sort button with dropdown (hidden when inlineSortValidateIcons enabled) */}
+              {/* Sort button with dropdown (Input JSON only) */}
               {!inlineSortValidateIcons && (
                 <div className="relative dropdown-container overflow-visible">
                   <button
@@ -3042,6 +3106,30 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       ✅
                     </button>
                   </Tooltip>
+                )}
+                {/* Output Sort (JSON) - independent of Input sort */}
+                {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && (
+                  <div className="relative inline-flex dropdown-container overflow-visible">
+                    <Tooltip content="Sort Output JSON (keys/values)">
+                      <button
+                        onClick={() => setShowOutputSortDropdown(!showOutputSortDropdown)}
+                        disabled={!outputCode || !outputCode.trim()}
+                        className={`p-1 rounded-md transition-all text-xl ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer'}`}
+                        aria-label="Sort Output"
+                        title="Sort Output JSON"
+                      >
+                        🔼
+                      </button>
+                    </Tooltip>
+                    {showOutputSortDropdown && (
+                      <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
+                        <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
+                        <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
+                        <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
+                        <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {/* Output Fullscreen toggle - immediately after Validate icon */}
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
