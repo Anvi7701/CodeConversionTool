@@ -3350,6 +3350,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                           tabIndex={0}
                                           title={`Press Alt+G to jump to line ${error.line}`}
                                           onKeyDown={(e) => {
+                                            if (errorSource === 'output') return;
                                             if (e.altKey && e.key.toLowerCase() === 'g') {
                                               setHighlightedLine(error.line);
                                               setHighlightedType('simple');
@@ -3395,6 +3396,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                           tabIndex={0}
                                           title={`Press Alt+G to jump to line ${error.line}`}
                                           onKeyDown={(e) => {
+                                            if (errorSource === 'output') return;
                                             if (e.altKey && e.key.toLowerCase() === 'g') {
                                               setHighlightedLine(error.line);
                                               setHighlightedType('complex');
@@ -3444,6 +3446,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                             tabIndex={0}
                                             title={`Press Alt+G to jump to line ${line}`}
                                             onKeyDown={(e) => {
+                                              if (errorSource === 'output') return;
                                               if (e.altKey && e.key.toLowerCase() === 'g') {
                                                 setHighlightedLine(line);
                                                 setHighlightedType('comment');
@@ -3479,6 +3482,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                             tabIndex={0}
                                             title={`Press Alt+G to jump to line ${line}`}
                                             onKeyDown={(e) => {
+                                              if (errorSource === 'output') return;
                                               if (e.altKey && e.key.toLowerCase() === 'g') {
                                                 setHighlightedLine(line);
                                                 setHighlightedType('comment');
