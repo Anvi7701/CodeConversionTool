@@ -2901,7 +2901,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Formatted Output</h2>
+                <h2 className="text-lg font-semibold">Output</h2>
                 {/* Icon Toolbar - positioned next to "Formatted Output" heading */}
                 <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
                   {(validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
