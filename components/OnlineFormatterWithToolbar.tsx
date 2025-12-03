@@ -575,17 +575,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         setIsValidated(true);
         
         // If there's a pending action, execute it immediately without showing fix summary or success message
+        // Do not show success banners/messages for Output auto-fix; just apply fixes
+        setShowFixSummary(false);
+        setSuccessMessage(null);
+        setAppliedFixes([]);
         if (pendingAction) {
-          setShowFixSummary(false);
-          setSuccessMessage(null);
-          setAppliedFixes([]);
           setTimeout(() => {
             executePendingAction();
           }, 50);
-        } else {
-          // Only show fix summary and success message if no pending action
-          setShowFixSummary(true);
-          setSuccessMessage(`✅ All syntax errors have been fixed in output! Applied ${result.changes.length} fix${result.changes.length > 1 ? 'es' : ''}. You can now use your JSON.`);
         }
       }
     } else {
@@ -857,14 +854,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             setOutputCode(correctedCode);
             
             // If there's a pending action, execute it immediately without showing success message
+            // Do not show success banners/messages for Output AI auto-correct; just apply fixes
+            setSuccessMessage(null);
             if (pendingAction) {
-              setSuccessMessage(null);
               setTimeout(() => {
                 executePendingAction();
               }, 50);
-            } else {
-              // Only show success message if no pending action
-              setSuccessMessage("✅ AI successfully corrected the syntax in output. You can now use your JSON.");
             }
           } else {
             setInputCode(correctedCode);
