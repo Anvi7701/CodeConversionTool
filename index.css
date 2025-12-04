@@ -2,6 +2,149 @@
 body.is-fullscreen .fullscreen-hide {
   display: none !important;
 }
+/* Shared button styles for toolbar */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 9999px;
+  text-decoration: none;
+  font-size: 0.875rem; /* text-sm */
+  user-select: none;
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+/* Removed square variant per user request; keep rounded `.icon-btn` */
+}
+.btn:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.btn:active { transform: scale(0.98); }
+.btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.5); /* blue focus ring */
+}
+
+/* Size variants */
+.btn-xs { padding: 4px 10px; font-size: 0.8rem; }
+.btn-sm { padding: 6px 12px; }
+.btn-md { padding: 8px 14px; }
+
+/* Gradient variants */
+.btn-blue {
+  background-image: linear-gradient(90deg, #2563eb, #1d4ed8, #3b82f6);
+}
+.btn-blue:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
+
+.btn-purple {
+  background-image: linear-gradient(90deg, #7c3aed, #9333ea, #a855f7);
+}
+.btn-purple:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+
+.btn-orange {
+  background-image: linear-gradient(90deg, #f97316, #fb923c, #f59e0b);
+}
+.btn-orange:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(249,115,22,0.35); }
+
+.btn-green {
+  background-image: linear-gradient(90deg, #10b981, #22c55e, #16a34a);
+}
+.btn-green:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(34,197,94,0.35); }
+
+.btn-cyan {
+  background-image: linear-gradient(90deg, #06b6d4, #22d3ee, #3b82f6);
+}
+.btn-cyan:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(6,182,212,0.35); }
+
+.btn-pink {
+  background-image: linear-gradient(90deg, #ec4899, #f472b6, #ef4444);
+}
+.btn-pink:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(236,72,153,0.35); }
+/* Reduced motion: minimize transitions and glow effects */
+@media (prefers-reduced-motion: reduce) {
+  .icon-btn,
+  .btn {
+    transition: none !important;
+  }
+  .icon-btn:hover,
+  .btn:hover {
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  .icon-btn:active,
+  .btn:active {
+    transform: none !important;
+  }
+}
+
+/* Icon sizing consistency */
+.btn i { font-size: 0.95rem; }
+
+/* Icon-only pill buttons (for toolbar icons after headings) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  color: #fff;
+  cursor: pointer;
+  transition: box-shadow 160ms ease, transform 120ms ease, background-color 160ms ease, color 160ms ease;
+}
+.icon-btn:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.16); filter: brightness(1.06); }
+.icon-btn:active { transform: scale(0.98); box-shadow: 0 6px 18px rgba(0,0,0,0.14); }
+.icon-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.5);
+}
+.icon-btn i {
+  font-size: 0.9rem;
+}
+
+/* Plain (transparent) icon variant: no gradient, no glow */
+.icon-plain {
+  background: transparent !important;
+  color: inherit;
+}
+.icon-plain:hover {
+  box-shadow: none !important;
+  filter: none !important;
+}
+.icon-plain:focus {
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.5);
+}
+
+/* Utility: remove focus ring when desired */
+.no-ring:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.icon-green {
+  background-image: linear-gradient(90deg, #22c55e, #16a34a, #10b981);
+}
+.icon-orange {
+  background-image: linear-gradient(90deg, #f97316, #fb923c, #f59e0b);
+}
+.icon-blue {
+  background-image: linear-gradient(90deg, #2563eb, #1d4ed8, #3b82f6);
+}
+.icon-cyan {
+  background-image: linear-gradient(90deg, #06b6d4, #22d3ee, #3b82f6);
+}
+/* Purple variant for icon pills */
+.icon-purple {
+  background-image: linear-gradient(90deg, #7c3aed, #9333ea, #a855f7);
+}
+/* Hide elements with fullscreen-hide class when in fullscreen mode */
+body.is-fullscreen .fullscreen-hide {
+  display: none !important;
+}
 
 /* Fallback for native fullscreen API */
 html:fullscreen .fullscreen-hide,
@@ -70,14 +213,14 @@ html:-ms-fullscreen .fullscreen-hide {
 .left-rail i,
 .left-rail .icon,
 .left-rail [class*="icon-"] {
-  font-size: 1.5rem !important; /* 24px */
+  font-size: 1.125rem !important; /* 18px */
   line-height: 1;
 }
 
 .right-rail i,
 .right-rail .icon,
 .right-rail [class*="icon-"] {
-  font-size: 1.5rem !important; /* 24px */
+  font-size: 1.125rem !important; /* 18px */
   line-height: 1;
 }
 
