@@ -53,9 +53,10 @@ interface OnlineFormatterWithToolbarProps {
   showLeftInputActions?: boolean;
   inlineStructureAnalysisIcon?: boolean; // Move Structure Analysis into Input toolbar as emoji
   inlineSortValidateIcons?: boolean; // Move Sort & Validate into Input toolbar as emoji icons
+  showMinifyNextToBeautify?: boolean; // Beautifier page: move Compact to a Minify button next to Beautify
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -2557,6 +2558,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
               </div>
 
+              {/* Minify button (Beautifier page only) */}
+              {showMinifyNextToBeautify && (
+                <button
+                  onClick={() => {
+                    if (isActionDisabled || !inputCode.trim()) return;
+                    // Preserve existing Compact behavior but label as Minify
+                    handleCompact();
+                  }}
+                  className="px-3 py-1.5 text-sm bg-fuchsia-500 text-white rounded-md hover:bg-fuchsia-600 transition-colors flex items-center gap-1.5 cursor-pointer"
+                  title="Minify JSON (remove all whitespace)"
+                >
+                  <span>🗜️</span>
+                  <span>Minify</span>
+                </button>
+              )}
+
               {/* Sort button with dropdown (Input JSON only) */}
               {!inlineSortValidateIcons && (
                 <div className="relative dropdown-container overflow-visible">
@@ -2900,7 +2917,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
                   {/* GROUP 5: Compact, Graph, (optional) Structure Analysis - only for JSON */}
-                  {isJsonLanguage && (
+                  {isJsonLanguage && !showMinifyNextToBeautify && (
                     <>
                       <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
