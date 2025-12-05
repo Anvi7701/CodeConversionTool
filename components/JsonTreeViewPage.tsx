@@ -66,7 +66,7 @@ const JsonTreeViewPage: React.FC = () => {
               <div className="flex items-center gap-2 relative z-50">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Input toolbar pills: Sort, Validate, Collapse, Expand */}
-                <div className="flex items-center gap-1 ml-2">
+                <div className="flex items-center gap-1 ml-2 bg-cyan-50/70 dark:bg-slate-700/40 px-2 py-1 rounded-md border border-cyan-200 dark:border-slate-600">
                   <span className="icon-btn icon-cyan border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Sort Input JSON" onClick={() => { try { const obj = JSON.parse(inputJson); const sortObj = (o:any):any => Array.isArray(o)? o.map(sortObj) : (o && typeof o==='object'? Object.keys(o).sort().reduce((acc,k)=>{ acc[k]=sortObj(o[k]); return acc; },{} as any) : o); const formatted = JSON.stringify(sortObj(obj), null, 2); setInputJson(formatted); setParseError(null);} catch(e:any){ setParseError(e.message);} }}>
                     <i className="fa-solid fa-sort" aria-hidden="true"></i>
                   </span>
@@ -82,7 +82,7 @@ const JsonTreeViewPage: React.FC = () => {
                 </div>
               </div>
               {/* Left rail icons */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 bg-cyan-50/70 dark:bg-slate-700/40 px-2 py-1 rounded-md border border-cyan-200 dark:border-slate-600">
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Upload" onClick={handleLoadSample}><i className="fa-solid fa-upload" aria-hidden="true"></i></span>
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Clear" onClick={handleClear}><i className="fa-solid fa-eraser" aria-hidden="true"></i></span>
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Copy" onClick={() => navigator.clipboard.writeText(inputJson)}><i className="fa-solid fa-copy" aria-hidden="true"></i></span>
@@ -123,7 +123,7 @@ const JsonTreeViewPage: React.FC = () => {
                 </div>
               </div>
               {/* Right rail icons */}
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 bg-cyan-50/70 dark:bg-slate-700/40 px-2 py-1 rounded-md border border-cyan-200 dark:border-slate-600">
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Download" onClick={() => { const blob = new Blob([inputJson], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'input.json'; a.click(); }}><i className="fa-solid fa-download" aria-hidden="true"></i></span>
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Save" onClick={() => { /* placeholder */ }}><i className="fa-solid fa-floppy-disk" aria-hidden="true"></i></span>
                 <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Print" onClick={() => window.print()}><i className="fa-solid fa-print" aria-hidden="true"></i></span>

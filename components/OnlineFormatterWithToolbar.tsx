@@ -2746,7 +2746,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="flex items-center gap-2 relative z-50 w-full">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50">
+                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-cyan-50/70 dark:bg-slate-700/40 px-2 py-1 rounded-md border border-cyan-200 dark:border-slate-600">
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
@@ -2969,7 +2969,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Dedicated left rail column and reserved content area */}
               <div className="flex-grow min-h-0 flex flex-col relative">
                 {showLeftInputActions && (
-                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-r border-slate-300 dark:border-slate-600">
+                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-cyan-50/70 dark:bg-slate-800/40 z-20 border-r border-cyan-200 dark:border-slate-600 rounded-md">
                     <Tooltip content="Upload file">
                       <span
                         role="button"
