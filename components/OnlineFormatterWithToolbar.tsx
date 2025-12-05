@@ -2759,7 +2759,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
                           aria-label="Collapse All Input"
                         >
-                          <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
+                          <i className="fa-solid fa-arrows-down-to-line text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                         </span>
                       </Tooltip>
                       <Tooltip content="Expand all JSON blocks">
@@ -2771,7 +2771,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
                           aria-label="Expand All Input"
                         >
-                          <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
+                          <i className="fa-solid fa-arrows-up-to-line text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                         </span>
                       </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -2788,7 +2788,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             aria-label="Sort Input"
                             title="Sort Input JSON"
                           >
-                            <i className="fa-solid fa-sort" aria-hidden="true"></i>
+                            <i className="fa-solid fa-sort text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                           </span>
                         </Tooltip>
                         {showSortDropdown && (
@@ -2864,7 +2864,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                     >
-                      <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
+                      <i className="fa-solid fa-rotate-left text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                     </span>
                   </Tooltip>
                   <Tooltip content="Redo last change">
@@ -2876,7 +2876,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                     >
-                      <i className="fa-solid fa-rotate-right" aria-hidden="true"></i>
+                      <i className="fa-solid fa-rotate-right text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                     </span>
                   </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -2893,7 +2893,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
                               aria-label="Validate Input JSON"
                             >
-                              <i className="fa-solid fa-check" aria-hidden="true"></i>
+                              <i className="fa-solid fa-check text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                             </span>
                           </Tooltip>
                           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -2906,7 +2906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
                           onClick={handleCompact}
-                          className="p-1 rounded-md transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30 icon-hover-bg"
+                          className="p-1 rounded-md transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30 icon-hover-bg text-slate-700 dark:text-slate-200"
                           aria-label="Compact"
                         >
                           📦
@@ -2928,10 +2928,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
                         aria-label="Enter Fullscreen"
                       >
-                        <i className="fa-solid fa-expand" aria-hidden="true"></i>
+                        <i className="fa-solid fa-expand text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
