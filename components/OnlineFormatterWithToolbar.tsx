@@ -2743,7 +2743,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
           <div className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg ${showLeftInputActions ? 'overflow-visible' : 'overflow-hidden'} p-6 gap-3 relative z-10 h-[600px]`}>
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 relative z-50">
+              <div className="flex items-center gap-2 relative z-50 w-full">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                   <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50">
