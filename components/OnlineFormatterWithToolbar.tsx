@@ -2746,7 +2746,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="flex items-center gap-2 relative z-50">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                  <div className="flex items-center gap-1 ml-3 opacity-100 pointer-events-auto relative z-50">
+                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50">
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
