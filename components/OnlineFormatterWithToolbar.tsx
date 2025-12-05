@@ -2756,7 +2756,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.foldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className="icon-btn icon-orange"
+                          className="icon-btn icon-plain no-ring"
                           aria-label="Collapse All Input"
                         >
                           <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
@@ -2768,7 +2768,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.unfoldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className="icon-btn icon-green"
+                          className="icon-btn icon-plain no-ring"
                           aria-label="Expand All Input"
                         >
                           <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
@@ -2835,7 +2835,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canUndoInput ? handleUndo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput) { e.preventDefault(); handleUndo(); } }}
-                      className={`icon-btn icon-blue ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`icon-btn icon-plain no-ring ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                     >
                       <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
@@ -2847,7 +2847,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canRedoInput ? handleRedo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput) { e.preventDefault(); handleRedo(); } }}
-                      className={`icon-btn icon-blue ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`icon-btn icon-plain no-ring ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                     >
                       <i className="fa-solid fa-rotate-right" aria-hidden="true"></i>
@@ -2865,7 +2865,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 tabIndex={0}
                                 onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
                                 onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                                className={`icon-btn icon-cyan ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                className={`icon-btn icon-plain no-ring ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 aria-label="Sort Input"
                                 title="Sort Input JSON"
                               >
@@ -2890,7 +2890,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               tabIndex={0}
                               onClick={handleValidate}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                              className="icon-btn icon-green"
+                              className="icon-btn icon-plain no-ring"
                               aria-label="Validate Input JSON"
                             >
                               <i className="fa-solid fa-check" aria-hidden="true"></i>
@@ -2928,7 +2928,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className="icon-btn icon-blue"
+                        className="icon-btn icon-plain no-ring"
                         aria-label="Enter Fullscreen"
                       >
                         <i className="fa-solid fa-expand" aria-hidden="true"></i>
