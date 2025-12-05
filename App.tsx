@@ -19,6 +19,7 @@ const OnlineFormatter = lazy(() => import('./components/OnlineFormatterWithToolb
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlConverter'));
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
+const JsonTransformPage = lazy(() => import('./components/JsonTransformPage').then(m => ({ default: m.JsonTransformPage })));
 
 // SEO-optimized formatter pages
 const JsonFormatterPage = lazy(() => import('./components/formatters/JsonFormatterPage.tsx').then(m => ({ default: m.JsonFormatterPage })));
@@ -98,6 +99,7 @@ const App: React.FC = () => {
                     { label: 'JSON Formatter', to: '/json-formatter', icon: '🧹' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
                     { label: 'JSON Structure Analyzer', to: '/json-structure-analyzer', icon: '🕸️' },
+                    { label: 'JSON Transform', to: '/json-transform', icon: '🛠️' },
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Parser', to: '/json-parser', icon: '🧪' }
@@ -151,6 +153,7 @@ const App: React.FC = () => {
             <Route path="/json-graph-viewer" element={<JsonGraphViewerPage />} />
             <Route path="/json-structure-analyzer" element={<JsonStructureAnalyzerPage />} />
             <Route path="/json-tree-view" element={<JsonTreeViewPage />} />
+            <Route path="/json-transform" element={<JsonTransformPage />} />
           </Routes>
         </Suspense>
       </div>

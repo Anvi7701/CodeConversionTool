@@ -2640,6 +2640,51 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* Graph button - opens in-page Graph Viewer (same workflow) */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                  className="btn btn-cyan"
+                  title="Visualize as Graph"
+                >
+                  <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
+                  <span>Graph</span>
+                </button>
+              )}
+
+              {/* Structure Analysis button - opens dedicated analyzer page */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
+                  }}
+                  className="btn btn-purple"
+                  title="Open JSON Structure Analyzer"
+                >
+                  <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
+                  <span>Structure Analysis</span>
+                </button>
+              )}
+
+              {/* Transform button - opens JMESPath Transform modal (same workflow) */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try { JSON.parse(inputCode); setShowJMESPathModal(true); }
+                    catch {
+                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className="btn btn-pink"
+                  title="Transform with JMESPath"
+                >
+                  <i className="fa-solid fa-shuffle" aria-hidden="true"></i>
+                  <span>Transform</span>
+                </button>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -2747,37 +2792,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </>
                     )}
                     
-                    {/* Transform with JMESPath - only for JSON */}
-                    {isJsonLanguage && (
-                      <>
-                        <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                        <Tooltip content="Transform with JMESPath">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => {
-                              try {
-                                JSON.parse(inputCode);
-                                setShowJMESPathModal(true);
-                              } catch {
-                                setValidationError({
-                                  isValid: false,
-                                  reason: 'Invalid JSON. Please fix syntax errors before using Transform.',
-                                  isFixableSyntaxError: true,
-                                  suggestedLanguage: undefined
-                                });
-                              }
-                            }}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } } }}
-                            className={`icon-btn icon-cyan ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Transform"
-                          >
-                            <i className="fa-solid fa-shuffle" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                      {/* Legacy inline Sort/Validate icons removed in favor of themed icon pills next to Input label */}
-                    </>
-                  )}
+                    {/* Transform moved to ribbon (button). */}
                   
                   <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
@@ -2813,18 +2828,29 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       {/* Sort (Input) – icon-only pill to toggle dropdown */}
                       {isJsonLanguage && (
                         <>
-                          <Tooltip content="Sort JSON (toggle options)">
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
-                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                              className="icon-btn icon-cyan"
-                              aria-label="Sort Input JSON"
-                            >
-                              <i className="fa-solid fa-sort" aria-hidden="true"></i>
-                            </span>
-                          </Tooltip>
+                          <div className="relative inline-flex dropdown-container overflow-visible">
+                            <Tooltip content="Sort Input JSON (toggle options)">
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
+                                className={`icon-btn icon-cyan ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                aria-label="Sort Input"
+                                title="Sort Input JSON"
+                              >
+                                <i className="fa-solid fa-sort" aria-hidden="true"></i>
+                              </span>
+                            </Tooltip>
+                            {showSortDropdown && (
+                              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
+                                <button onClick={() => { handleSort('asc','keys'); setShowSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
+                                <button onClick={() => { handleSort('desc','keys'); setShowSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
+                                <button onClick={() => { handleSort('asc','values'); setShowSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
+                                <button onClick={() => { handleSort('desc','values'); setShowSortDropdown(false); }} className="w-full px-3 py-1.5 text-sm text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                              </div>
+                            )}
+                          </div>
                           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
                           {/* Validate (Input) – icon-only pill */}
@@ -2860,38 +2886,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </>
                   )}
 
-                  {/* Graph and Structure Analysis icons – always visible for JSON */}
-                  {isJsonLanguage && (
-                    <>
-                      <Tooltip content="Visualize as graph">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={handleShowGraph}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleShowGraph(); } }}
-                          className="icon-btn icon-cyan"
-                          aria-label="Graph"
-                        >
-                          <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      {inlineStructureAnalysisIcon && (
-                        <Tooltip content="Structure Analysis">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleStructureAnalysis(); }}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); handleStructureAnalysis(); } }}
-                            className="icon-btn icon-green"
-                            aria-label="Structure Analysis"
-                          >
-                            <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                      )}
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                    </>
-                  )}
+                  {/* Structure Analysis icon removed from Input toolbar (moved to ribbon) */}
 
                   {/* GROUP 5.5: Input Collapse/Expand All (JSON only) – icon-only pills after Input label */}
                   {isJsonLanguage && (
