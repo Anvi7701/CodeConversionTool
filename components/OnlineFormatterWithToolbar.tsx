@@ -2746,7 +2746,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="flex items-center gap-2 relative z-50">
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                  <div className="flex items-center gap-1 ml-2 opacity-100 pointer-events-auto relative z-50">
+                  <div className="flex items-center gap-1 ml-3 opacity-100 pointer-events-auto relative z-50">
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
@@ -2756,7 +2756,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.foldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ml-1"
                           aria-label="Collapse All Input"
                         >
                           <i className="fa-solid fa-arrows-down-to-line text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
