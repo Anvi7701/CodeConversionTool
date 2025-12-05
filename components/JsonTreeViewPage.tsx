@@ -83,9 +83,9 @@ const JsonTreeViewPage: React.FC = () => {
               </div>
               {/* Left rail icons */}
               <div className="flex items-center gap-1">
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Upload" onClick={handleLoadSample}><i className="fa-solid fa-upload" aria-hidden="true"></i></span>
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Clear" onClick={handleClear}><i className="fa-solid fa-eraser" aria-hidden="true"></i></span>
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Copy" onClick={() => navigator.clipboard.writeText(inputJson)}><i className="fa-solid fa-copy" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Upload" onClick={handleLoadSample}><i className="fa-solid fa-upload" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Clear" onClick={handleClear}><i className="fa-solid fa-eraser" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Copy" onClick={() => navigator.clipboard.writeText(inputJson)}><i className="fa-solid fa-copy" aria-hidden="true"></i></span>
               </div>
             </div>
 
@@ -124,9 +124,9 @@ const JsonTreeViewPage: React.FC = () => {
               </div>
               {/* Right rail icons */}
               <div className="flex items-center gap-1">
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Download" onClick={() => { const blob = new Blob([inputJson], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'input.json'; a.click(); }}><i className="fa-solid fa-download" aria-hidden="true"></i></span>
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Save" onClick={() => { /* placeholder */ }}><i className="fa-solid fa-floppy-disk" aria-hidden="true"></i></span>
-                <span className="icon-plain no-ring text-slate-600" role="button" tabIndex={0} title="Print" onClick={() => window.print()}><i className="fa-solid fa-print" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Download" onClick={() => { const blob = new Blob([inputJson], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'input.json'; a.click(); }}><i className="fa-solid fa-download" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Save" onClick={() => { /* placeholder */ }}><i className="fa-solid fa-floppy-disk" aria-hidden="true"></i></span>
+                <span className="icon-plain no-ring text-slate-600 icon-hover-bg border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Print" onClick={() => window.print()}><i className="fa-solid fa-print" aria-hidden="true"></i></span>
               </div>
             </div>
 

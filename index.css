@@ -125,6 +125,14 @@ body.is-fullscreen .fullscreen-hide {
   outline: none !important;
 }
 
+/* Utility: visible hover background for plain icons */
+.icon-hover-bg:hover {
+  background-color: #f1f5f9 !important; /* slate-100 */
+}
+.dark .icon-hover-bg:hover {
+  background-color: #334155 !important; /* slate-700 */
+}
+
 .icon-green {
   background-image: linear-gradient(90deg, #22c55e, #16a34a, #10b981);
 }
