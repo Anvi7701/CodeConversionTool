@@ -2976,7 +2976,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={() => fileInputRef.current?.click()}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                        className="icon-btn icon-plain no-ring"
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                         aria-label="Upload File"
                       >
                         <i className="fa-solid fa-upload text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
@@ -2988,7 +2988,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleClear}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
-                        className={`icon-btn icon-plain no-ring ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Clear Input"
                       >
                         <i className="fa-solid fa-broom text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
@@ -3000,7 +3000,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleDownload}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                        className={`icon-btn icon-plain no-ring ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Download"
                       >
                         <i className="fa-solid fa-download text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
@@ -3012,7 +3012,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleSave}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                        className={`icon-btn icon-plain no-ring ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Save"
                       >
                         <i className="fa-solid fa-floppy-disk text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
@@ -3024,7 +3024,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleCopy}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
-                        className={`icon-btn icon-plain no-ring ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Copy"
                       >
                         <i className="fa-solid fa-copy text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
@@ -3036,7 +3036,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handlePrint}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePrint(); } }}
-                        className="icon-btn icon-plain no-ring"
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                         aria-label="Print"
                       >
                         <i className="fa-solid fa-print text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
