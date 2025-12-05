@@ -2747,6 +2747,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                   <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
+                  {/* Collapse/Expand All – moved to be first after Input label */}
+                  {isJsonLanguage && (
+                    <>
+                      <Tooltip content="Collapse all JSON blocks">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => inputEditorApiRef.current?.foldAll()}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
+                          className="icon-btn icon-orange"
+                          aria-label="Collapse All Input"
+                        >
+                          <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Expand all JSON blocks">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => inputEditorApiRef.current?.unfoldAll()}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
+                          className="icon-btn icon-green"
+                          aria-label="Expand All Input"
+                        >
+                          <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                    </>
+                  )}
                     {/* GROUP 2: Save, Download, Copy (hide when left rail is enabled to avoid duplication) */}
                     {!showLeftInputActions && (
                       <>
@@ -2888,36 +2918,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   {/* Structure Analysis icon removed from Input toolbar (moved to ribbon) */}
 
-                  {/* GROUP 5.5: Input Collapse/Expand All (JSON only) – icon-only pills after Input label */}
-                  {isJsonLanguage && (
-                    <>
-                      <Tooltip content="Collapse all JSON blocks">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => inputEditorApiRef.current?.foldAll()}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className="icon-btn icon-orange"
-                          aria-label="Collapse All Input"
-                        >
-                          <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <Tooltip content="Expand all JSON blocks">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => inputEditorApiRef.current?.unfoldAll()}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className="icon-btn icon-green"
-                          aria-label="Expand All Input"
-                        >
-                          <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                    </>
-                  )}
+                  {/* Collapse/Expand moved earlier */}
 
                   {/* GROUP 6: Fullscreen only (Print moved to left rail / header mini toolbar) */}
                   {!isFullscreen && (
