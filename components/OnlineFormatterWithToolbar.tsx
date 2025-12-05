@@ -2994,13 +2994,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <i className="fa-solid fa-broom text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
-                    <Tooltip content="Download file">
+                    <Tooltip content="Upload file">
                       <span
                         role="button"
                         tabIndex={0}
                         onClick={handleDownload}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg mt-0.5"
                         aria-label="Download"
                       >
                         <i className="fa-solid fa-download text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
