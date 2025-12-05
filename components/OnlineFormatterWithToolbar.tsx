@@ -2881,24 +2881,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
-                      {/* Validate (Input) – icon-only pill */}
-                      {isJsonLanguage && (
-                        <>
-                          <Tooltip content="Validate Input JSON">
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={handleValidate}
-                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                              className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
-                              aria-label="Validate Input JSON"
-                            >
-                              <i className="fa-solid fa-check text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
-                            </span>
-                          </Tooltip>
-                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                        </>
-                      )}
+                      {/* Validate moved to right side toolbar */}
 
                   {/* GROUP 5: Compact (JSON only) */}
                   {isJsonLanguage && !showMinifyNextToBeautify && (
@@ -2920,7 +2903,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   {/* Collapse/Expand moved earlier */}
 
-                  {/* GROUP 6: Fullscreen only (Print moved to left rail / header mini toolbar) */}
+                  {/* Fullscreen moved to right side toolbar */}
+                  {/* Line numbers toggle removed per requirement (input always matches output) */}
+                </div>
+                {/* Toolbar always rendered; hidden when left rail is enabled */}
+                {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
+                <div className="flex items-center gap-1 ml-auto">
+                  {isJsonLanguage && (
+                    <Tooltip content="Validate Input JSON">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={handleValidate}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                        aria-label="Validate Input JSON"
+                      >
+                        <i className="fa-solid fa-check text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
                   {!isFullscreen && (
                     <Tooltip content="Enter fullscreen">
                       <span
@@ -2928,16 +2930,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
                         aria-label="Enter Fullscreen"
                       >
                         <i className="fa-solid fa-expand text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
-                  {/* Line numbers toggle removed per requirement (input always matches output) */}
                 </div>
-                {/* Toolbar always rendered; hidden when left rail is enabled */}
               </div>
             </div>
 
