@@ -67,16 +67,16 @@ const JsonTreeViewPage: React.FC = () => {
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Input toolbar pills: Sort, Validate, Collapse, Expand */}
                 <div className="flex items-center gap-1 ml-2">
-                  <span className="icon-btn icon-cyan" role="button" tabIndex={0} title="Sort Input JSON" onClick={() => { try { const obj = JSON.parse(inputJson); const sortObj = (o:any):any => Array.isArray(o)? o.map(sortObj) : (o && typeof o==='object'? Object.keys(o).sort().reduce((acc,k)=>{ acc[k]=sortObj(o[k]); return acc; },{} as any) : o); const formatted = JSON.stringify(sortObj(obj), null, 2); setInputJson(formatted); setParseError(null);} catch(e:any){ setParseError(e.message);} }}>
+                  <span className="icon-btn icon-cyan border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Sort Input JSON" onClick={() => { try { const obj = JSON.parse(inputJson); const sortObj = (o:any):any => Array.isArray(o)? o.map(sortObj) : (o && typeof o==='object'? Object.keys(o).sort().reduce((acc,k)=>{ acc[k]=sortObj(o[k]); return acc; },{} as any) : o); const formatted = JSON.stringify(sortObj(obj), null, 2); setInputJson(formatted); setParseError(null);} catch(e:any){ setParseError(e.message);} }}>
                     <i className="fa-solid fa-sort" aria-hidden="true"></i>
                   </span>
-                  <span className="icon-btn icon-green" role="button" tabIndex={0} title="Validate Input JSON" onClick={() => { try { JSON.parse(inputJson); setParseError(null);} catch(e:any){ setParseError(e.message);} }}>
+                  <span className="icon-btn icon-green border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Validate Input JSON" onClick={() => { try { JSON.parse(inputJson); setParseError(null);} catch(e:any){ setParseError(e.message);} }}>
                     <i className="fa-solid fa-check" aria-hidden="true"></i>
                   </span>
-                  <span className="icon-btn icon-orange" role="button" tabIndex={0} title="Collapse All" onClick={() => { /* no-op for textarea */ }}>
+                  <span className="icon-btn icon-orange border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Collapse All" onClick={() => { /* no-op for textarea */ }}>
                     <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
                   </span>
-                  <span className="icon-btn icon-green" role="button" tabIndex={0} title="Expand All" onClick={() => { /* no-op for textarea */ }}>
+                  <span className="icon-btn icon-green border border-black/30 dark:border-white/30 rounded-md" role="button" tabIndex={0} title="Expand All" onClick={() => { /* no-op for textarea */ }}>
                     <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
                   </span>
                 </div>

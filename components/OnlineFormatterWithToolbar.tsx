@@ -2756,7 +2756,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.foldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className="icon-btn icon-plain no-ring"
+                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                           aria-label="Collapse All Input"
                         >
                           <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
@@ -2768,7 +2768,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.unfoldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className="icon-btn icon-plain no-ring"
+                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                           aria-label="Expand All Input"
                         >
                           <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
@@ -2783,7 +2783,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Save to file">
                           <button
                             onClick={handleSave}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
                             aria-label="Save"
                             
                           >
@@ -2793,7 +2793,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Download to file">
                           <button
                             onClick={handleDownload}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
                             aria-label="Download"
                             
                           >
@@ -2803,7 +2803,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Copy to clipboard">
                           <button
                             onClick={handleCopy}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
                             aria-label="Copy"
                             
                           >
@@ -2813,7 +2813,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Print">
                           <button
                             onClick={handlePrint}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
+                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
                             aria-label="Print"
                           >
                             🖨️
@@ -2835,7 +2835,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canUndoInput ? handleUndo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput) { e.preventDefault(); handleUndo(); } }}
-                      className={`icon-btn icon-plain no-ring ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                     >
                       <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
@@ -2847,7 +2847,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canRedoInput ? handleRedo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput) { e.preventDefault(); handleRedo(); } }}
-                      className={`icon-btn icon-plain no-ring ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                     >
                       <i className="fa-solid fa-rotate-right" aria-hidden="true"></i>
@@ -2865,7 +2865,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 tabIndex={0}
                                 onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
                                 onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                                className={`icon-btn icon-plain no-ring ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                                 aria-label="Sort Input"
                                 title="Sort Input JSON"
                               >
@@ -2890,7 +2890,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               tabIndex={0}
                               onClick={handleValidate}
                               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                              className="icon-btn icon-plain no-ring"
+                              className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                               aria-label="Validate Input JSON"
                             >
                               <i className="fa-solid fa-check" aria-hidden="true"></i>
@@ -2906,7 +2906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
                           onClick={handleCompact}
-                          className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer"
+                          className="p-1 rounded-md hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
                           aria-label="Compact"
                         >
                           📦
@@ -2928,7 +2928,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className="icon-btn icon-plain no-ring"
+                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md"
                         aria-label="Enter Fullscreen"
                       >
                         <i className="fa-solid fa-expand" aria-hidden="true"></i>
