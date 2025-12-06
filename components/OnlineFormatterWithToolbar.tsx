@@ -95,11 +95,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const isPurpleTheme = colorTheme === 'purple';
   const iconButtonBase = 'icon-btn no-ring rounded-md border inline-flex items-center justify-center';
   const defaultIconButton = 'icon-plain border-black/30 dark:border-white/30 icon-hover-bg';
-  const purpleIconButton = 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400';
+  // Deeper purple treatment
+  const purpleIconButton = 'bg-white text-purple-800 border-purple-500 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600';
   const iconButtonClass = `${iconButtonBase} ${isPurpleTheme ? purpleIconButton : defaultIconButton}`;
 
   const defaultIconText = 'text-slate-700 dark:text-slate-200';
-  const purpleIconText = 'text-purple-700 dark:text-purple-300';
+  const purpleIconText = 'text-purple-800 dark:text-purple-300';
   const iconTextClass = isPurpleTheme ? purpleIconText : defaultIconText;
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const lastSavedToHistoryRef = useRef<string>('');
@@ -2822,7 +2823,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Save to file">
                           <button
                             onClick={handleSave}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Save"
                             
                           >
@@ -2832,7 +2833,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Download to file">
                           <button
                             onClick={handleDownload}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Download"
                             
                           >
@@ -2842,7 +2843,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Copy to clipboard">
                           <button
                             onClick={handleCopy}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Copy"
                             
                           >
@@ -2852,7 +2853,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Print">
                           <button
                             onClick={handlePrint}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Print"
                           >
                             🖨️
