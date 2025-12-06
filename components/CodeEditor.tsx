@@ -58,7 +58,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   // Custom theme & gutter styling
   const theme = useMemo(() => EditorView.theme({
     '&': { height: '100%' },
-    '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px' },
+    '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px', backgroundColor: '#ffffff' },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
     // Match Output formatter gutter background (slate tone) and sizing per individual gutters
     '.cm-gutters': { border: 'none', gap: '0px' },
@@ -66,8 +66,12 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
     '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
-    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
+    // Surrounding area/background outside the text content
+    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%', backgroundColor: 'rgba(236, 254, 255, 0.6)' },
     '.cm-editor': { backgroundColor: 'transparent', height: '100%' },
+    // Dark theme variants
+    '.dark .cm-scroller': { backgroundColor: 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-content': { backgroundColor: '#0b0b0c' },
     '.cm-line': { lineHeight: '20px' },
     // Single solid arrow styling
     '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },
