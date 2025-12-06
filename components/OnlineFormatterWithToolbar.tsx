@@ -3077,6 +3077,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     }}
                     editorApiRef={inputEditorApiRef}
                   showLineNumbers={showInputLineNumbers}
+                  // Apply purple gutter only when purple theme is active on JSON Beautifier
+                  gutterColorLight={isPurpleTheme ? 'rgba(243, 232, 255, 0.6)' : undefined}
+                  gutterColorDark={isPurpleTheme ? 'rgba(76, 29, 149, 0.35)' : undefined}
                   />
                 </div>
               </div>

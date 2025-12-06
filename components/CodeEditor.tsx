@@ -29,6 +29,9 @@ interface CodeEditorProps {
   renderLeftRail?: React.ReactNode; // Optional vertical action rail inside editor
   editorApiRef?: React.Ref<{ foldAll: () => void; unfoldAll: () => void }>; // Expose folding API to parent
   showLineNumbers?: boolean; // Toggle input line numbers
+  // Optional: override gutter background colors (light/dark) per page theme
+  gutterColorLight?: string; // e.g., 'rgba(243, 232, 255, 0.6)' (purple-100)
+  gutterColorDark?: string;  // e.g., 'rgba(76, 29, 149, 0.35)' (purple-900 tint)
 }
 
 // Simple CSS-injected line decorations for error/comment/simple markers
@@ -39,7 +42,7 @@ const markerClassFor = (style?: 'simple' | 'complex' | 'comment') => {
   return '';
 };
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef, showLineNumbers = true }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef, showLineNumbers = true, gutterColorLight, gutterColorDark }) => {
   const viewRef = useRef<EditorView | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -60,11 +63,14 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '&': { height: '100%' },
     '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px', backgroundColor: '#ffffff' },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
-    // Match Output formatter gutter background (slate tone) and sizing per individual gutters
+    // Gutter styling
+    // Previous default (record for revert):
+    //   light: 'rgba(226, 232, 240, 0.6)'  // slate-200/opacity
+    //   dark:  'rgba(51, 65, 85, 0.35)'    // slate-700/opacity
     '.cm-gutters': { border: 'none', gap: '0px' },
-    '.cm-gutter': { background: 'rgba(226, 232, 240, 0.6)', border: 'none' },
+    '.cm-gutter': { background: gutterColorLight ?? 'rgba(226, 232, 240, 0.6)', border: 'none' },
     '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
-    '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-gutter': { background: gutterColorDark ?? 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
     // Surrounding area/background outside the text content
     '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
