@@ -2755,7 +2755,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          <div className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg ${showLeftInputActions ? 'overflow-visible' : 'overflow-hidden'} p-6 gap-3 relative z-10 h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg ${showLeftInputActions ? 'overflow-visible' : 'overflow-hidden'} p-6 gap-3 relative z-10 h-[600px] border border-slate-200 dark:border-slate-700`}>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
                 <h2 className="text-lg font-semibold">Input</h2>
@@ -2983,7 +2983,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Dedicated left rail column and reserved content area */}
               <div className="flex-grow min-h-0 flex flex-col relative">
                 {showLeftInputActions && (
-                  <div className={`left-rail absolute top-2 bottom-2 left-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center z-20 border-r ${isPurpleTheme ? 'bg-white/90 border-purple-500 dark:bg-slate-800/40 dark:border-purple-700' : 'bg-cyan-50/70 border-cyan-200 dark:bg-slate-800/40 dark:border-slate-600'}`}>
+                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-cyan-50/70 dark:bg-slate-800/40 z-20 border-r border-cyan-200 dark:border-slate-600 rounded-md">
                     <Tooltip content="Upload file">
                       <span
                         role="button"
@@ -3059,7 +3059,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </div>
                 )}
 
-                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[50px]" : "relative h-full min-h-0"}>
+                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[34px]" : "relative h-full min-h-0"}>
                   <CodeEditor
                     value={inputCode}
                     onChange={handleInputChange}
