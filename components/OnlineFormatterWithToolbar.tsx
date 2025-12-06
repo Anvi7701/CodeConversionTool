@@ -2983,7 +2983,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Dedicated left rail column and reserved content area */}
               <div className="flex-grow min-h-0 flex flex-col relative">
                 {showLeftInputActions && (
-                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-cyan-50/70 dark:bg-slate-800/40 z-20 border-r border-cyan-200 dark:border-slate-600 rounded-md">
+                  <div className={`left-rail absolute top-2 bottom-2 left-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center z-20 border-r ${isPurpleTheme ? 'bg-white/90 border-purple-500 dark:bg-slate-800/40 dark:border-purple-700' : 'bg-cyan-50/70 border-cyan-200 dark:bg-slate-800/40 dark:border-slate-600'}`}>
                     <Tooltip content="Upload file">
                       <span
                         role="button"
@@ -3059,7 +3059,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </div>
                 )}
 
-                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[34px]" : "relative h-full min-h-0"}>
+                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[50px]" : "relative h-full min-h-0"}>
                   <CodeEditor
                     value={inputCode}
                     onChange={handleInputChange}
