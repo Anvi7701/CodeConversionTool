@@ -67,10 +67,11 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
     // Surrounding area/background outside the text content
-    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%', backgroundColor: 'rgba(236, 254, 255, 0.6)' },
-    '.cm-editor': { backgroundColor: 'transparent', height: '100%' },
+    '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
+    // Make the editor container a subtle light cyan so it's clearly visible
+    '.cm-editor': { backgroundColor: 'rgba(236, 254, 255, 0.8)', height: '100%' },
     // Dark theme variants
-    '.dark .cm-scroller': { backgroundColor: 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-editor': { backgroundColor: 'rgba(30, 41, 59, 0.45)' },
     '.dark .cm-content': { backgroundColor: '#0b0b0c' },
     '.cm-line': { lineHeight: '20px' },
     // Single solid arrow styling
