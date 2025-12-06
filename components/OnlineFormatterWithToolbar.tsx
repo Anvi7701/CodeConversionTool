@@ -55,9 +55,11 @@ interface OnlineFormatterWithToolbarProps {
   inlineStructureAnalysisIcon?: boolean; // Move Structure Analysis into Input toolbar as emoji
   inlineSortValidateIcons?: boolean; // Move Sort & Validate into Input toolbar as emoji icons
   showMinifyNextToBeautify?: boolean; // Beautifier page: move Compact to a Minify button next to Beautify
+  // Optional color theme override for specific pages (e.g., JSON Beautifier)
+  colorTheme?: 'default' | 'purple';
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default' }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -88,6 +90,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Input/output history tracking
   const [history, setHistory] = useState<string[]>([]);
+
+  // Theming for toolbar and left-rail icons (scoped to this component)
+  const isPurpleTheme = colorTheme === 'purple';
+  const iconButtonBase = 'icon-btn no-ring rounded-md border inline-flex items-center justify-center';
+  const defaultIconButton = 'icon-plain border-black/30 dark:border-white/30 icon-hover-bg';
+  const purpleIconButton = 'bg-white text-purple-700 border-purple-300 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400';
+  const iconButtonClass = `${iconButtonBase} ${isPurpleTheme ? purpleIconButton : defaultIconButton}`;
+
+  const defaultIconText = 'text-slate-700 dark:text-slate-200';
+  const purpleIconText = 'text-purple-700 dark:text-purple-300';
+  const iconTextClass = isPurpleTheme ? purpleIconText : defaultIconText;
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const lastSavedToHistoryRef = useRef<string>('');
   const [outputHistory, setOutputHistory] = useState<string[]>([]);
@@ -2756,10 +2769,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.foldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ml-1"
+                          className={`${iconButtonClass} ml-1`}
                           aria-label="Collapse All Input"
                         >
-                          <i className="fa-solid fa-arrows-down-to-line text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                          <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
                         </span>
                       </Tooltip>
                       <Tooltip content="Expand all JSON blocks">
@@ -2768,10 +2781,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           tabIndex={0}
                           onClick={() => inputEditorApiRef.current?.unfoldAll()}
                           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                          className={iconButtonClass}
                           aria-label="Expand All Input"
                         >
-                          <i className="fa-solid fa-arrows-up-to-line text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                          <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
                         </span>
                       </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -2784,11 +2797,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
                             onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                            className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                             aria-label="Sort Input"
                             title="Sort Input JSON"
                           >
-                            <i className="fa-solid fa-sort text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                            <i className={`fa-solid fa-sort ${iconTextClass}`} aria-hidden="true"></i>
                           </span>
                         </Tooltip>
                         {showSortDropdown && (
@@ -2809,7 +2822,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Save to file">
                           <button
                             onClick={handleSave}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Save"
                             
                           >
@@ -2819,7 +2832,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Download to file">
                           <button
                             onClick={handleDownload}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Download"
                             
                           >
@@ -2829,7 +2842,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Copy to clipboard">
                           <button
                             onClick={handleCopy}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Copy"
                             
                           >
@@ -2839,7 +2852,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <Tooltip content="Print">
                           <button
                             onClick={handlePrint}
-                            className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30"
+                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-300 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
                             aria-label="Print"
                           >
                             🖨️
@@ -2861,10 +2874,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canUndoInput ? handleUndo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput) { e.preventDefault(); handleUndo(); } }}
-                      className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`${iconButtonClass} ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                     >
-                      <i className="fa-solid fa-rotate-left text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                      <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
                     </span>
                   </Tooltip>
                   <Tooltip content="Redo last change">
@@ -2873,10 +2886,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={canRedoInput ? handleRedo : undefined}
                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput) { e.preventDefault(); handleRedo(); } }}
-                      className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      className={`${iconButtonClass} ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                     >
-                      <i className="fa-solid fa-rotate-right text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                      <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
                     </span>
                   </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -2916,10 +2929,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleValidate}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                        className={iconButtonClass}
                         aria-label="Validate Input JSON"
                       >
-                        <i className="fa-solid fa-check text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-check ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -2930,10 +2943,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                        className={iconButtonClass}
                         aria-label="Enter Fullscreen"
                       >
-                        <i className="fa-solid fa-expand text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-expand ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -2976,10 +2989,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={() => fileInputRef.current?.click()}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
+                        className={iconButtonClass}
                         aria-label="Upload File"
                       >
-                        <i className="fa-solid fa-upload text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-upload ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                     <Tooltip content="Clear input">
@@ -2988,10 +3001,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleClear}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
-                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Clear Input"
                       >
-                        <i className="fa-solid fa-broom text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-broom ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                     <Tooltip content="Upload file">
@@ -3000,10 +3013,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleDownload}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg mt-0.5"
+                        className={`${iconButtonClass} mt-0.5`}
                         aria-label="Download"
                       >
-                        <i className="fa-solid fa-download text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                     <Tooltip content="Save file">
@@ -3012,10 +3025,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleSave}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Save"
                       >
-                        <i className="fa-solid fa-floppy-disk text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                     <Tooltip content="Copy to clipboard">
@@ -3024,10 +3037,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleCopy}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
-                        className={`icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                        className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Copy"
                       >
-                        <i className="fa-solid fa-copy text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                     <Tooltip content="Print">
@@ -3036,10 +3049,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handlePrint}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePrint(); } }}
-                        className="icon-btn icon-plain no-ring border border-black/30 dark:border-white/30 rounded-md icon-hover-bg"
+                        className={iconButtonClass}
                         aria-label="Print"
                       >
-                        <i className="fa-solid fa-print text-slate-700 dark:text-slate-200" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   </div>
