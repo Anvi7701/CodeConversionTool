@@ -33,8 +33,15 @@ export const JsonEditorPage: React.FC = () => {
           })}
         </script>
       </Helmet>
-      {/* Use shared formatter with left input rail enabled for Editor too */}
-      <OnlineFormatterWithToolbar initialLanguage="json" showLeftInputActions={true} />
+      {/* Restore toolbar layout with outside-gutter rails and purple theme */}
+      <OnlineFormatterWithToolbar
+        initialLanguage="json"
+        showLeftInputActions={true}
+        inlineStructureAnalysisIcon={false}
+        inlineSortValidateIcons={false}
+        showMinifyNextToBeautify={false}
+        colorTheme="purple"
+      />
     </>
   );
 };

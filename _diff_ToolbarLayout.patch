@@ -1,0 +1,1067 @@
+﻿diff --git a/components/OnlineFormatterWithToolbar.tsx b/components/OnlineFormatterWithToolbar.tsx
+index 78f4f66..4461b65 100644
+--- a/components/OnlineFormatterWithToolbar.tsx
++++ b/components/OnlineFormatterWithToolbar.tsx
+@@ -1,4 +1,59 @@
+-∩╗┐import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
++∩╗┐import React, { useState } from 'react';
++import SEO from './SEO';
++
++type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
++
++interface OnlineFormatterWithToolbarProps {
++  initialLanguage?: Language;
++  showLeftInputActions?: boolean;
++  inlineStructureAnalysisIcon?: boolean;
++  inlineSortValidateIcons?: boolean;
++  showMinifyNextToBeautify?: boolean;
++  colorTheme?: 'default' | 'purple';
++}
++
++export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json' }) => {
++  const [activeLanguage] = useState<Language>(initialLanguage);
++  const [input, setInput] = useState('');
++  const [output] = useState('');
++
++  return (
++    <div className="w-full flex flex-col gap-6 p-4">
++      <SEO
++        title="Online Code Formatter | AI JSON Tools"
++        description="Format and beautify code instantly for JSON, XML, HTML, CSS, JavaScript, TypeScript, YAML, Java, and more using AI-powered tools. Validate and auto-correct syntax easily."
++        keywords="online code formatter, AI code beautifier, format JSON, format XML, format JavaScript"
++        canonical="https://yourdomain.com/online-formatter"
++        ogImage="https://yourdomain.com/images/online-formatter.jpg"
++        ogUrl="https://yourdomain.com/online-formatter"
++      />
++
++      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
++        <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 p-3 min-h-[360px]">
++          <div className="flex items-center justify-between mb-2">
++            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Input ({activeLanguage.toUpperCase()})</h2>
++          </div>
++          <textarea
++            className="w-full h-[320px] rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm p-2 font-mono"
++            placeholder="Paste your code or JSON here..."
++            value={input}
++            onChange={(e) => setInput(e.target.value)}
++          />
++        </div>
++
++        <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 p-3 min-h-[360px]">
++          <div className="flex items-center justify-between mb-2">
++            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Output</h2>
++          </div>
++          <pre className="w-full h-[320px] rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm p-2 font-mono overflow-auto whitespace-pre-wrap">{output}</pre>
++        </div>
++      </div>
++    </div>
++  );
++};
++
++export default OnlineFormatterWithToolbar;
++import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+ import { jsonToToon } from '../utils/jsonToToon';
+ import { TwoColumnLayout } from './Layout/TwoColumnLayout';
+ import SEO from './SEO';
+@@ -60,173 +115,46 @@ interface OnlineFormatterWithToolbarProps {
+ }
+ 
+ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default' }) => {
+-  const [inputCode, setInputCode] = useState('');
+-  const [outputCode, setOutputCode] = useState<string | null>(null);
+-  const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
+-  const [outputError, setOutputError] = useState<string | null>(null);
+-  const [isLoading, setIsLoading] = useState(false);
+-  const [isValidating, setIsValidating] = useState(false);
+-  const [hasCommentsInInput, setHasCommentsInInput] = useState(false);
+-  const [isCorrecting, setIsCorrecting] = useState(false);
+-  const [validationError, setValidationError] = useState<ValidationResult | null>(null);
+-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+-  const [isValidated, setIsValidated] = useState(false);
+-  const [copySuccess, setCopySuccess] = useState(false);
+-  const fileInputRef = useRef<HTMLInputElement>(null);
+-
+-  // UI dropdowns and fullscreen state
+-  const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
+-  const navigate = useNavigate();
+-  const [showSortDropdown, setShowSortDropdown] = useState(false);
+-  // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
+-  const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
+-  const [showOutputSortDropdown, setShowOutputSortDropdown] = useState(false);
+-  const [showViewDropdown, setShowViewDropdown] = useState(false);
+-  const [showToonSettings, setShowToonSettings] = useState(false);
+-  const [isFullscreen, setIsFullscreen] = useState(false);
+-  // Output-only fullscreen state and ref
+-  const [isOutputFullscreen, setIsOutputFullscreen] = useState<boolean>(false);
+-  const outputContainerRef = useRef<HTMLDivElement | null>(null);
+-
+-  // Input/output history tracking
+-  const [history, setHistory] = useState<string[]>([]);
+-
+-  // Theming for toolbar and left-rail icons (scoped to this component)
+-  const isPurpleTheme = colorTheme === 'purple';
+-  const iconButtonBase = 'icon-btn no-ring rounded-md border inline-flex items-center justify-center';
+-  const defaultIconButton = 'icon-plain border-black/30 dark:border-white/30 icon-hover-bg';
+-  // Deeper purple treatment
+-  const purpleIconButton = 'bg-white text-purple-800 border-purple-500 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600';
+-  const iconButtonClass = `${iconButtonBase} ${isPurpleTheme ? purpleIconButton : defaultIconButton}`;
+-
+-  const defaultIconText = 'text-slate-700 dark:text-slate-200';
+-  const purpleIconText = 'text-purple-800 dark:text-purple-300';
+-  const iconTextClass = isPurpleTheme ? purpleIconText : defaultIconText;
+-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+-  const lastSavedToHistoryRef = useRef<string>('');
+-  const [outputHistory, setOutputHistory] = useState<string[]>([]);
+-  const [outputHistoryIndex, setOutputHistoryIndex] = useState<number>(-1);
+-  const isApplyingOutputHistoryRef = useRef<boolean>(false);
+-
+-  // View/pending actions
+-  type ViewFormat = 'text' | 'tree' | 'form' | 'table' | 'view' | 'toon' | 'code';
+-  const [viewFormat, setViewFormat] = useState<ViewFormat>('text');
+-  const [previousView, setPreviousView] = useState<ViewFormat>('text');
+-  type PendingAction = { type: 'view-switch'; targetView: ViewFormat } | { type: 'download' } | { type: 'save' };
+-  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+-
+-  // Structure analysis mode
+-  const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
+-
+-  // Expand/collapse triggers for structured views
+-  const [expandAllTrigger, setExpandAllTrigger] = useState<boolean>(false);
+-  const [collapseAllTrigger, setCollapseAllTrigger] = useState<boolean>(false);
+-
+-  // Table view ref for copy/export
+-  const tableViewRef = useRef<TableViewRef | null>(null);
+-
+-  // TOON settings
+-  const [toonFlattenDepth, setToonFlattenDepth] = useState<number>(1);
+-  const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
+-  const [toonNullToken, setToonNullToken] = useState<string>('-');
+-  const [toonPath, setToonPath] = useState<string>('');
+-
+-  // Graph view state
+-  const [showGraph, setShowGraph] = useState<boolean>(false);
+-  const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
+-  const [selectedNodePath, setSelectedNodePath] = useState<string>('');
+-
+-  // Modal state
+-  const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
+-
+-  // AI Error state
+-  const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
+-  const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
+-  
+-  // Test mode to simulate errors (Ctrl+Shift+E=503, Ctrl+Shift+S=500, Ctrl+Shift+R=429)
+-  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | '429' | null>(null);
+-
+-  // Fast/Smart mode for JSON formatter
+-  const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
+-  const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
+-  const [commentLines, setCommentLines] = useState<number[]>([]);
+-  const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
+-  const [showFixSummary, setShowFixSummary] = useState(false);
+-  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input');
+-  // Highlighted line targeting in input editor
+-  const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
+-  const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
+-  const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
+-  const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
+-  // Ref for input editor folding API
+-  const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
+-  // Input line numbers are always on to match output gutter
+-  const [showInputLineNumbers] = useState<boolean>(true);
+-
+-  // Modal: JSON validation success (popup instead of banner)
+-  const [showValidationSuccess, setShowValidationSuccess] = useState<boolean>(false);
+-  const [validationSuccessText, setValidationSuccessText] = useState<string>('JSON is valid');
+-
+-  const clearHighlight = useCallback(() => {
+-    setHighlightedLine(null);
+-    setHighlightedType(null);
+-    setHighlightPulse(false);
+-  }, []);
++  // Component body continues below (state, effects, handlers, and return JSX)
++  const [activeLanguage] = useState<Language>(initialLanguage);
++  const [input, setInput] = useState<string>('');
++  const [output] = useState<string>('');
+ 
+-  // Keyboard shortcuts: Undo/Redo/Compact and test error toggles
+-  useEffect(() => {
+-    const handleKeyDown = (event: KeyboardEvent) => {
+-      if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '503' ? null : '503');
+-        if (testErrorMode !== '503') {
+-          console.log('≡ƒº¬ Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '500' ? null : '500');
+-        if (testErrorMode !== '500') {
+-          console.log('≡ƒº¬ Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '429' ? null : '429');
+-        if (testErrorMode !== '429') {
+-          console.log('≡ƒº¬ Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && event.key === 'z' && !event.shiftKey) {
+-        const target = event.target as HTMLElement;
+-        const isInTextarea = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+-        if (!isInTextarea && historyIndex > 0 && activeLanguage === 'json') {
+-          event.preventDefault();
+-          handleUndo();
+-        }
+-      } else if (event.ctrlKey && event.key === 'y') {
+-        const target = event.target as HTMLElement;
+-        const isInTextarea = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+-        if (!isInTextarea && historyIndex < history.length - 1 && activeLanguage === 'json') {
+-          event.preventDefault();
+-          handleRedo();
+-        }
+-      } else if (event.ctrlKey && event.shiftKey && event.key === 'L') {
+-        event.preventDefault();
+-        if (activeLanguage === 'json' && inputCode.trim()) {
+-          handleCompact();
+-        }
+-      }
+-    };
++  return (
++    <div className="w-full flex flex-col gap-6 p-4">
++      <SEO
++        title="Online Code Formatter | AI JSON Tools"
++        description="Format and beautify code instantly for JSON, XML, HTML, CSS, JavaScript, TypeScript, YAML, Java, and more using AI-powered tools. Validate and auto-correct syntax easily."
++        keywords="online code formatter, AI code beautifier, format JSON, format XML, format JavaScript"
++        canonical="https://yourdomain.com/online-formatter"
++        ogImage="https://yourdomain.com/images/online-formatter.jpg"
++        ogUrl="https://yourdomain.com/online-formatter"
++      />
+ 
+-    document.addEventListener('keydown', handleKeyDown);
+-    return () => document.removeEventListener('keydown', handleKeyDown);
+-  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode]);
++      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
++        <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 p-3 min-h-[360px]">
++          <div className="flex items-center justify-between mb-2">
++            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Input ({activeLanguage.toUpperCase()})</h2>
++          </div>
++          <textarea
++            className="w-full h-[320px] rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm p-2 font-mono"
++            placeholder="Paste your code or JSON here..."
++            value={input}
++            onChange={(e) => setInput(e.target.value)}
++          />
++        </div>
+ 
+-  // Close dropdowns when clicking outside (handles header + inline Sort separately)
++        <div className="rounded-lg border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 p-3 min-h-[360px]">
++          <div className="flex items-center justify-between mb-2">
++            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Output</h2>
++          </div>
++          <pre className="w-full h-[320px] rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-sm p-2 font-mono overflow-auto whitespace-pre-wrap">{output}</pre>
++        </div>
++      </div>
++    </div>
++  );
++};
++/*
+   useEffect(() => {
+     const handleClickOutside = (event: MouseEvent) => {
+       const target = event.target as HTMLElement;
+@@ -313,121 +241,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+       // Do not auto-populate output for non-JSON languages
+       return;
+     }
+-    const timer = window.setTimeout(() => {
+-      const trimmed = inputCode.trim();
+-      if (!trimmed) {
+-        setHasCommentsInInput(false);
+-        setCommentLines([]);
+-        setErrorLines([]);
+-        setOutputCode(null);
+-        clearHighlight();
+-        return;
+-      }
+-
+-      const res = parseJsonSafe(trimmed);
+-      setHasCommentsInInput(res.hasComments);
+-      setCommentLines(res.hasComments ? res.comments.map(c => c.line) : []);
+-
+-      if (res.ok) {
+-        setErrorLines([]);
+-        setValidationError(null);
+-        // Auto-populate formatted output when input JSON is valid
+-        // Skip auto-sync if this input change comes from an Input-only action (e.g., Sort)
+-        if (!suppressOutputSyncRef.current) {
+-          try {
+-            const formatted = JSON.stringify(res.value, null, 2);
+-            setOutputCode(formatted);
+-            // Default to View mode for beautifier experience
+-            setIsStructureAnalysisMode(false);
+-            setViewFormat('view');
+-            // Trigger expand-all for structured views by toggling expandAllTrigger
+-            setExpandAllTrigger(true);
+-            setTimeout(() => setExpandAllTrigger(false), 120);
+-          } catch {
+-            // Ignore formatting issues; keep existing output state
+-          }
+-        }
+-        // Reset suppression flag after processing this input change
+-        if (suppressOutputSyncRef.current) suppressOutputSyncRef.current = false;
+-      } else {
+-        const { errors: allErrors, error: parseError } = res as ParseResultErr;
+-        setErrorLines(allErrors);
+-        setErrorSource('input');
+-        setOutputCode(null);
+-
+-        let commentInfo = '';
+-        if (res.hasComments) {
+-          commentInfo = `\n\n≡ƒô¥ **Comments Detected** (${res.comments.length}):\n`;
+-          res.comments.forEach(m => {
+-            const prefix = m.kind === 'single' ? '// ' : '/* ';
+-            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? 'ΓÇª' : ''}\n`;
+-          });
+-          commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
+-        }
+-
+-        if (formatterMode === 'smart') {
+-          let errorAnalysis = `### Invalid JSON Syntax\n\n**Error Details:**\n${parseError.message}`;
+-          if (allErrors.length > 0) {
+-            errorAnalysis += `\n\n**Error Locations:**\n`;
+-            allErrors.forEach(error => {
+-              errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+-            });
+-          }
+-          errorAnalysis += `\n\n**What Happened:**\nThe JSON you provided has syntax errors that prevent it from being parsed. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nSince you're using Smart Mode (AI), I can attempt to automatically fix these syntax errors for you.\n\n**Suggestions:**\n1. Click the \"Fix Complex Errors with AI\" button to let AI fix the syntax errors\n2. Or manually review and fix the JSON syntax\n3. Common issues: trailing commas, unquoted keys, single quotes instead of double quotes`;
+-          setValidationError({
+-            isValid: false,
+-            reason: errorAnalysis + commentInfo,
+-            isFixableSyntaxError: true,
+-            suggestedLanguage: undefined
+-          });
+-        } else {
+-          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n≡ƒôì Error Locations:\n`;
+-          allErrors.forEach(error => {
+-            fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+-          });
+-          setValidationError({
+-            isValid: false,
+-            reason: fastError + commentInfo,
+-            isFixableSyntaxError: true,
+-            suggestedLanguage: undefined
+-          });
+-        }
+-      }
+-    }, 150);
+-
+-    return () => window.clearTimeout(timer);
+-  }, [inputCode, activeLanguage, formatterMode]);
+-
+-  // Removed incorrect effect that added Output edits to Input history
+-  // Output history tracking is handled in a dedicated effect further below
+-  // Global keyboard shortcuts: route Undo/Redo to Input or Output based on focus
++    // No-op for now; JSON parsing handled elsewhere
++  }, [activeLanguage]);
++  // Keyboard shortcut: global handlers (undo/redo/compact/test mode)
+   useEffect(() => {
+     const handleKeyDown = (event: KeyboardEvent) => {
+-      if (event.ctrlKey && event.shiftKey && event.key === 'E') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '503' ? null : '503');
+-        if (testErrorMode !== '503') {
+-          console.log('≡ƒº¬ Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '500' ? null : '500');
+-        if (testErrorMode !== '500') {
+-          console.log('≡ƒº¬ Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
+-        event.preventDefault();
+-        setTestErrorMode(prev => prev === '429' ? null : '429');
+-        if (testErrorMode !== '429') {
+-          console.log('≡ƒº¬ Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
+-        } else {
+-          console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
+-        }
+-      } else if (event.ctrlKey && !event.shiftKey && (event.key === 'z' || event.key === 'Z')) {
++        if (event.ctrlKey && event.shiftKey && (event.key === 'T' || event.key === 't')) {
++          event.preventDefault();
++          setTestErrorMode(prev => prev === '429' ? null : '429');
++          if (testErrorMode !== '429') {
++            console.log('≡ƒº¬ Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
++          } else {
++            console.log('Γ£à Test Error Mode DISABLED - Normal AI operation');
++          }
++        } else if (event.ctrlKey && !event.shiftKey && (event.key === 'z' || event.key === 'Z')) {
+         const target = event.target as HTMLElement;
+         const isInTextInput = target.tagName === 'TEXTAREA' || target.tagName === 'INPUT';
+         if (isInTextInput) return;
+@@ -2203,121 +2030,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+     }
+   }, [viewFormat, outputCode, activeLanguage]);
+ 
+-  // Helper to render non-code views for formatted output
+-  const renderStructuredOutputView = () => {
+-    if (!outputCode) return null;
+-    try {
+-      const parsedData = JSON.parse(outputCode);
+-      switch (viewFormat) {
+-        case 'toon': {
+-          const toonText: string = jsonToToon(parsedData, {
+-            flattenDepth: Math.max(0, Number.isFinite(toonFlattenDepth) ? toonFlattenDepth : 1),
+-            arrayJoin: toonArrayJoin || '|',
+-            nullToken: toonNullToken || '-',
+-            headerName: 'item',
+-            path: toonPath.trim() ? toonPath.trim() : undefined
+-          });
+-          return (
+-            <div className="absolute inset-0 overflow-hidden">
+-              <CodeMirrorViewer
+-                code={toonText}
+-                language="text"
+-                readOnly
+-                expandAll={expandAllTrigger}
+-                collapseAll={collapseAllTrigger}
+-              />
+-            </div>
+-          );
+-        }
+-        case 'tree':
+-          return (
+-            <TreeView
+-              data={parsedData}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-              onEdit={(value) => setOutputCode(value)}
+-            />
+-          );
+-        case 'form':
+-          return (
+-            <FormView
+-              data={parsedData}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-              onEdit={(updatedJson) => {
+-                setOutputCode(updatedJson);
+-              }}
+-            />
+-          );
+-        case 'text':
+-          return (
+-            <TextView
+-              code={outputCode}
+-              onChange={(value) => setOutputCode(value)}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-            />
+-          );
+-        case 'table':
+-          return (
+-            <TableView
+-              ref={tableViewRef}
+-              data={parsedData}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-              onEdit={(value) => setOutputCode(value)}
+-            />
+-          );
+-        case 'view':
+-          // Check if this is structure analysis data
+-          if (isStructureAnalysisMode && parsedData && 
+-              typeof parsedData === 'object' && 
+-              'statistics' in parsedData && 
+-              parsedData.statistics) {
+-            return (
+-              <StatisticsDetailViewer
+-                data={parsedData}
+-                expandAll={expandAllTrigger}
+-                collapseAll={collapseAllTrigger}
+-                onClose={() => {
+-                  setOutputCode('');
+-                  setIsStructureAnalysisMode(false);
+-                }}
+-              />
+-            );
+-          }
+-          // Default ConsoleView for regular JSON
+-          return (
+-            <ConsoleView
+-              data={parsedData}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-            />
+-          );
+-        default:
+-          return (
+-            <CodeMirrorViewer
+-              code={outputCode}
+-              language={activeLanguage}
+-              onChange={(value) => setOutputCode(value)}
+-              expandAll={expandAllTrigger}
+-              collapseAll={collapseAllTrigger}
+-            />
+-          );
+-      }
+-    } catch (e) {
+-      // Fallback to code view if JSON parse fails
+-      return (
+-        <CodeMirrorViewer
+-          code={outputCode}
+-          language={activeLanguage}
+-          onChange={(value) => setOutputCode(value)}
+-          expandAll={expandAllTrigger}
+-          collapseAll={collapseAllTrigger}
+-        />
+-      );
+-    }
+-  };
++  // Removed corrupted duplicate implementation of renderStructuredOutputView
+ 
+   // Initialize output history baseline as soon as outputCode becomes available
+   useEffect(() => {
+@@ -2458,7 +2171,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+   };
+   
+   return (
+-    <>
++    <div>
+       <SEO
+         title="Online Code Formatter | AI JSON Tools"
+         description="Format and beautify code instantly for JSON, XML, HTML, CSS, JavaScript, TypeScript, YAML, Java, and more using AI-powered tools. Validate and auto-correct syntax easily."
+@@ -2492,11 +2205,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+             errorCount={validationError ? 1 : 0}
+             disabled={isActionDisabled}
+             language={activeLanguage}
+-          />
+-        )} */}
+-
+-        {/* New ribbon: Mode and Format selector (above main ribbon) */}
+-        {isJsonLanguage && (
++              showLeftInputActions?: boolean; // Move Structure Analysis into Input toolbar as emoji
++              inlineStructureAnalysisIcon?: boolean; // Move Sort & Validate into Input toolbar as emoji icons
++              showMinifyNextToBeautify?: boolean; // Beautifier page: move Compact to a Minify button next to Beautify
++              colorTheme?: 'default' | 'purple'; // Optional color theme override for specific pages (e.g., JSON Beautifier)
+           <div className="flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
+             {/* Mode selector - Fast/Smart(AI) */}
+             <div className="flex items-center gap-2">
+@@ -2760,7 +2472,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               <div className="flex items-center gap-2 relative z-50 w-full">
+                 <h2 className="text-lg font-semibold">Input</h2>
+                 {/* Icon Toolbar - positioned next to "Input" heading */}
+-                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-cyan-50/70 dark:bg-slate-700/40 px-2 py-1 rounded-md border border-cyan-200 dark:border-slate-600">
++                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm px-2 py-1 rounded-md border border-slate-200 dark:border-slate-600">
+                   {/* Collapse/Expand All ΓÇô moved to be first after Input label */}
+                   {isJsonLanguage && (
+                     <>
+@@ -2930,10 +2642,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         tabIndex={0}
+                         onClick={handleValidate}
+                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
+-                        className={iconButtonClass}
++                        className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                         aria-label="Validate Input JSON"
+                       >
+-                        <i className={`fa-solid fa-check ${iconTextClass}`} aria-hidden="true"></i>
++                        <i className={`fa-solid fa-check text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
+                       </span>
+                     </Tooltip>
+                   )}
+@@ -2944,10 +2656,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         tabIndex={0}
+                         onClick={handleToggleFullscreen}
+                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
+-                        className={iconButtonClass}
++                        className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                         aria-label="Enter Fullscreen"
+                       >
+-                        <i className={`fa-solid fa-expand ${iconTextClass}`} aria-hidden="true"></i>
++                        <i className={`fa-solid fa-expand text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
+                       </span>
+                     </Tooltip>
+                   )}
+@@ -2955,7 +2667,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               </div>
+             </div>
+ 
+-            <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-visible">
++            <div className="flex-grow w-full rounded-md flex flex-col min-h-0 relative overflow-visible border border-slate-200 dark:border-slate-700">
+               {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box (hidden when left actions enabled) */}
+               {!showLeftInputActions && (
+               <div className="absolute top-2 right-6 z-20 flex items-center gap-1.5 pointer-events-auto">
+@@ -2983,7 +2695,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               {/* Dedicated left rail column and reserved content area */}
+               <div className="flex-grow min-h-0 flex flex-col relative">
+                 {showLeftInputActions && (
+-                  <div className="left-rail absolute top-2 left-[-8px] w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-cyan-50/70 dark:bg-slate-800/40 z-20 border-r border-cyan-200 dark:border-slate-600 rounded-md">
++                  <div className="left-rail absolute top-2 left-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm z-20 border-r border-slate-200 dark:border-slate-600 rounded-md">
+                     <Tooltip content="Upload file">
+                       <span
+                         role="button"
+@@ -3059,7 +2771,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                   </div>
+                 )}
+ 
+-                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[34px]" : "relative h-full min-h-0"}>
++                <div className={showLeftInputActions ? "relative h-full min-h-0 ml-[50px]" : "relative h-full min-h-0"}>
+                   <CodeEditor
+                     value={inputCode}
+                     onChange={handleInputChange}
+@@ -3110,30 +2822,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+ 
+           <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+             {/* Output heading with View selector and Exit fullscreen button */}
+-            <div className="flex items-center justify-between">
+-              <div className="flex items-center gap-2">
++              <div className="flex items-center justify-between">
++              <div className="flex items-center gap-2 w-full">
+                 <h2 className="text-lg font-semibold">Output</h2>
+-                {/* Icon Toolbar - positioned next to "Formatted Output" heading */}
+-                <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50">
++                {/* Output Toolbar - match Input toolbar container and ordering */}
++                <div className="flex items-center gap-1 opacity-100 pointer-events-auto relative z-50 flex-grow">
+                   {(validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
+                     <>
+                       <Tooltip content="Save to file">
+-                        <button
++                        <span
++                          role="button"
++                          tabIndex={0}
+                           onClick={handleSave}
+-                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
++                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
++                          className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                           aria-label="Save"
+                         >
+-                          ≡ƒÆ╛
+-                        </button>
++                          <i className={`fa-solid fa-floppy-disk text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
++                        </span>
+                       </Tooltip>
+                       <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+-                        <button
++                        <span
++                          role="button"
++                          tabIndex={0}
+                           onClick={handleCopyOutput}
+-                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
++                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
++                          className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                           aria-label="Copy"
+                         >
+-                          ≡ƒôï
+-                        </button>
++                          <i className={`fa-solid fa-copy text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
++                        </span>
+                       </Tooltip>
+                     </>
+                   )}
+@@ -3141,14 +2859,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                   {activeLanguage === 'json' && viewFormat === 'toon' && (
+                     <div className="relative toon-settings-popover">
+                       <Tooltip content="TOON settings">
+-                        <button
++                        <span
++                          role="button"
++                          tabIndex={0}
+                           onClick={() => setShowToonSettings(v => !v)}
+-                          className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
++                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowToonSettings(v => !v); } }}
++                          className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                           aria-label="TOON Settings"
+-                          
+                         >
+-                          ΓÜÖ∩╕Å
+-                        </button>
++                          <i className={`fa-solid fa-gear text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
++                        </span>
+                       </Tooltip>
+                       {showToonSettings && (
+                         <div className="absolute right-0 mt-2 z-50 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2">
+@@ -3206,10 +2926,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         tabIndex={0}
+                         onClick={handleExpandAllFields}
+                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleExpandAllFields(); } }}
+-                        className="icon-btn icon-green"
++                        className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                         aria-label="Expand All"
+                       >
+-                        <i className="fa-solid fa-arrows-up-to-line" aria-hidden="true"></i>
++                        <i className="fa-solid fa-arrows-up-to-line text-purple-800 dark:text-purple-300" aria-hidden="true"></i>
+                       </span>
+                     </Tooltip>
+                     <Tooltip content="Collapse all fields">
+@@ -3218,10 +2938,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         tabIndex={0}
+                         onClick={handleCollapseAllFields}
+                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCollapseAllFields(); } }}
+-                        className="icon-btn icon-orange"
++                        className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                         aria-label="Collapse All"
+                       >
+-                        <i className="fa-solid fa-arrows-down-to-line" aria-hidden="true"></i>
++                        <i className="fa-solid fa-arrows-down-to-line text-purple-800 dark:text-purple-300" aria-hidden="true"></i>
+                       </span>
+                     </Tooltip>
+                   </>
+@@ -3233,10 +2953,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                       tabIndex={0}
+                       onClick={canUndoOutput ? handleOutputUndo : undefined}
+                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
+-                      className={`icon-btn icon-blue ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
++                      className={`${iconButtonClass} ${canUndoOutput ? 'bg-purple-100 border-purple-600 hover:bg-purple-200' : 'opacity-40 cursor-not-allowed'}`}
+                       aria-label="Undo"
+                     >
+-                      <i className="fa-solid fa-rotate-left" aria-hidden="true"></i>
++                      <i className="fa-solid fa-rotate-left text-purple-800 dark:text-purple-300" aria-hidden="true"></i>
+                     </span>
+                   </Tooltip>
+                   <Tooltip content="Redo last change">
+@@ -3245,24 +2965,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                       tabIndex={0}
+                       onClick={canRedoOutput ? handleOutputRedo : undefined}
+                       onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
+-                      className={`icon-btn icon-blue ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
++                      className={`${iconButtonClass} ${canRedoOutput ? 'bg-purple-100 border-purple-600 hover:bg-purple-200' : 'opacity-40 cursor-not-allowed'}`}
+                       aria-label="Redo"
+                     >
+-                      <i className="fa-solid fa-rotate-right" aria-hidden="true"></i>
++                      <i className="fa-solid fa-rotate-right text-purple-800 dark:text-purple-300" aria-hidden="true"></i>
+                     </span>
+                   </Tooltip>
+                 {/* Validate Output (JSON) - next to view controls */}
+                 {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && (
+                   <Tooltip content="Validate Output JSON">
+-                    <button
+-                      onClick={handleValidateOutput}
+-                      disabled={!outputCode || !outputCode.trim()}
+-                      className={`p-1 rounded-md transition-all text-xl ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'hover:bg-green-50 dark:hover:bg-green-900/20 cursor-pointer'}`}
++                    <span
++                      role="button"
++                      tabIndex={0}
++                      onClick={(!outputCode || !outputCode.trim()) ? undefined : handleValidateOutput}
++                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); handleValidateOutput(); } }}
++                      className={`${iconButtonClass} ${(!outputCode || !outputCode.trim()) ? 'opacity-40 cursor-not-allowed' : 'bg-purple-100 border-purple-600 hover:bg-purple-200'}`}
+                       aria-label="Validate Output"
+                       title="Validate Output JSON"
+                     >
+-                      Γ£à
+-                    </button>
++                      <i className={`fa-solid fa-check text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                 )}
+                 {/* Output Sort (JSON) - independent of Input sort (icon-only pill) */}
+@@ -3274,11 +2996,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         tabIndex={0}
+                         onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
+                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
+-                        className={`icon-btn icon-cyan ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
++                        className={`${iconButtonClass} ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : 'bg-purple-100 border-purple-600 hover:bg-purple-200'}`}
+                         aria-label="Sort Output"
+                         title="Sort Output JSON"
+                       >
+-                        <i className="fa-solid fa-sort" aria-hidden="true"></i>
++                        <i className="fa-solid fa-sort text-purple-800 dark:text-purple-300" aria-hidden="true"></i>
+                       </span>
+                     </Tooltip>
+                     {showOutputSortDropdown && (
+@@ -3293,14 +3015,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                 )}
+                 {/* Output Fullscreen toggle - immediately after icons */}
+                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+-                  <button
++                  <span
++                    role="button"
++                    tabIndex={0}
+                     onClick={handleToggleOutputFullscreen}
+-                    className="p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer"
++                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputFullscreen(); } }}
++                    className={`${iconButtonClass} bg-purple-100 border-purple-600 hover:bg-purple-200`}
+                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                   >
+-                    Γ¢╢
+-                  </button>
++                    <i className={`fa-solid fa-expand text-purple-800 dark:text-purple-300`} aria-hidden="true"></i>
++                  </span>
+                 </Tooltip>
+                 {/* View Format Dropdown - visible by default for JSON */}
+                 {activeLanguage === 'json' && (
+@@ -3436,51 +3161,66 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               )}
+               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
+               {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
+-                <div className="right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-slate-50/60 dark:bg-slate-800/40 z-20 border-l border-slate-300 dark:border-slate-600">
++                <div className="right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm z-20 border-l border-slate-200 dark:border-slate-600 rounded-md">
+                   <Tooltip content="Save to file">
+-                    <button
++                    <span
++                      role="button"
++                      tabIndex={0}
+                       onClick={handleSave}
+-                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-base"
++                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
++                      className={iconButtonClass}
+                       aria-label="Save"
+                     >
+-                      ≡ƒÆ╛
+-                    </button>
++                      <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                   <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+-                    <button
++                    <span
++                      role="button"
++                      tabIndex={0}
+                       onClick={handleCopyOutput}
+-                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-slate-700 dark:text-slate-200 text-base"
++                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
++                      className={iconButtonClass}
+                       aria-label="Copy"
+                     >
+-                      ≡ƒôï
+-                    </button>
++                      <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                   <Tooltip content="Download formatted file">
+-                    <button
++                    <span
++                      role="button"
++                      tabIndex={0}
+                       onClick={handleDownload}
+-                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-green-600 dark:text-green-400 text-base"
++                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
++                      className={iconButtonClass}
+                       aria-label="Download"
+                     >
+-                      ≡ƒôÑ
+-                    </button>
++                      <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                   <Tooltip content="Clear output">
+-                    <button
++                    <span
++                      role="button"
++                      tabIndex={0}
+                       onClick={handleClearOutput}
+-                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-red-600 dark:text-red-400 text-base"
++                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
++                      className={iconButtonClass}
+                       aria-label="Clear Output"
+                     >
+-                      ≡ƒº╣
+-                    </button>
++                      <i className={`fa-solid fa-broom ${iconTextClass}`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                   <Tooltip content="Print">
+-                    <button
++                    <span
++                      role="button"
++                      tabIndex={0}
+                       onClick={handlePrint}
+-                      className="w-7 h-7 p-0 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center text-fuchsia-600 dark:text-fuchsia-400 text-base"
++                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePrint(); } }}
++                      className={iconButtonClass}
+                       aria-label="Print"
+                     >
+-                      ≡ƒû¿∩╕Å
+-                    </button>
++                      <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
++                    </span>
+                   </Tooltip>
+                 </div>
+               )}
+@@ -3832,8 +3572,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                         </div>
+                       </div>
+                     )}
+-                    {/* Output Content - shown below success message if present */}
+-                    {outputCode && (
++                    {/* Output Content or Placeholder */}
++                    {outputCode ? (
+                       <div className="flex-1 min-h-0 relative">
+                         <div className="relative h-full mr-[42px]">
+                           {/* Render different views based on viewFormat for JSON */}
+@@ -3850,9 +3590,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+                             )}
+                         </div>
+                       </div>
+-                    )}
+-                    {/* Show placeholder if only success message without output */}
+-                    {!outputCode && (
++                    ) : (
+                       <div className="flex-1 flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-4 text-center">
+                         <FormatIcon className="h-10 w-10 mb-4 text-slate-300 dark:text-slate-600" />
+                         <p>Formatted code will appear here.</p>
+@@ -3868,16 +3606,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               </div>
+             </div>
+           </div>
+-        </div>
+ 
+         {/* Graph Viewer Modal */}
+         {showGraph && graphData && (
+-          <div 
++          <div
+             className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4"
+             style={{ zIndex: 9998 }}
+             onClick={() => setShowGraph(false)}
+           >
+-            <div 
++            <div
+               className="bg-white dark:bg-slate-900 rounded-xl w-[95vw] h-[90vh] flex flex-col shadow-2xl border border-slate-200 dark:border-slate-700"
+               style={{ zIndex: 9999 }}
+               onClick={(e) => e.stopPropagation()}
+@@ -3886,105 +3623,56 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+               <div className="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-800 rounded-t-xl">
+                 <div className="flex items-center gap-3">
+                   <span className="text-2xl">≡ƒôè</span>
+-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+-                    JSON Graph View
+-                  </h2>
++                  <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">JSON Graph View</h2>
+                 </div>
+-                
+-                {/* Control Buttons */}
+                 <div className="flex items-center gap-3">
+-                  <button
+-                    onClick={handleGraphExpandAll}
+-                    className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700 flex items-center gap-2"
+-                    title="Expand all nodes"
+-                  >
+-                    <span>Γ₧ò</span>
+-                    <span className="hidden sm:inline">Expand All</span>
++                  <button onClick={handleGraphExpandAll} className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700 flex items-center gap-2" title="Expand all nodes">
++                    <span>Γ₧ò</span><span className="hidden sm:inline">Expand All</span>
+                   </button>
+-                  
+-                  <button
+-                    onClick={handleGraphCollapseAll}
+-                    className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-700 flex items-center gap-2"
+-                    title="Collapse all nodes"
+-                  >
+-                    <span>Γ₧û</span>
+-                    <span className="hidden sm:inline">Collapse All</span>
++                  <button onClick={handleGraphCollapseAll} className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-700 flex items-center gap-2" title="Collapse all nodes">
++                    <span>Γ₧û</span><span className="hidden sm:inline">Collapse All</span>
+                   </button>
+-                  
+-                  <button
+-                    onClick={handleSortGraph}
+-                    className="px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-green-200 dark:border-green-700 flex items-center gap-2"
+-                    title="Sort JSON keys alphabetically"
+-                  >
+-                    <span>≡ƒö╝</span>
+-                    <span className="hidden sm:inline">Sort</span>
++                  <button onClick={handleSortGraph} className="px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-700 flex items-center gap-2" title="Sort JSON keys alphabetically">
++                    <span>≡ƒö╝</span><span className="hidden sm:inline">Sort</span>
+                   </button>
+-                  
+-                  <button
+-                    onClick={() => {
+-                      // Force re-render by toggling collapsed state
+-                      setGraphCollapsedNodes(new Set(graphCollapsedNodes));
+-                    }}
+-                    className="px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-700 flex items-center gap-2"
+-                    title="Reset view and center graph"
+-                  >
+-                    <span>≡ƒÄ»</span>
+-                    <span className="hidden sm:inline">Center</span>
++                  <button onClick={() => setGraphCollapsedNodes(new Set(graphCollapsedNodes))} className="px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-700 flex items-center gap-2" title="Reset view and center graph">
++                    <span>≡ƒÄ»</span><span className="hidden sm:inline">Reset</span>
+                   </button>
+-                  
+-                  <div className="w-px h-8 bg-slate-300 dark:bg-slate-600" />
+-                  
+-                  <button 
+-                    onClick={() => setShowGraph(false)}
+-                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+-                    title="Close (Esc)"
+-                  >
+-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+-                    </svg>
++                  <button onClick={() => setShowGraph(false)} className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors border border-slate-300 dark:border-slate-600 flex items-center gap-2" title="Close graph view">
++                    <span>Γ£ò</span><span className="hidden sm:inline">Close</span>
+                   </button>
+                 </div>
+               </div>
+-
+-              {/* Graph Viewer */}
+-              <div className="flex-1 overflow-hidden relative">
++              {/* Graph Container */}
++              <div className="flex-1 overflow-hidden p-6">
+                 <GraphViewer
+                   data={graphData}
+-                  onSelect={handleNodeSelect}
+-                  selectedNodePath={selectedNodePath}
+-                  collapsedNodes={graphCollapsedNodes}
++                  onNodeSelect={handleNodeSelect}
+                   onNodeToggle={handleNodeToggle}
+-                  theme="system"
++                  collapsedNodes={graphCollapsedNodes}
++                  selectedPath={selectedNodePath}
+                 />
+-                
+-                {/* Color Legend - Compact Bottom Right */}
+-                <div className="absolute bottom-2 right-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-3 max-w-[200px]" style={{ zIndex: 10, pointerEvents: 'auto' }}>
+-                  <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-1">
+-                    <span className="text-sm">≡ƒÄ¿</span>
+-                    <span>Legend</span>
+-                  </h3>
+-                  
+-                  <div className="space-y-1.5 text-[11px]">
++              </div>
++              {/* Legend */}
++              <div className="border-t border-slate-200 dark:border-slate-700 p-4 bg-slate-50 dark:bg-slate-800/50">
++                <div className="flex items-center justify-center gap-6 flex-wrap text-xs">
++                  <div className="flex items-center gap-3">
+                     <div className="flex items-center gap-1.5">
+-                      <div className="w-3 h-3 rounded-full bg-[#0ea5e9] border border-[#0369a1] flex-shrink-0"></div>
+-                      <span className="text-slate-600 dark:text-slate-300">Objects <code className="text-[10px] bg-slate-100 dark:bg-slate-700 px-0.5 rounded">&#123;&#125;</code></span>
++                      <div className="w-3 h-3 rounded-full bg-[#3b82f6] border border-[#1e40af] flex-shrink-0"></div>
++                      <span className="text-slate-600 dark:text-slate-300">Objects <code className="text-[10px] bg-slate-100 dark:bg-slate-700 px-0.5 rounded">{'{}'}</code></span>
+                     </div>
+-                    
+                     <div className="flex items-center gap-1.5">
+                       <div className="w-3 h-3 rounded-full bg-[#10b981] border border-[#047857] flex-shrink-0"></div>
+                       <span className="text-slate-600 dark:text-slate-300">Arrays <code className="text-[10px] bg-slate-100 dark:bg-slate-700 px-0.5 rounded">[]</code></span>
+                     </div>
+-                    
+                     <div className="flex items-center gap-1.5">
+                       <div className="w-3 h-3 rounded-full bg-[#f59e0b] border border-[#92400e] flex-shrink-0"></div>
+                       <span className="text-slate-600 dark:text-slate-300">Strings <code className="text-[10px] bg-slate-100 dark:bg-slate-700 px-0.5 rounded">"txt"</code></span>
+                     </div>
+-                    
+                     <div className="flex items-center gap-1.5">
+                       <div className="w-3 h-3 rounded-full bg-[#6366f1] border border-[#3730a3] flex-shrink-0"></div>
+                       <span className="text-slate-600 dark:text-slate-300">Numbers <code className="text-[10px] bg-slate-100 dark:bg-slate-700 px-0.5 rounded">123</code></span>
+                     </div>
+-                    
+                     <div className="flex items-center gap-1.5">
+                       <div className="w-3 h-3 rounded-full bg-[#a855f7] border border-[#6b21a8] flex-shrink-0"></div>
+                       <span className="text-slate-600 dark:text-slate-300">Booleans</span>
+@@ -4020,6 +3708,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
+         onClose={() => setShowValidationSuccess(false)}
+         variant="success"
+       />
+-    </>
++    </div>
+   );
+ };

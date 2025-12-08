@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const SoapFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const SoapFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/soap-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="soap" />
+      <OnlineFormatter initialLanguage="soap" />
     </>
   );
 };

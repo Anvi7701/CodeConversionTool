@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const YamlFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const YamlFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/yaml-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="yaml" />
+      <OnlineFormatter initialLanguage="yaml" />
     </>
   );
 };

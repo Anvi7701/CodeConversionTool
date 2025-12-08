@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const WsdlFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const WsdlFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/wsdl-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="wsdl" />
+      <OnlineFormatter initialLanguage="wsdl" />
     </>
   );
 };

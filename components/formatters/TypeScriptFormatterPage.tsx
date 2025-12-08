@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const TypeScriptFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const TypeScriptFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/typescript-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="typescript" />
+      <OnlineFormatter initialLanguage="typescript" />
     </>
   );
 };

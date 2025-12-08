@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const AngularFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const AngularFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/angular-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="angular" />
+      <OnlineFormatter initialLanguage="angular" />
     </>
   );
 };

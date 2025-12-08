@@ -32,10 +32,12 @@ const languageDetails: { [key in Language]: { label: string; icon: React.ReactNo
   graphql: { label: 'GraphQL', icon: <GraphQLIcon className="h-5 w-5" />, extensions: ['.graphql', '.gql', '.txt'] },
 };
 
-export const OnlineFormatter: React.FC = () => {
+interface OnlineFormatterProps { initialLanguage?: Language }
+
+export const OnlineFormatter: React.FC<OnlineFormatterProps> = ({ initialLanguage = 'json' }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
-  const [activeLanguage, setActiveLanguage] = useState<Language>('json');
+  const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
   const [outputError, setOutputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // For formatting
   const [isValidating, setIsValidating] = useState(false);
@@ -243,7 +245,39 @@ export const OnlineFormatter: React.FC = () => {
         ogUrl="https://yourdomain.com/online-formatter"
       />
       
+      {/* Simple top toolbar to restore core controls */}
+      <div className="flex items-center justify-between bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-md px-3 py-2 mb-4">
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1 bg-blue-600 text-white rounded" disabled={isActionDisabled || !inputCode.trim()} onClick={handleFormat}>Beautify</button>
+          <button className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded" disabled={isActionDisabled || !inputCode.trim()} onClick={handleValidate}>Validate</button>
+          <button className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded" disabled={isActionDisabled || !inputCode.trim()} onClick={() => { try { const compact = JSON.stringify(JSON.parse(inputCode)); setInputCode(compact); } catch {} }}>Compact</button>
+          <button className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded" onClick={() => { setInputCode(''); setOutputCode(null); setValidationError(null); setSuccessMessage(null); }}>Clear</button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded" disabled={!inputCode} onClick={() => navigator.clipboard.writeText(inputCode)}>Copy</button>
+          <label htmlFor="language-select" className="text-sm font-medium">Format:</label>
+          <select
+            id="language-select"
+            value={activeLanguage}
+            onChange={(e) => handleLanguageChange(e.target.value as Language)}
+            className="px-2 py-1 text-sm rounded-md bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 focus:ring-brand-primary focus:border-brand-primary"
+          >
+            {Object.keys(languageDetails).map(lang => (
+              <option key={lang} value={lang}>{languageDetails[lang as Language].label}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="w-full flex flex-col lg:flex-row gap-6">
+        {/* Left Rail */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-12 gap-2 items-center py-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-dark-card">
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" onClick={handleFormat} disabled={isActionDisabled || !inputCode.trim()}>Beautify</button>
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" onClick={handleValidate} disabled={isActionDisabled || !inputCode.trim()}>Validate</button>
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" onClick={() => { try { const compact = JSON.stringify(JSON.parse(inputCode)); setInputCode(compact); } catch {} }} disabled={isActionDisabled || !inputCode.trim()}>Compact</button>
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" onClick={() => { setInputCode(''); setOutputCode(null); setValidationError(null); setSuccessMessage(null); }}>Clear</button>
+        </aside>
+
         <div className="w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg overflow-hidden p-6 gap-4">
           <div className="flex justify-between items-center">
             <h2 className="text-xl font-semibold">Input</h2>
@@ -323,6 +357,13 @@ export const OnlineFormatter: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Right Rail */}
+        <aside className="hidden lg:flex lg:flex-col lg:w-12 gap-2 items-center py-4 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-dark-card">
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" disabled={!outputCode}>Code</button>
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" disabled={!outputCode}>Tree</button>
+          <button className="px-2 py-1 text-xs rounded bg-slate-100 dark:bg-slate-800" disabled={!outputCode}>Table</button>
+        </aside>
       </div>
     </>
   );

@@ -1,6 +1,6 @@
 import React from 'react';
 import SEO from './SEO';
-import { OnlineFormatterWithToolbar } from './OnlineFormatterWithToolbar';
+import { OnlineFormatter } from './OnlineFormatter';
 
 export const JsonToToonConverter: React.FC = () => {
   const structuredData = {
@@ -35,7 +35,7 @@ export const JsonToToonConverter: React.FC = () => {
       <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
         Tip: Paste your JSON on the left, then choose the View dropdown → TOON to generate token-friendly output.
       </div>
-      <OnlineFormatterWithToolbar initialLanguage="json" />
+      <OnlineFormatter initialLanguage="json" />
     </>
   );
 };

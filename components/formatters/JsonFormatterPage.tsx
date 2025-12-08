@@ -40,7 +40,14 @@ export const JsonFormatterPage: React.FC = () => {
         ogType="website"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="json" />
+      <OnlineFormatterWithToolbar
+        initialLanguage="json"
+        showLeftInputActions={true}
+        inlineStructureAnalysisIcon={false}
+        inlineSortValidateIcons={false}
+        showMinifyNextToBeautify={true}
+        colorTheme="purple"
+      />
     </>
   );
 };

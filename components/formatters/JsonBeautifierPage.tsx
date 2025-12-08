@@ -33,8 +33,15 @@ export const JsonBeautifierPage: React.FC = () => {
           })}
         </script>
       </Helmet>
-      {/* Reuse formatter with left rail and inline structure analysis icon */}
-      <OnlineFormatterWithToolbar initialLanguage="json" showLeftInputActions={true} inlineStructureAnalysisIcon={true} inlineSortValidateIcons={true} showMinifyNextToBeautify={true} colorTheme="purple" />
+      {/* Restore full toolbar layout with outside-gutter rails and purple theme */}
+      <OnlineFormatterWithToolbar
+        initialLanguage="json"
+        showLeftInputActions={true}
+        inlineStructureAnalysisIcon={false}
+        inlineSortValidateIcons={false}
+        showMinifyNextToBeautify={true}
+        colorTheme="purple"
+      />
     </>
   );
 };

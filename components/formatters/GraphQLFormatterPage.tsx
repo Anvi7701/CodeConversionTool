@@ -1,5 +1,5 @@
 import React from 'react';
-import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { OnlineFormatter } from '../OnlineFormatter';
 import SEO from '../SEO';
 
 export const GraphQLFormatterPage: React.FC = () => {
@@ -23,7 +23,7 @@ export const GraphQLFormatterPage: React.FC = () => {
         ogUrl="https://yoursite.com/graphql-formatter"
         structuredData={structuredData}
       />
-      <OnlineFormatterWithToolbar initialLanguage="graphql" />
+      <OnlineFormatter initialLanguage="graphql" />
     </>
   );
 };
