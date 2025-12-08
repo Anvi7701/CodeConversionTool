@@ -68,9 +68,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     //   light: 'rgba(226, 232, 240, 0.6)'  // slate-200/opacity
     //   dark:  'rgba(51, 65, 85, 0.35)'    // slate-700/opacity
     '.cm-gutters': { border: 'none', gap: '0px' },
-    '.cm-gutter': { background: gutterColorLight ?? 'rgba(226, 232, 240, 0.6)', border: 'none' },
+    '.cm-gutter': { background: gutterColorLight ?? 'rgba(241, 245, 249, 0.5)', border: 'none' },
     '.cm-gutter.cm-foldGutter': { width: '18px', minWidth: '18px' },
-    '.dark .cm-gutter': { background: gutterColorDark ?? 'rgba(51, 65, 85, 0.35)' },
+    '.dark .cm-gutter': { background: gutterColorDark ?? 'rgba(51, 65, 85, 0.25)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
     // Surrounding area/background outside the text content
     '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
