@@ -2987,7 +2987,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
-                    <Tooltip content="Upload file">
+                    <Tooltip content="Download file">
                       <span
                         role="button"
                         tabIndex={0}
