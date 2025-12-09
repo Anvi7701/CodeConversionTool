@@ -119,6 +119,8 @@ interface CodeMirrorViewerProps {
   readOnly?: boolean;
   expandAll?: boolean;
   collapseAll?: boolean;
+  highlightLine?: number;
+  highlightPulse?: boolean;
 }
 
 export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({ 
@@ -128,6 +130,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   readOnly = false,
   expandAll: expandAllTrigger,
   collapseAll: collapseAllTrigger,
+  highlightLine,
+  highlightPulse,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
 
@@ -220,8 +224,61 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     return baseExtensions;
   }, [languageExtension, readOnly, language, onChange]);
 
+  // Highlight search result line
+  useEffect(() => {
+    if (!editorRef.current || !highlightLine) return;
+    
+    const view = editorRef.current.view;
+    if (!view) return;
+    
+    try {
+      const lineInfo = view.state.doc.line(highlightLine);
+      
+      // Scroll to line
+      view.dispatch({ 
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+      });
+      
+      // Apply highlight by adding class to line element
+      setTimeout(() => {
+        if (!editorRef.current?.view) return;
+        const lines = editorRef.current.view.dom.querySelectorAll('.cm-line');
+        
+        // Remove previous highlights
+        lines.forEach(line => {
+          line.classList.remove('search-highlight', 'search-highlight-pulse');
+        });
+        
+        // Add highlight to target line
+        if (highlightLine > 0 && highlightLine <= lines.length) {
+          const lineEl = lines[highlightLine - 1];
+          if (lineEl) {
+            lineEl.classList.add('search-highlight');
+            if (highlightPulse) {
+              lineEl.classList.add('search-highlight-pulse');
+            }
+          }
+        }
+      }, 10);
+    } catch (e) {
+      console.error('Error highlighting line in CodeMirrorViewer:', e);
+    }
+  }, [highlightLine, highlightPulse]);
+
   return (
     <div className="absolute inset-0 overflow-auto">
+      <style>{`
+        .cm-line.search-highlight {
+          background-color: rgba(255, 255, 0, 0.3);
+        }
+        .cm-line.search-highlight-pulse {
+          animation: search-highlight-pulse 0.8s ease-in-out 2;
+        }
+        @keyframes search-highlight-pulse {
+          0%, 100% { background-color: rgba(255, 255, 0, 0.3); }
+          50% { background-color: rgba(255, 255, 0, 0.7); }
+        }
+      `}</style>
       <CodeMirror
         ref={editorRef}
         value={code}

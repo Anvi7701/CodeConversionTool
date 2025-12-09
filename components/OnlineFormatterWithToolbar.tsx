@@ -162,6 +162,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [searchResults, setSearchResults] = useState<Array<{ line: number; column: number; text: string }>>([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
 
+  // Search functionality state for Output JSON
+  const [showOutputSearchPanel, setShowOutputSearchPanel] = useState<boolean>(false);
+  const [outputSearchQuery, setOutputSearchQuery] = useState<string>('');
+  const [outputSearchResults, setOutputSearchResults] = useState<Array<{ line: number; column: number; text: string }>>([]);
+  const [currentOutputSearchIndex, setCurrentOutputSearchIndex] = useState<number>(-1);
+
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
     setHighlightedType(null);
@@ -469,24 +475,44 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         // Ctrl+F: Open search panel for JSON
         if (activeLanguage === 'json') {
           event.preventDefault();
-          setShowSearchPanel(true);
+          
+          // Determine if focus is in Output section
+          const activeEl = (document.activeElement as Node | null);
+          const isInOutput = !!(outputContainerRef.current && activeEl && outputContainerRef.current.contains(activeEl));
+          
+          if (isInOutput && viewFormat === 'code' && outputCode) {
+            setShowOutputSearchPanel(true);
+          } else {
+            setShowSearchPanel(true);
+          }
         }
       } else if (event.key === 'Escape') {
         // Escape: Close search panel if open
         if (showSearchPanel) {
           event.preventDefault();
           handleToggleSearch();
+        } else if (showOutputSearchPanel) {
+          event.preventDefault();
+          handleToggleOutputSearch();
         }
-      } else if (event.key === 'Enter' && showSearchPanel) {
+      } else if (event.key === 'Enter' && (showSearchPanel || showOutputSearchPanel)) {
         // Enter/Shift+Enter: Navigate search results
         const target = event.target as HTMLElement;
         const isInSearchInput = target.tagName === 'INPUT' && target.closest('[class*="purple-"]');
-        if (isInSearchInput && searchResults.length > 0) {
+        if (isInSearchInput) {
           event.preventDefault();
-          if (event.shiftKey) {
-            handleSearchPrevious();
-          } else {
-            handleSearchNext();
+          if (showSearchPanel && searchResults.length > 0) {
+            if (event.shiftKey) {
+              handleSearchPrevious();
+            } else {
+              handleSearchNext();
+            }
+          } else if (showOutputSearchPanel && outputSearchResults.length > 0) {
+            if (event.shiftKey) {
+              handleOutputSearchPrevious();
+            } else {
+              handleOutputSearchNext();
+            }
           }
         }
       }
@@ -494,7 +520,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode, outputHistoryIndex, outputHistory, showSearchPanel, searchResults]);
+  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode, outputHistoryIndex, outputHistory, showSearchPanel, searchResults, showOutputSearchPanel, outputSearchResults, viewFormat, outputCode]);
 
   // Sync fullscreen state with actual fullscreen status
   useEffect(() => {
@@ -655,6 +681,68 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setHighlightedLine(null);
       setHighlightedType(null);
       setHighlightPulse(false);
+    }
+  };
+
+  // Output Search functionality
+  const handleOutputSearch = (query: string) => {
+    setOutputSearchQuery(query);
+    
+    if (!query.trim() || !outputCode || !outputCode.trim()) {
+      setOutputSearchResults([]);
+      setCurrentOutputSearchIndex(-1);
+      return;
+    }
+
+    const results: Array<{ line: number; column: number; text: string }> = [];
+    const lines = outputCode.split('\n');
+    const searchLower = query.toLowerCase();
+
+    lines.forEach((lineText, lineIndex) => {
+      const lineLower = lineText.toLowerCase();
+      let columnIndex = 0;
+      
+      while (true) {
+        const foundIndex = lineLower.indexOf(searchLower, columnIndex);
+        if (foundIndex === -1) break;
+        
+        results.push({
+          line: lineIndex + 1,
+          column: foundIndex + 1,
+          text: lineText.substring(Math.max(0, foundIndex - 20), Math.min(lineText.length, foundIndex + query.length + 20))
+        });
+        
+        columnIndex = foundIndex + 1;
+      }
+    });
+
+    setOutputSearchResults(results);
+    if (results.length > 0) {
+      setCurrentOutputSearchIndex(0);
+    } else {
+      setCurrentOutputSearchIndex(-1);
+    }
+  };
+
+  const handleOutputSearchNext = () => {
+    if (outputSearchResults.length === 0) return;
+    const nextIndex = (currentOutputSearchIndex + 1) % outputSearchResults.length;
+    setCurrentOutputSearchIndex(nextIndex);
+  };
+
+  const handleOutputSearchPrevious = () => {
+    if (outputSearchResults.length === 0) return;
+    const prevIndex = (currentOutputSearchIndex - 1 + outputSearchResults.length) % outputSearchResults.length;
+    setCurrentOutputSearchIndex(prevIndex);
+  };
+
+  const handleToggleOutputSearch = () => {
+    setShowOutputSearchPanel(!showOutputSearchPanel);
+    if (showOutputSearchPanel) {
+      // Closing search panel - clear search state
+      setOutputSearchQuery('');
+      setOutputSearchResults([]);
+      setCurrentOutputSearchIndex(-1);
     }
   };
 
@@ -2899,11 +2987,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
                             onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
                             aria-label="Sort Input"
                             title="Sort Input JSON"
                           >
-                            <i className={`fa-solid fa-sort ${iconTextClass}`} aria-hidden="true"></i>
+                            <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
                           </span>
                         </Tooltip>
                         {showSortDropdown && (
@@ -3004,10 +3092,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleSearch}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`${iconButtonClass} ${showSearchPanel ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`}
+                        className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
                         aria-label="Search"
                       >
-                        <i className={`fa-solid fa-search ${iconTextClass}`} aria-hidden="true"></i>
+                        <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -3122,7 +3210,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <div className="flex items-center gap-1 px-2 border-l border-purple-300 dark:border-purple-600">
                   <button
                     onClick={handleSearchPrevious}
-                    disabled={searchResults.length === 0}
+                    disabled={searchResults.length === 0 || currentSearchIndex === 0}
                     className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Previous result"
                     title="Previous (Shift+Enter)"
@@ -3131,7 +3219,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                   <button
                     onClick={handleSearchNext}
-                    disabled={searchResults.length === 0}
+                    disabled={searchResults.length === 0 || currentSearchIndex === searchResults.length - 1}
                     className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     aria-label="Next result"
                     title="Next (Enter)"
@@ -3322,11 +3410,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
                             onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
-                            className={`${iconButtonClass} ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
                             aria-label="Sort Output"
                             title="Sort Output JSON"
                           >
-                            <i className={`fa-solid fa-sort ${iconTextClass}`} aria-hidden="true"></i>
+                            <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
                           </span>
                         </Tooltip>
                         {showOutputSortDropdown && (
@@ -3339,6 +3427,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         )}
                       </div>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
                       {/* Undo/Redo for Output - positioned after Sort (matching Input section layout) */}
                       <Tooltip content="Undo last change">
                         <span
@@ -3364,6 +3453,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
                         </span>
                       </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
+                      {/* Search Output JSON (code view only) */}
+                      {viewFormat === 'code' && (
+                        <Tooltip content="Search in Output JSON">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={handleToggleOutputSearch}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputSearch(); } }}
+                            className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
+                            aria-label="Search Output"
+                          >
+                            <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
+                          </span>
+                        </Tooltip>
+                      )}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
@@ -4036,6 +4142,61 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     {/* Output Content - shown below success message if present */}
                     {outputCode && (
                       <div className="flex-1 min-h-0 relative">
+                        {/* Output Search Panel */}
+                        {showOutputSearchPanel && viewFormat === 'code' && (
+                          <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-700 mr-[42px]">
+                            <input
+                              type="text"
+                              value={outputSearchQuery}
+                              onChange={(e) => handleOutputSearch(e.target.value)}
+                              placeholder="Search in output..."
+                              className="flex-1 px-3 py-1.5 text-sm border border-purple-300 dark:border-purple-600 rounded bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                              autoFocus
+                            />
+                            {outputSearchQuery && (
+                              <button
+                                onClick={() => handleOutputSearch('')}
+                                className="px-2 py-1 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors"
+                                aria-label="Clear search"
+                                title="Clear search"
+                              >
+                                <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+                              </button>
+                            )}
+                            <div className="flex items-center gap-1 px-2 border-l border-purple-300 dark:border-purple-600">
+                              <button
+                                onClick={handleOutputSearchPrevious}
+                                disabled={outputSearchResults.length === 0 || currentOutputSearchIndex === 0}
+                                className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                aria-label="Previous result"
+                                title="Previous"
+                              >
+                                <i className="fa-solid fa-chevron-up text-xs" aria-hidden="true"></i>
+                              </button>
+                              <button
+                                onClick={handleOutputSearchNext}
+                                disabled={outputSearchResults.length === 0 || currentOutputSearchIndex === outputSearchResults.length - 1}
+                                className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                aria-label="Next result"
+                                title="Next"
+                              >
+                                <i className="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+                              </button>
+                            </div>
+                            <span className="text-sm text-purple-700 dark:text-purple-300 font-medium min-w-[60px] text-center">
+                              {outputSearchResults.length > 0 ? `${currentOutputSearchIndex + 1} of ${outputSearchResults.length}` : 'No results'}
+                            </span>
+                            <button
+                              onClick={handleToggleOutputSearch}
+                              className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors ml-1"
+                              aria-label="Close search"
+                              title="Close"
+                            >
+                              <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+                            </button>
+                          </div>
+                        )}
+                        
                         <div className="relative h-full mr-[42px]">
                           {/* Render different views based on viewFormat for JSON */}
                           {activeLanguage === 'json' && viewFormat !== 'code'
@@ -4047,6 +4208,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 onChange={(value) => setOutputCode(value)}
                                 expandAll={expandAllTrigger}
                                 collapseAll={collapseAllTrigger}
+                                highlightLine={outputSearchResults.length > 0 && currentOutputSearchIndex >= 0 ? outputSearchResults[currentOutputSearchIndex].line : undefined}
+                                highlightPulse={true}
                               />
                             )}
                         </div>
