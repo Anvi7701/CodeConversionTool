@@ -156,6 +156,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Pending action state for validation flow
   const [pendingAction, setPendingAction] = useState<{ type: 'save' | 'copy' | 'download' } | null>(null);
 
+  // Search functionality state for Input JSON
+  const [showSearchPanel, setShowSearchPanel] = useState<boolean>(false);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchResults, setSearchResults] = useState<Array<{ line: number; column: number; text: string }>>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState<number>(-1);
+
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
     setHighlightedType(null);
@@ -459,12 +465,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (activeLanguage === 'json' && inputCode.trim()) {
           handleCompact();
         }
+      } else if (event.ctrlKey && event.key === 'f') {
+        // Ctrl+F: Open search panel for JSON
+        if (activeLanguage === 'json') {
+          event.preventDefault();
+          setShowSearchPanel(true);
+        }
+      } else if (event.key === 'Escape') {
+        // Escape: Close search panel if open
+        if (showSearchPanel) {
+          event.preventDefault();
+          handleToggleSearch();
+        }
+      } else if (event.key === 'Enter' && showSearchPanel) {
+        // Enter/Shift+Enter: Navigate search results
+        const target = event.target as HTMLElement;
+        const isInSearchInput = target.tagName === 'INPUT' && target.closest('[class*="purple-"]');
+        if (isInSearchInput && searchResults.length > 0) {
+          event.preventDefault();
+          if (event.shiftKey) {
+            handleSearchPrevious();
+          } else {
+            handleSearchNext();
+          }
+        }
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode, outputHistoryIndex, outputHistory]);
+  }, [testErrorMode, historyIndex, history, activeLanguage, inputCode, outputHistoryIndex, outputHistory, showSearchPanel, searchResults]);
 
   // Sync fullscreen state with actual fullscreen status
   useEffect(() => {
@@ -534,6 +564,62 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setHistory(newHistory);
       setHistoryIndex(newHistory.length - 1);
       lastSavedToHistoryRef.current = value;
+    }
+  };
+
+  // Search functionality for Input JSON
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    
+    if (!query.trim() || !inputCode.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const results: Array<{ line: number; column: number; text: string }> = [];
+    const lines = inputCode.split('\n');
+    const searchLower = query.toLowerCase();
+
+    lines.forEach((lineText, lineIndex) => {
+      const lineLower = lineText.toLowerCase();
+      let columnIndex = 0;
+      
+      while (true) {
+        const foundIndex = lineLower.indexOf(searchLower, columnIndex);
+        if (foundIndex === -1) break;
+        
+        results.push({
+          line: lineIndex + 1,
+          column: foundIndex + 1,
+          text: lineText.substring(Math.max(0, foundIndex - 20), Math.min(lineText.length, foundIndex + query.length + 20))
+        });
+        
+        columnIndex = foundIndex + 1;
+      }
+    });
+
+    setSearchResults(results);
+    setCurrentSearchIndex(results.length > 0 ? 0 : -1);
+  };
+
+  const handleSearchNext = () => {
+    if (searchResults.length === 0) return;
+    setCurrentSearchIndex((prev) => (prev + 1) % searchResults.length);
+  };
+
+  const handleSearchPrevious = () => {
+    if (searchResults.length === 0) return;
+    setCurrentSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+  };
+
+  const handleToggleSearch = () => {
+    setShowSearchPanel(!showSearchPanel);
+    if (showSearchPanel) {
+      // Closing search panel - clear search state
+      setSearchQuery('');
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
     }
   };
 
@@ -2873,6 +2959,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
                     </span>
                   </Tooltip>
+                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
+                  {/* GROUP 4.5: Search (JSON only) */}
+                  {isJsonLanguage && (
+                    <Tooltip content="Search in Input JSON">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={handleToggleSearch}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleSearch(); } }}
+                        className={`${iconButtonClass} ${showSearchPanel ? 'bg-purple-100 dark:bg-purple-900/30' : ''}`}
+                        aria-label="Search"
+                      >
+                        <i className={`fa-solid fa-search ${iconTextClass}`} aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
                       {/* Validate moved to right side toolbar */}
@@ -2957,6 +3060,62 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               </Tooltip>
             </div>
+            )}
+
+            {/* Search Panel - shown when search is active */}
+            {showSearchPanel && isJsonLanguage && (
+              <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-md mb-2">
+                <i className="fa-solid fa-search text-purple-600 dark:text-purple-400 text-sm ml-1" aria-hidden="true"></i>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  placeholder="Search in Input JSON..."
+                  className="flex-grow px-3 py-1.5 text-sm border border-purple-300 dark:border-purple-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => handleSearch('')}
+                    className="px-2 py-1 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors"
+                    aria-label="Clear search"
+                    title="Clear search"
+                  >
+                    <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+                  </button>
+                )}
+                <div className="flex items-center gap-1 px-2 border-l border-purple-300 dark:border-purple-600">
+                  <button
+                    onClick={handleSearchPrevious}
+                    disabled={searchResults.length === 0}
+                    className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Previous result"
+                    title="Previous (Shift+Enter)"
+                  >
+                    <i className="fa-solid fa-chevron-up text-xs" aria-hidden="true"></i>
+                  </button>
+                  <button
+                    onClick={handleSearchNext}
+                    disabled={searchResults.length === 0}
+                    className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    aria-label="Next result"
+                    title="Next (Enter)"
+                  >
+                    <i className="fa-solid fa-chevron-down text-xs" aria-hidden="true"></i>
+                  </button>
+                </div>
+                <span className="text-sm text-purple-700 dark:text-purple-300 font-medium min-w-[60px] text-center">
+                  {searchResults.length > 0 ? `${currentSearchIndex + 1} of ${searchResults.length}` : 'No results'}
+                </span>
+                <button
+                  onClick={handleToggleSearch}
+                  className="p-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors ml-1"
+                  aria-label="Close search"
+                  title="Close (Escape)"
+                >
+                  <i className="fa-solid fa-xmark" aria-hidden="true"></i>
+                </button>
+              </div>
             )}
 
             {/* Dedicated left rail column and reserved content area */}
