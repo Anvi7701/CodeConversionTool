@@ -3429,6 +3429,30 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
               {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
                 <div className="right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md">
+                  <Tooltip content="Download file">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={handleDownload}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
+                      className={iconButtonClass}
+                      aria-label="Download"
+                    >
+                      <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
+                    </span>
+                  </Tooltip>
+                  <Tooltip content="Clear output">
+                    <span
+                      role="button"
+                      tabIndex={0}
+                      onClick={handleClearOutput}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
+                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      aria-label="Clear Output"
+                    >
+                      <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
+                    </span>
+                  </Tooltip>
                   <Tooltip content="Save to file">
                     <span
                       role="button"
@@ -3451,30 +3475,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Copy"
                     >
                       <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Download formatted file">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={handleDownload}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                      className={iconButtonClass}
-                      aria-label="Download"
-                    >
-                      <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Clear output">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={handleClearOutput}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Clear Output"
-                    >
-                      <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
                     </span>
                   </Tooltip>
                   <Tooltip content="Print">
