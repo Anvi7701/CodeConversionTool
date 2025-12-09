@@ -574,6 +574,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!query.trim() || !inputCode.trim()) {
       setSearchResults([]);
       setCurrentSearchIndex(-1);
+      setHighlightedLine(null);
+      setHighlightedType(null);
+      setHighlightPulse(false);
       return;
     }
 
@@ -600,26 +603,54 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     });
 
     setSearchResults(results);
-    setCurrentSearchIndex(results.length > 0 ? 0 : -1);
+    if (results.length > 0) {
+      setCurrentSearchIndex(0);
+      // Highlight the first result immediately
+      setHighlightedLine(results[0].line);
+      setHighlightedType('simple');
+      setHighlightPulse(true);
+      // Disable auto-scroll temporarily to allow manual scrolling to result
+      setDisableAutoScroll(false);
+    } else {
+      setCurrentSearchIndex(-1);
+      setHighlightedLine(null);
+      setHighlightedType(null);
+      setHighlightPulse(false);
+    }
   };
 
   const handleSearchNext = () => {
     if (searchResults.length === 0) return;
-    setCurrentSearchIndex((prev) => (prev + 1) % searchResults.length);
+    const nextIndex = (currentSearchIndex + 1) % searchResults.length;
+    setCurrentSearchIndex(nextIndex);
+    const result = searchResults[nextIndex];
+    setHighlightedLine(result.line);
+    setHighlightedType('simple');
+    setHighlightPulse(true);
+    setDisableAutoScroll(false);
   };
 
   const handleSearchPrevious = () => {
     if (searchResults.length === 0) return;
-    setCurrentSearchIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length);
+    const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    setCurrentSearchIndex(prevIndex);
+    const result = searchResults[prevIndex];
+    setHighlightedLine(result.line);
+    setHighlightedType('simple');
+    setHighlightPulse(true);
+    setDisableAutoScroll(false);
   };
 
   const handleToggleSearch = () => {
     setShowSearchPanel(!showSearchPanel);
     if (showSearchPanel) {
-      // Closing search panel - clear search state
+      // Closing search panel - clear search state and highlights
       setSearchQuery('');
       setSearchResults([]);
       setCurrentSearchIndex(-1);
+      setHighlightedLine(null);
+      setHighlightedType(null);
+      setHighlightPulse(false);
     }
   };
 
