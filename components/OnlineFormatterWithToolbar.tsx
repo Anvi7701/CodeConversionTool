@@ -624,15 +624,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const nextIndex = (currentSearchIndex + 1) % searchResults.length;
     setCurrentSearchIndex(nextIndex);
     const result = searchResults[nextIndex];
-    // Reset pulse first, then set it with the new line to trigger animation
-    setHighlightPulse(false);
     setHighlightedLine(result.line);
     setHighlightedType('simple');
-    // Use setTimeout to ensure pulse triggers on next render
-    setTimeout(() => {
-      setHighlightPulse(true);
-      setDisableAutoScroll(false);
-    }, 10);
+    setHighlightPulse(true);
+    setDisableAutoScroll(false);
+    // Reset pulse after animation
+    setTimeout(() => setHighlightPulse(false), 1600);
   };
 
   const handleSearchPrevious = () => {
@@ -640,15 +637,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     const prevIndex = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     setCurrentSearchIndex(prevIndex);
     const result = searchResults[prevIndex];
-    // Reset pulse first, then set it with the new line to trigger animation
-    setHighlightPulse(false);
     setHighlightedLine(result.line);
     setHighlightedType('simple');
-    // Use setTimeout to ensure pulse triggers on next render
-    setTimeout(() => {
-      setHighlightPulse(true);
-      setDisableAutoScroll(false);
-    }, 10);
+    setHighlightPulse(true);
+    setDisableAutoScroll(false);
+    // Reset pulse after animation
+    setTimeout(() => setHighlightPulse(false), 1600);
   };
 
   const handleToggleSearch = () => {

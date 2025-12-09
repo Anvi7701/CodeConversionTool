@@ -3,8 +3,8 @@ import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { foldGutter, foldAll, unfoldAll } from '@codemirror/language';
 import { lineNumbers } from '@codemirror/view';
-import { EditorView } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorView, Decoration } from '@codemirror/view';
+import { EditorState, StateField, StateEffect } from '@codemirror/state';
 import { syntaxTree } from '@codemirror/language';
 
 interface ErrorPosition {
@@ -105,15 +105,47 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     }
   }), []);
 
-  // Scroll to highlight/error line
+  // Scroll to and highlight line
   useEffect(() => {
-    if (disableAutoScroll) return;
+    if (!viewRef.current) return;
+    
     const targetLine = highlightLine || errorLine || (errorLines && errorLines.length ? errorLines[0].line : null);
-    if (targetLine && viewRef.current) {
-      const lineInfo = viewRef.current.state.doc.line(targetLine);
-      viewRef.current.dispatch({ effects: EditorView.scrollIntoView(lineInfo.from) });
+    if (targetLine) {
+      try {
+        const lineInfo = viewRef.current.state.doc.line(targetLine);
+        
+        // Scroll to line
+        if (!disableAutoScroll) {
+          viewRef.current.dispatch({ 
+            effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+          });
+        }
+        
+        // Apply highlight by adding class to line element
+        setTimeout(() => {
+          if (!viewRef.current) return;
+          const lines = viewRef.current.dom.querySelectorAll('.cm-line');
+          // Remove previous highlights
+          lines.forEach(line => {
+            line.classList.remove('search-highlight', 'search-highlight-pulse');
+          });
+          
+          // Add highlight to target line
+          if (targetLine > 0 && targetLine <= lines.length) {
+            const lineEl = lines[targetLine - 1];
+            if (lineEl) {
+              lineEl.classList.add('search-highlight');
+              if (highlightPulse) {
+                lineEl.classList.add('search-highlight-pulse');
+              }
+            }
+          }
+        }, 10);
+      } catch (e) {
+        console.error('Error highlighting line:', e);
+      }
     }
-  }, [highlightLine, errorLine, errorLines, disableAutoScroll]);
+  }, [highlightLine, errorLine, errorLines, disableAutoScroll, highlightPulse]);
 
   // Handle paste to parent
   const handlePaste = (text: string) => {
@@ -143,7 +175,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   }, [language, theme]);
 
   return (
-    <div ref={containerRef} className="absolute inset-0 overflow-auto">
+    <div ref={containerRef} className="absolute inset-0">
         <CodeMirror
           value={value}
           height="100%"
@@ -169,13 +201,6 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
             if (text && onPaste) onPaste(text);
           }}
         />
-        {highlightLine && highlightStyle && (
-          <div className={`absolute inset-x-0 pointer-events-none ${highlightPulse ? 'animate-pulse' : ''}`} style={{
-            top: ((highlightLine - 1) * 20) + 'px',
-            height: '20px',
-            backgroundColor: highlightStyle === 'simple' ? 'rgba(16,185,129,0.15)' : highlightStyle === 'complex' ? 'rgba(239,68,68,0.15)' : 'rgba(168,85,247,0.15)'
-          }} />
-        )}
     </div>
   );
 };
@@ -193,6 +218,18 @@ if (typeof document !== 'undefined' && !document.getElementById(styleElId)) {
     .dark .cm-ln-bg-complex { background: rgba(239,68,68,0.18); color: rgb(252,165,165); }
     .cm-ln-bg-comment { background: rgba(168,85,247,0.12); color: rgb(168,85,247); }
     .dark .cm-ln-bg-comment { background: rgba(168,85,247,0.18); color: rgb(216,180,254); }
+    
+    /* Search highlight styles */
+    .cm-line.search-highlight {
+      background-color: rgba(250,204,21,0.3) !important;
+    }
+    .cm-line.search-highlight-pulse {
+      animation: search-highlight-pulse 0.8s ease-in-out 2;
+    }
+    @keyframes search-highlight-pulse {
+      0%, 100% { background-color: rgba(250,204,21,0.3) !important; }
+      50% { background-color: rgba(250,204,21,0.65) !important; }
+    }
   `;
   document.head.appendChild(el);
 }
