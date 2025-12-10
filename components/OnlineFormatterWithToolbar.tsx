@@ -3151,10 +3151,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleFullscreen}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className={iconButtonClass}
+                        className="w-8 h-8 rounded-md hover:bg-slate-800 dark:hover:bg-slate-700 transition-all cursor-pointer bg-black dark:bg-slate-900 flex items-center justify-center"
                         aria-label="Enter Fullscreen"
                       >
-                        <i className={`fa-solid fa-expand ${iconTextClass}`} aria-hidden="true"></i>
+                        <i className="fa-solid fa-expand text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -3588,11 +3588,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     tabIndex={0}
                     onClick={handleToggleOutputFullscreen}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={iconButtonClass}
+                    className="w-8 h-8 rounded-md hover:bg-slate-800 dark:hover:bg-slate-700 transition-all cursor-pointer bg-black dark:bg-slate-900 flex items-center justify-center"
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
-                    <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} ${iconTextClass}`} aria-hidden="true"></i>
+                    <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
                   </span>
                 </Tooltip>
                 {/* View Format Dropdown - visible by default for JSON */}
