@@ -234,62 +234,58 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     try {
       const lineInfo = view.state.doc.line(highlightLine);
       
-      // Ensure the target line is visible within the editor's scroll container
-      // Use coordsAtPos + scrollDOM to bring the line into view with gentle margins
-      const coords = view.coordsAtPos(lineInfo.from);
-      const scrollDOM = view.scrollDOM as HTMLElement;
-      if (coords && scrollDOM) {
-        const containerRect = scrollDOM.getBoundingClientRect();
-        const lineTop = coords.top - containerRect.top + scrollDOM.scrollTop;
-        const lineBottom = coords.bottom - containerRect.top + scrollDOM.scrollTop;
-        const visibleTop = scrollDOM.scrollTop;
-        const visibleBottom = visibleTop + scrollDOM.clientHeight;
-        const margin = Math.max(24, Math.floor(scrollDOM.clientHeight * 0.1));
-
-        if (lineTop < visibleTop + margin) {
-          const targetTop = Math.max(0, lineTop - Math.floor(scrollDOM.clientHeight * 0.3));
-          scrollDOM.scrollTo({ top: targetTop, behavior: 'smooth' });
-        } else if (lineBottom > visibleBottom - margin) {
-          const targetTop = Math.min(
-            scrollDOM.scrollHeight - scrollDOM.clientHeight,
-            lineBottom - Math.floor(scrollDOM.clientHeight * 0.7)
-          );
-          scrollDOM.scrollTo({ top: targetTop, behavior: 'smooth' });
-        }
-      }
+      // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
+      // CodeMirror 6 virtualizes content, so coords won't be available until the line is rendered.
+      // scrollIntoView ensures the line is in the viewport and DOM is updated.
+      view.dispatch({
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+      });
       
-      // Apply highlight by locating the DOM for the exact document position
-      // Use a short delay + rAF to allow scroll/render to complete
+      // Step 2: After scrolling, wait for rendering, then apply highlight.
+      // Use a longer delay to ensure CM6 has finished rendering the scrolled-to content.
       setTimeout(() => {
         const v = editorRef.current?.view;
         if (!v) return;
 
-        // Remove any existing highlights in the current viewport
+        // Remove any existing highlights across the entire editor
         const container = v.dom as HTMLElement;
         container
           .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
           .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
 
-        // Ensure the target line's DOM is available, then add highlight classes
+        // Use requestAnimationFrame to ensure DOM is painted after scroll
         requestAnimationFrame(() => {
-          const info = v.domAtPos(lineInfo.from);
-          let target: HTMLElement | null = null;
-          if (info) {
-            const node = info.node as Node;
-            const baseEl = node.nodeType === Node.TEXT_NODE ? (node.parentElement as HTMLElement | null) : (node as HTMLElement | null);
-            target = baseEl ? (baseEl.closest('.cm-line') as HTMLElement | null) : null;
-          }
+          const vInner = editorRef.current?.view;
+          if (!vInner) return;
+          
+          try {
+            // Re-get lineInfo in case doc changed (unlikely but safe)
+            const currentLineInfo = vInner.state.doc.line(highlightLine);
+            const info = vInner.domAtPos(currentLineInfo.from);
+            let target: HTMLElement | null = null;
+            if (info) {
+              const node = info.node as Node;
+              const baseEl = node.nodeType === Node.TEXT_NODE 
+                ? (node.parentElement as HTMLElement | null) 
+                : (node as HTMLElement | null);
+              target = baseEl ? (baseEl.closest('.cm-line') as HTMLElement | null) : null;
+            }
 
-          if (target) {
-            target.classList.add('search-highlight');
-            target.classList.add('search-highlight-pulse');
+            if (target) {
+              target.classList.add('search-highlight');
+              target.classList.add('search-highlight-pulse');
+            }
+          } catch (innerErr) {
+            console.error('Error applying highlight after scroll:', innerErr);
           }
         });
-      }, 30);
-  } catch (e) {
-    console.error('Error highlighting line in CodeMirrorViewer:', e);
-  }
-  }, [highlightLine, highlightTrigger]);  return (
+      }, 80);
+    } catch (e) {
+      console.error('Error highlighting line in CodeMirrorViewer:', e);
+    }
+  }, [highlightLine, highlightTrigger]);
+
+  return (
     <div className="absolute inset-0 overflow-auto">
       <style>{`
         .cm-line.search-highlight {
