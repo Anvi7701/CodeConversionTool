@@ -167,7 +167,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [outputSearchQuery, setOutputSearchQuery] = useState<string>('');
   const [outputSearchResults, setOutputSearchResults] = useState<Array<{ line: number; column: number; text: string }>>([]);
   const [currentOutputSearchIndex, setCurrentOutputSearchIndex] = useState<number>(-1);
-  const [outputHighlightTrigger, setOutputHighlightTrigger] = useState<number>(0);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -721,7 +720,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setOutputSearchResults(results);
     if (results.length > 0) {
       setCurrentOutputSearchIndex(0);
-      setOutputHighlightTrigger(prev => prev + 1);
     } else {
       setCurrentOutputSearchIndex(-1);
     }
@@ -731,14 +729,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (outputSearchResults.length === 0) return;
     const nextIndex = (currentOutputSearchIndex + 1) % outputSearchResults.length;
     setCurrentOutputSearchIndex(nextIndex);
-    setOutputHighlightTrigger(prev => prev + 1);
   };
 
   const handleOutputSearchPrevious = () => {
     if (outputSearchResults.length === 0) return;
     const prevIndex = (currentOutputSearchIndex - 1 + outputSearchResults.length) % outputSearchResults.length;
     setCurrentOutputSearchIndex(prevIndex);
-    setOutputHighlightTrigger(prev => prev + 1);
   };
 
   const handleToggleOutputSearch = () => {
@@ -748,7 +744,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setOutputSearchQuery('');
       setOutputSearchResults([]);
       setCurrentOutputSearchIndex(-1);
-      setOutputHighlightTrigger(0);
     }
   };
 
@@ -4215,7 +4210,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 expandAll={expandAllTrigger}
                                 collapseAll={collapseAllTrigger}
                                 highlightLine={outputSearchResults.length > 0 && currentOutputSearchIndex >= 0 ? outputSearchResults[currentOutputSearchIndex].line : undefined}
-                                highlightTrigger={outputHighlightTrigger}
                               />
                             )}
                         </div>

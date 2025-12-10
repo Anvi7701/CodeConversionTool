@@ -120,7 +120,6 @@ interface CodeMirrorViewerProps {
   expandAll?: boolean;
   collapseAll?: boolean;
   highlightLine?: number;
-  highlightTrigger?: number;
 }
 
 export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({ 
@@ -131,7 +130,6 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   expandAll: expandAllTrigger,
   collapseAll: collapseAllTrigger,
   highlightLine,
-  highlightTrigger = 0,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
 
@@ -254,16 +252,14 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
         const lineEl = lines[highlightLine - 1];
         if (lineEl) {
           lineEl.classList.add('search-highlight');
-          if (highlightTrigger > 0) {
-            lineEl.classList.add('search-highlight-pulse');
-          }
+          lineEl.classList.add('search-highlight-pulse');
         }
       }
     }, 10);
   } catch (e) {
     console.error('Error highlighting line in CodeMirrorViewer:', e);
   }
-}, [highlightLine, highlightTrigger]);  return (
+}, [highlightLine]);  return (
     <div className="absolute inset-0 overflow-auto">
       <style>{`
         .cm-line.search-highlight {
