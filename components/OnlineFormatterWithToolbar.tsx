@@ -557,7 +557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       }
     };
 
-    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown) {
+    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown || showOutputSortDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
