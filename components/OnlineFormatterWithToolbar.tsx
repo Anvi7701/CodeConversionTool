@@ -2988,7 +2988,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
                             onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                            className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
+                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer'}`}
                             aria-label="Sort Input"
                             title="Sort Input JSON"
                           >
@@ -3063,9 +3063,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={canUndoInput ? handleUndo : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput) { e.preventDefault(); handleUndo(); } }}
-                      className={`${iconButtonClass} ${canUndoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      onClick={canUndoInput && inputCode.trim() ? handleUndo : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput && inputCode.trim()) { e.preventDefault(); handleUndo(); } }}
+                      className={`${iconButtonClass} ${(canUndoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Undo"
                     >
                       <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
@@ -3075,9 +3075,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={canRedoInput ? handleRedo : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput) { e.preventDefault(); handleRedo(); } }}
-                      className={`${iconButtonClass} ${canRedoInput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                      onClick={canRedoInput && inputCode.trim() ? handleRedo : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput && inputCode.trim()) { e.preventDefault(); handleRedo(); } }}
+                      className={`${iconButtonClass} ${(canRedoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
                       aria-label="Redo"
                     >
                       <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
@@ -3091,9 +3091,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span
                         role="button"
                         tabIndex={0}
-                        onClick={handleToggleSearch}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
+                        onClick={inputCode.trim() ? handleToggleSearch : undefined}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleSearch(); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
                         aria-label="Search"
                       >
                         <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -3135,9 +3135,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span
                         role="button"
                         tabIndex={0}
-                        onClick={handleValidate}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                        className="w-8 h-8 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center"
+                        onClick={inputCode.trim() ? handleValidate : undefined}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleValidate(); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-400 dark:bg-green-400' : 'hover:bg-green-700 dark:hover:bg-green-600 cursor-pointer bg-green-600 dark:bg-green-500'}`}
                         aria-label="Validate Input JSON"
                       >
                         <i className="fa-solid fa-check text-white text-sm" aria-hidden="true"></i>
@@ -3149,9 +3149,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span
                         role="button"
                         tabIndex={0}
-                        onClick={handleToggleFullscreen}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className="w-8 h-8 rounded-md hover:bg-slate-800 dark:hover:bg-slate-700 transition-all cursor-pointer bg-black dark:bg-slate-900 flex items-center justify-center"
+                        onClick={inputCode.trim() ? handleToggleFullscreen : undefined}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleFullscreen(); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
                         aria-label="Enter Fullscreen"
                       >
                         <i className="fa-solid fa-expand text-white text-sm" aria-hidden="true"></i>
@@ -3274,9 +3274,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span
                         role="button"
                         tabIndex={0}
-                        onClick={handleDownload}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                        className={`${iconButtonClass} mt-0.5`}
+                        onClick={inputCode.trim() ? handleDownload : undefined}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
+                        className={`${iconButtonClass} mt-0.5 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Download"
                       >
                         <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
@@ -3310,9 +3310,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span
                         role="button"
                         tabIndex={0}
-                        onClick={handlePrint}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePrint(); } }}
-                        className={iconButtonClass}
+                        onClick={inputCode.trim() ? handlePrint : undefined}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
+                        className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                         aria-label="Print"
                       >
                         <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
@@ -3462,9 +3462,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <span
                             role="button"
                             tabIndex={0}
-                            onClick={handleToggleOutputSearch}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputSearch(); } }}
-                            className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
+                            onClick={inputCode.trim() ? handleToggleOutputSearch : undefined}
+                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleOutputSearch(); } }}
+                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
                             aria-label="Search Output"
                           >
                             <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -3586,9 +3586,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <span
                     role="button"
                     tabIndex={0}
-                    onClick={handleToggleOutputFullscreen}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className="w-8 h-8 rounded-md hover:bg-slate-800 dark:hover:bg-slate-700 transition-all cursor-pointer bg-black dark:bg-slate-900 flex items-center justify-center"
+                    onClick={inputCode.trim() ? handleToggleOutputFullscreen : undefined}
+                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
@@ -3734,9 +3734,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={handleDownload}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDownload(); } }}
-                      className={iconButtonClass}
+                      onClick={inputCode.trim() ? handleDownload : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
+                      className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Download"
                     >
                       <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
@@ -3782,9 +3782,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={handlePrint}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handlePrint(); } }}
-                      className={iconButtonClass}
+                      onClick={inputCode.trim() ? handlePrint : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
+                      className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Print"
                     >
                       <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
