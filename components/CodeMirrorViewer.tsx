@@ -234,9 +234,9 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     try {
       const lineInfo = view.state.doc.line(highlightLine);
       
-      // Scroll to line
+      // Scroll to line without forcing center to reduce UI shift
       view.dispatch({ 
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest', x: 'nearest' })
       });
       
       // Apply highlight by locating the DOM for the exact document position
