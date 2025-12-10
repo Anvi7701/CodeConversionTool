@@ -554,15 +554,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (showSortDropdown) setShowSortDropdown(false);
         if (showInlineSortDropdown) setShowInlineSortDropdown(false);
         if (showOutputSortDropdown) setShowOutputSortDropdown(false);
+        if (showViewDropdown) setShowViewDropdown(false);
       }
     };
 
-    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown || showOutputSortDropdown) {
+    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown || showOutputSortDropdown || showViewDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
 
-  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown]);
+  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown, showViewDropdown]);
 
   // Build a per-line style map for gutter markers in the input editor
   const inputLineStyleMap = useMemo(() => {
