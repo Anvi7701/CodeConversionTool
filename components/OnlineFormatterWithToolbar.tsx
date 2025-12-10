@@ -2958,9 +2958,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={() => inputEditorApiRef.current?.foldAll()}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className={`${iconButtonClass} ml-1`}
+                          onClick={inputCode.trim() ? () => inputEditorApiRef.current?.foldAll() : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
+                          className={`${iconButtonClass} ml-1 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Collapse All Input"
                         >
                           <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -2970,9 +2970,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={() => inputEditorApiRef.current?.unfoldAll()}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className={iconButtonClass}
+                          onClick={inputCode.trim() ? () => inputEditorApiRef.current?.unfoldAll() : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
+                          className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Expand All Input"
                         >
                           <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -3382,9 +3382,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={handleCollapseAllFields}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCollapseAllFields(); } }}
-                          className={`${iconButtonClass} ml-1`}
+                          onClick={inputCode.trim() ? handleCollapseAllFields : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleCollapseAllFields(); } }}
+                          className={`${iconButtonClass} ml-1 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Collapse All"
                         >
                           <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -3394,9 +3394,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={handleExpandAllFields}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleExpandAllFields(); } }}
-                          className={iconButtonClass}
+                          onClick={inputCode.trim() ? handleExpandAllFields : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleExpandAllFields(); } }}
+                          className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Expand All"
                         >
                           <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -3600,13 +3600,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
-                        if (isStructureAnalysisMode) return;
+                        if (isStructureAnalysisMode || !inputCode.trim()) return;
                         console.log('View dropdown clicked, current format:', viewFormat);
                         setShowViewDropdown(!showViewDropdown);
                       }}
-                      disabled={isStructureAnalysisMode}
+                      disabled={isStructureAnalysisMode || !inputCode.trim()}
                       className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
-                        isStructureAnalysisMode 
+                        (isStructureAnalysisMode || !inputCode.trim())
                           ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
                           : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
                       } text-white`}
