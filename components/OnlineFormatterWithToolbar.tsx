@@ -3597,7 +3597,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </Tooltip>
                 {/* View Format Dropdown - visible by default for JSON */}
                 {activeLanguage === 'json' && (
-                  <div className="relative view-dropdown-container">
+                  <div className="relative dropdown-container">
                     <button
                       onClick={() => {
                         if (isStructureAnalysisMode) return;
