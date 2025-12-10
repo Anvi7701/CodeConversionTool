@@ -3382,9 +3382,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={inputCode.trim() ? handleCollapseAllFields : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleCollapseAllFields(); } }}
-                          className={`${iconButtonClass} ml-1 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          onClick={outputCode?.trim() ? handleCollapseAllFields : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleCollapseAllFields(); } }}
+                          className={`${iconButtonClass} ml-1 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Collapse All"
                         >
                           <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -3394,9 +3394,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span
                           role="button"
                           tabIndex={0}
-                          onClick={inputCode.trim() ? handleExpandAllFields : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleExpandAllFields(); } }}
-                          className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          onClick={outputCode?.trim() ? handleExpandAllFields : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleExpandAllFields(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                           aria-label="Expand All"
                         >
                           <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
@@ -3462,9 +3462,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <span
                             role="button"
                             tabIndex={0}
-                            onClick={inputCode.trim() ? handleToggleOutputSearch : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleOutputSearch(); } }}
-                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
+                            onClick={outputCode?.trim() ? handleToggleOutputSearch : undefined}
+                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputSearch(); } }}
+                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
                             aria-label="Search Output"
                           >
                             <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -3586,9 +3586,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <span
                     role="button"
                     tabIndex={0}
-                    onClick={inputCode.trim() ? handleToggleOutputFullscreen : undefined}
-                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
+                    onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
+                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
@@ -3600,13 +3600,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
-                        if (isStructureAnalysisMode || !inputCode.trim()) return;
+                        if (isStructureAnalysisMode || !outputCode?.trim()) return;
                         console.log('View dropdown clicked, current format:', viewFormat);
                         setShowViewDropdown(!showViewDropdown);
                       }}
-                      disabled={isStructureAnalysisMode || !inputCode.trim()}
+                      disabled={isStructureAnalysisMode || !outputCode?.trim()}
                       className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
-                        (isStructureAnalysisMode || !inputCode.trim())
+                        (isStructureAnalysisMode || !outputCode?.trim())
                           ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
                           : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
                       } text-white`}
@@ -3734,9 +3734,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={inputCode.trim() ? handleDownload : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
-                      className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      onClick={outputCode?.trim() ? handleDownload : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleDownload(); } }}
+                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Download"
                     >
                       <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
@@ -3758,9 +3758,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={handleSave}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                      className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      onClick={outputCode?.trim() ? handleSave : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleSave(); } }}
+                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Save"
                     >
                       <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
@@ -3782,9 +3782,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span
                       role="button"
                       tabIndex={0}
-                      onClick={inputCode.trim() ? handlePrint : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
-                      className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      onClick={outputCode?.trim() ? handlePrint : undefined}
+                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handlePrint(); } }}
+                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Print"
                     >
                       <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
