@@ -234,10 +234,29 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     try {
       const lineInfo = view.state.doc.line(highlightLine);
       
-      // Scroll to line without forcing center to reduce UI shift
-      view.dispatch({ 
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest', x: 'nearest' })
-      });
+      // Ensure the target line is visible within the editor's scroll container
+      // Use coordsAtPos + scrollDOM to bring the line into view with gentle margins
+      const coords = view.coordsAtPos(lineInfo.from);
+      const scrollDOM = view.scrollDOM as HTMLElement;
+      if (coords && scrollDOM) {
+        const containerRect = scrollDOM.getBoundingClientRect();
+        const lineTop = coords.top - containerRect.top + scrollDOM.scrollTop;
+        const lineBottom = coords.bottom - containerRect.top + scrollDOM.scrollTop;
+        const visibleTop = scrollDOM.scrollTop;
+        const visibleBottom = visibleTop + scrollDOM.clientHeight;
+        const margin = Math.max(24, Math.floor(scrollDOM.clientHeight * 0.1));
+
+        if (lineTop < visibleTop + margin) {
+          const targetTop = Math.max(0, lineTop - Math.floor(scrollDOM.clientHeight * 0.3));
+          scrollDOM.scrollTo({ top: targetTop, behavior: 'smooth' });
+        } else if (lineBottom > visibleBottom - margin) {
+          const targetTop = Math.min(
+            scrollDOM.scrollHeight - scrollDOM.clientHeight,
+            lineBottom - Math.floor(scrollDOM.clientHeight * 0.7)
+          );
+          scrollDOM.scrollTo({ top: targetTop, behavior: 'smooth' });
+        }
+      }
       
       // Apply highlight by locating the DOM for the exact document position
       // Use a short delay + rAF to allow scroll/render to complete
