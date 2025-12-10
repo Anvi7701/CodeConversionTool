@@ -239,25 +239,34 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
         effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
       });
       
-      // Apply highlight by adding class to line element
+      // Apply highlight by locating the DOM for the exact document position
+      // Use a short delay + rAF to allow scroll/render to complete
       setTimeout(() => {
-        if (!editorRef.current?.view) return;
-        const lines = editorRef.current.view.dom.querySelectorAll('.cm-line');
-        
-        // Remove previous highlights
-        lines.forEach(line => {
-          line.classList.remove('search-highlight', 'search-highlight-pulse');
+        const v = editorRef.current?.view;
+        if (!v) return;
+
+        // Remove any existing highlights in the current viewport
+        const container = v.dom as HTMLElement;
+        container
+          .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
+          .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
+
+        // Ensure the target line's DOM is available, then add highlight classes
+        requestAnimationFrame(() => {
+          const info = v.domAtPos(lineInfo.from);
+          let target: HTMLElement | null = null;
+          if (info) {
+            const node = info.node as Node;
+            const baseEl = node.nodeType === Node.TEXT_NODE ? (node.parentElement as HTMLElement | null) : (node as HTMLElement | null);
+            target = baseEl ? (baseEl.closest('.cm-line') as HTMLElement | null) : null;
+          }
+
+          if (target) {
+            target.classList.add('search-highlight');
+            target.classList.add('search-highlight-pulse');
+          }
         });
-        
-        // Add highlight to target line
-        if (highlightLine > 0 && highlightLine <= lines.length) {
-        const lineEl = lines[highlightLine - 1];
-        if (lineEl) {
-          lineEl.classList.add('search-highlight');
-          lineEl.classList.add('search-highlight-pulse');
-        }
-      }
-    }, 10);
+      }, 30);
   } catch (e) {
     console.error('Error highlighting line in CodeMirrorViewer:', e);
   }
