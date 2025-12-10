@@ -2657,7 +2657,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Theme-based styling
   const isPurpleTheme = colorTheme === 'purple';
-  const iconButtonClass = 'w-6 h-6 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-purple-600 dark:border-purple-500 flex items-center justify-center';
+  const iconButtonClass = 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-purple-600 dark:border-purple-500 flex items-center justify-center';
   const iconTextClass = 'text-purple-800 dark:text-purple-500 text-sm';
   
   return (
@@ -3092,7 +3092,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleToggleSearch}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
+                        className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
                         aria-label="Search"
                       >
                         <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -3136,7 +3136,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={handleValidate}
                         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidate(); } }}
-                        className="w-6 h-6 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center"
+                        className="w-8 h-8 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center"
                         aria-label="Validate Input JSON"
                       >
                         <i className="fa-solid fa-check text-white text-sm" aria-hidden="true"></i>
@@ -3410,7 +3410,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
                             onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
-                            className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
+                            className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
                             aria-label="Sort Output"
                             title="Sort Output JSON"
                           >
@@ -3463,7 +3463,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={handleToggleOutputSearch}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggleOutputSearch(); } }}
-                            className={`w-6 h-6 rounded-md transition-all cursor-pointer flex items-center justify-center ${showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
+                            className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600'}`}
                             aria-label="Search Output"
                           >
                             <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -3572,7 +3572,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={handleValidateOutput}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidateOutput(); } }}
-                      className={`w-6 h-6 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      className={`w-8 h-8 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
                       aria-label="Validate Output"
                       title="Validate Output JSON"
                     >
