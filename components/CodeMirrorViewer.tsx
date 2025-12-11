@@ -234,19 +234,28 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     try {
       const lineInfo = view.state.doc.line(highlightLine);
       
+      // Save current page scroll position to restore after CM scroll
+      const savedPageScrollY = window.scrollY;
+      const savedPageScrollX = window.scrollX;
+      
       // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
       // CodeMirror 6 virtualizes content, so coords won't be available until the line is rendered.
       // scrollIntoView ensures the line is in the viewport and DOM is updated.
-      // Use 'nearest' to avoid shifting the page layout unnecessarily.
       view.dispatch({
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest' })
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
       });
+      
+      // Immediately restore page scroll position to prevent page movement
+      window.scrollTo(savedPageScrollX, savedPageScrollY);
       
       // Step 2: After scrolling, wait for rendering, then apply highlight.
       // Use a longer delay to ensure CM6 has finished rendering the scrolled-to content.
       setTimeout(() => {
         const v = editorRef.current?.view;
         if (!v) return;
+        
+        // Restore page scroll again in case CM triggered another scroll
+        window.scrollTo(savedPageScrollX, savedPageScrollY);
 
         // Remove any existing highlights across the entire editor
         const container = v.dom as HTMLElement;
@@ -258,6 +267,9 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
         requestAnimationFrame(() => {
           const vInner = editorRef.current?.view;
           if (!vInner) return;
+          
+          // Final restoration of page scroll
+          window.scrollTo(savedPageScrollX, savedPageScrollY);
           
           try {
             // Re-get lineInfo in case doc changed (unlikely but safe)
