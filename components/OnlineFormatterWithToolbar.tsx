@@ -1660,6 +1660,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       return;
     }
     
+    // If in Tree View, copy as plain text with tree connectors (├──, └──, │)
+    if (viewFormat === 'tree') {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        const treeText = `🌳 JSON Tree View\n${'─'.repeat(40)}\n\n${generateTreeText(parsedData)}`;
+        await navigator.clipboard.writeText(treeText);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy Tree View:', error);
+      }
+      return;
+    }
+    
+    // If in Form View, copy as plain text with type icons (📝, 🔢, ☑, 📦, 📚)
+    if (viewFormat === 'form') {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        const formText = `📋 JSON Form View\n${'─'.repeat(40)}\n\n${generateFormText(parsedData)}`;
+        await navigator.clipboard.writeText(formText);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy Form View:', error);
+      }
+      return;
+    }
+    
     try {
       await navigator.clipboard.writeText(outputCode);
       setCopySuccess(true);
