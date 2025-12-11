@@ -234,11 +234,17 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     try {
       const lineInfo = view.state.doc.line(highlightLine);
       
+      // Remove any existing highlights first
+      const container = view.dom as HTMLElement;
+      container
+        .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
+        .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
+      
       // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
       // CodeMirror 6 virtualizes content, so coords won't be available until the line is rendered.
-      // scrollIntoView ensures the line is in the viewport and DOM is updated.
+      // Use 'center' to ensure the line is fully scrolled into view for virtualized content.
       view.dispatch({
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest' })
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
       });
       
       // Step 2: After scrolling, wait for rendering, then apply highlight.
@@ -246,12 +252,6 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       setTimeout(() => {
         const v = editorRef.current?.view;
         if (!v) return;
-
-        // Remove any existing highlights across the entire editor
-        const container = v.dom as HTMLElement;
-        container
-          .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
-          .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
 
         // Use requestAnimationFrame to ensure DOM is painted after scroll
         requestAnimationFrame(() => {
@@ -279,7 +279,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
             console.error('Error applying highlight after scroll:', innerErr);
           }
         });
-      }, 80);
+      }, 120);
     } catch (e) {
       console.error('Error highlighting line in CodeMirrorViewer:', e);
     }
