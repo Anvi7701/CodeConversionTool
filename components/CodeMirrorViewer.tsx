@@ -240,31 +240,17 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
         .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
         .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
       
-      // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
-      // CodeMirror 6 virtualizes content, so coords won't be available until the line is rendered.
-      // Use 'nearest' to minimize page movement, but we need to ensure the line renders.
-      view.dispatch({
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest' })
+      // Scroll to the line and ensure it's rendered.
+      // For CodeMirror 6 virtualization, we need to actually bring the line into the viewport.
+      // Using 'start' ensures the line is scrolled to the top of the viewport, guaranteeing render.
+      view.dispatch({ 
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'start' })
       });
       
-      // Step 2: After scrolling, wait for rendering, then apply highlight.
-      // Use a longer delay to ensure CM6 has finished rendering the scrolled-to content.
+      // After scrolling, wait for rendering, then apply highlight.
       setTimeout(() => {
         const v = editorRef.current?.view;
         if (!v) return;
-
-        // If the line is still not in view (virtualized), force scroll to center
-        // This ensures the line is rendered for highlighting
-        try {
-          const currentLineInfo = v.state.doc.line(highlightLine);
-          const coords = v.coordsAtPos(currentLineInfo.from);
-          if (!coords) {
-            // Line not rendered yet, force scroll with center
-            v.dispatch({
-              effects: EditorView.scrollIntoView(currentLineInfo.from, { y: 'center' })
-            });
-          }
-        } catch {}
 
         // Use requestAnimationFrame to ensure DOM is painted after scroll
         requestAnimationFrame(() => {
@@ -272,7 +258,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           if (!vInner) return;
           
           try {
-            // Re-get lineInfo in case doc changed (unlikely but safe)
+            // Re-get lineInfo in case doc changed
             const currentLineInfo = vInner.state.doc.line(highlightLine);
             const info = vInner.domAtPos(currentLineInfo.from);
             let target: HTMLElement | null = null;
@@ -292,7 +278,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
             console.error('Error applying highlight after scroll:', innerErr);
           }
         });
-      }, 120);
+      }, 100);
     } catch (e) {
       console.error('Error highlighting line in CodeMirrorViewer:', e);
     }
