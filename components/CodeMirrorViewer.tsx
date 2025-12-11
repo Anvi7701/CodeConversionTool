@@ -138,6 +138,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   // Local theme to match Input gutter styles (24px line numbers, 18px fold gutter)
   const theme = useMemo(() => EditorView.theme({
     '&': { height: '100%' },
+    '.cm-editor': { backgroundColor: '#ffffff', height: '100%' },
+    '.cm-content': { backgroundColor: '#ffffff' },
     '.cm-gutters': { border: 'none', gap: '0px' },
     '.cm-gutter': { background: 'rgba(226, 232, 240, 0.6)', border: 'none' },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
@@ -145,6 +147,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },
     '.cm-foldGutter .cm-gutterElement > span + span': { display: 'none' },
     '.cm-scroller': { overflow: 'auto' },
+    '.dark .cm-editor': { backgroundColor: '#1e293b' },
+    '.dark .cm-content': { backgroundColor: '#1e293b' },
     '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
     '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#fff' },

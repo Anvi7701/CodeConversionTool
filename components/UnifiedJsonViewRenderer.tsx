@@ -602,8 +602,8 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
   };
   
   if(isObject) return (
-    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-l-1 border-orange-400 dark:border-orange-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-orange-700 dark:text-orange-300 mb-1 text-sm cursor-pointer hover:text-orange-900 dark:hover:text-orange-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
+    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} font-mono text-sm bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/10 dark:to-amber-900/10 border-l-1 border-orange-400 dark:border-orange-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-orange-700 dark:text-orange-300 mb-1 cursor-pointer hover:text-orange-900 dark:hover:text-orange-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
         <span className="inline-block transition-transform duration-200" style={{transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>▶</span>
         <span>{keyName}</span>
         <span className="text-xs bg-orange-200 dark:bg-orange-800 px-1.5 py-0.5 rounded-full">{Object.keys(value).length} props</span>
@@ -612,8 +612,8 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
     </div>
   );
   if(isArray) return (
-    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/10 dark:to-cyan-900/10 border-l-1 border-teal-400 dark:border-teal-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
-      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-teal-700 dark:text-teal-300 mb-1 text-sm cursor-pointer hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
+    <div className={`${level>0?'ml-4 mt-1.5':'mt-1'} font-mono text-sm bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-900/10 dark:to-cyan-900/10 border-l-1 border-teal-400 dark:border-teal-500 rounded-md p-2 shadow-sm hover:shadow-md transition-all duration-200`}>
+      <div onClick={()=>setIsExpanded(e=>!e)} className="font-bold text-teal-700 dark:text-teal-300 mb-1 cursor-pointer hover:text-teal-900 dark:hover:text-teal-100 flex items-center gap-2 transition-all duration-200 hover:scale-[1.02]">
         <span className="inline-block transition-transform duration-200" style={{transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'}}>▶</span>
         <span>{keyName}</span>
         <span className="text-xs bg-teal-200 dark:bg-teal-800 px-1.5 py-0.5 rounded-full">{value.length} items</span>
@@ -622,9 +622,9 @@ const FormField:React.FC<FormFieldProps>=({ keyName,value,level,path,expandAll,c
     </div>
   );
   return (
-    <div className={`flex items-baseline gap-2 py-1 px-2 rounded-md shadow-sm hover:shadow-md transition-all duration-200 ${getFieldBgClass()}`}>
-      <label className="text-sm font-semibold text-teal-700 dark:text-teal-300 min-w-[100px] bg-teal-50/50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded">{keyName}:</label>
-      <div className="flex-1 text-sm">{renderVal()}</div>
+    <div className={`font-mono text-sm flex items-baseline gap-2 py-1 px-2 rounded-md shadow-sm hover:shadow-md transition-all duration-200 ${getFieldBgClass()}`}>
+      <label className="font-semibold text-teal-700 dark:text-teal-300 min-w-[100px] bg-teal-50/50 dark:bg-teal-900/20 px-1.5 py-0.5 rounded">{keyName}:</label>
+      <div className="flex-1">{renderVal()}</div>
     </div>
   );
 };

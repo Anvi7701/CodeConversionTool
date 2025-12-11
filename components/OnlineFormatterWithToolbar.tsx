@@ -1728,6 +1728,234 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     URL.revokeObjectURL(url);
   };
 
+  // Helper function to generate tree-style text representation of JSON data
+  const generateTreeText = (data: any, indent: string = '', isLast: boolean = true, prefix: string = ''): string => {
+    const connector = isLast ? '└── ' : '├── ';
+    const extension = isLast ? '    ' : '│   ';
+    let result = '';
+
+    if (data === null) {
+      return `${prefix}${connector}null\n`;
+    }
+
+    if (typeof data !== 'object') {
+      const typeLabel = typeof data === 'string' ? `"${data}"` : String(data);
+      return `${prefix}${connector}${typeLabel}\n`;
+    }
+
+    if (Array.isArray(data)) {
+      const entries = data;
+      entries.forEach((item, index) => {
+        const isLastItem = index === entries.length - 1;
+        const itemConnector = isLastItem ? '└── ' : '├── ';
+        const itemExtension = isLastItem ? '    ' : '│   ';
+        
+        if (typeof item === 'object' && item !== null) {
+          result += `${prefix}${itemConnector}[${index}] ${Array.isArray(item) ? `Array (${item.length} items)` : `Object (${Object.keys(item).length} props)`}\n`;
+          result += generateTreeText(item, indent + extension, true, prefix + itemExtension);
+        } else {
+          const val = item === null ? 'null' : typeof item === 'string' ? `"${item}"` : String(item);
+          result += `${prefix}${itemConnector}[${index}]: ${val}\n`;
+        }
+      });
+    } else {
+      const entries = Object.entries(data);
+      entries.forEach(([key, value], index) => {
+        const isLastItem = index === entries.length - 1;
+        const itemConnector = isLastItem ? '└── ' : '├── ';
+        const itemExtension = isLastItem ? '    ' : '│   ';
+        
+        if (typeof value === 'object' && value !== null) {
+          result += `${prefix}${itemConnector}${key}: ${Array.isArray(value) ? `Array (${value.length} items)` : `Object (${Object.keys(value).length} props)`}\n`;
+          result += generateTreeText(value, indent + extension, true, prefix + itemExtension);
+        } else {
+          const val = value === null ? 'null' : typeof value === 'string' ? `"${value}"` : String(value);
+          result += `${prefix}${itemConnector}${key}: ${val}\n`;
+        }
+      });
+    }
+
+    return result;
+  };
+
+  // Helper function to generate form-style text representation of JSON data
+  const generateFormText = (data: any, indent: string = '', level: number = 0): string => {
+    let result = '';
+    const indentStr = '  '.repeat(level);
+
+    if (data === null) {
+      return `${indentStr}Value: null\n`;
+    }
+
+    if (typeof data !== 'object') {
+      const typeLabel = typeof data === 'boolean' ? (data ? '☑ true' : '☐ false') : 
+                        typeof data === 'number' ? `${data}` : 
+                        typeof data === 'string' ? `"${data}"` : String(data);
+      return `${indentStr}Value: ${typeLabel}\n`;
+    }
+
+    if (Array.isArray(data)) {
+      result += `${indentStr}📚 Array [${data.length} items]\n`;
+      result += `${indentStr}${'─'.repeat(40)}\n`;
+      data.forEach((item, index) => {
+        result += `${indentStr}  Item ${index + 1}:\n`;
+        if (typeof item === 'object' && item !== null) {
+          result += generateFormText(item, indent, level + 2);
+        } else {
+          const val = item === null ? 'null' : typeof item === 'string' ? `"${item}"` : String(item);
+          result += `${indentStr}    ${val}\n`;
+        }
+      });
+    } else {
+      const entries = Object.entries(data);
+      entries.forEach(([key, value]) => {
+        if (typeof value === 'object' && value !== null) {
+          if (Array.isArray(value)) {
+            result += `${indentStr}📚 ${key}: Array [${value.length} items]\n`;
+          } else {
+            result += `${indentStr}📦 ${key}: Object {${Object.keys(value).length} props}\n`;
+          }
+          result += generateFormText(value, indent, level + 1);
+        } else {
+          const typeIcon = typeof value === 'string' ? '📝' : 
+                          typeof value === 'number' ? '🔢' : 
+                          typeof value === 'boolean' ? (value ? '☑' : '☐') : 
+                          value === null ? '∅' : '•';
+          const val = value === null ? 'null' : typeof value === 'string' ? `"${value}"` : String(value);
+          result += `${indentStr}${typeIcon} ${key}: ${val}\n`;
+        }
+      });
+    }
+
+    return result;
+  };
+
+  // Helper function to generate HTML representation of JSON for Tree/Form view
+  const generateViewHtml = (data: any, viewType: 'tree' | 'form', title: string = 'JSON Data'): string => {
+    const generateTreeHtmlContent = (obj: any, level: number = 0): string => {
+      const indent = level * 20;
+      let html = '';
+      
+      if (obj === null) {
+        return `<div style="margin-left: ${indent}px; color: #6c757d; font-style: italic;">null</div>`;
+      }
+      
+      if (typeof obj !== 'object') {
+        const color = typeof obj === 'string' ? '#28a745' : typeof obj === 'number' ? '#0d6efd' : typeof obj === 'boolean' ? '#6f42c1' : '#495057';
+        const value = typeof obj === 'string' ? `"${obj}"` : String(obj);
+        return `<span style="color: ${color}; font-weight: 500;">${value}</span>`;
+      }
+      
+      if (Array.isArray(obj)) {
+        html += `<div style="margin-left: ${indent}px;">`;
+        obj.forEach((item, index) => {
+          html += `<div style="margin: 8px 0; padding: 8px; background: linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%); border-left: 3px solid #17a2b8; border-radius: 4px;">`;
+          html += `<span style="color: #17a2b8; font-weight: 600;">[${index}]</span> `;
+          if (typeof item === 'object' && item !== null) {
+            html += Array.isArray(item) ? `<span style="color: #6c757d;">Array (${item.length})</span>` : `<span style="color: #6c757d;">Object (${Object.keys(item).length})</span>`;
+            html += generateTreeHtmlContent(item, level + 1);
+          } else {
+            html += generateTreeHtmlContent(item, level);
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      } else {
+        const entries = Object.entries(obj);
+        html += `<div style="margin-left: ${indent}px;">`;
+        entries.forEach(([key, value]) => {
+          const bgColor = typeof value === 'object' && value !== null 
+            ? (Array.isArray(value) ? 'linear-gradient(135deg, #e8f4f8 0%, #d1ecf1 100%)' : 'linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%)')
+            : typeof value === 'string' ? 'linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%)'
+            : typeof value === 'number' ? 'linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)'
+            : typeof value === 'boolean' ? 'linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%)'
+            : 'linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%)';
+          const borderColor = typeof value === 'object' && value !== null 
+            ? (Array.isArray(value) ? '#17a2b8' : '#fd7e14')
+            : typeof value === 'string' ? '#28a745'
+            : typeof value === 'number' ? '#0d6efd'
+            : typeof value === 'boolean' ? '#6f42c1'
+            : '#6c757d';
+          
+          html += `<div style="margin: 6px 0; padding: 10px; background: ${bgColor}; border-left: 3px solid ${borderColor}; border-radius: 4px;">`;
+          html += `<span style="color: ${borderColor}; font-weight: 600;">${key}:</span> `;
+          if (typeof value === 'object' && value !== null) {
+            html += Array.isArray(value) ? `<span style="color: #6c757d; font-size: 12px;">Array (${value.length} items)</span>` : `<span style="color: #6c757d; font-size: 12px;">Object (${Object.keys(value).length} props)</span>`;
+            html += generateTreeHtmlContent(value, level + 1);
+          } else {
+            html += generateTreeHtmlContent(value, level);
+          }
+          html += `</div>`;
+        });
+        html += `</div>`;
+      }
+      
+      return html;
+    };
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title} - ${viewType === 'tree' ? 'Tree View' : 'Form View'}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); 
+            padding: 30px; 
+            line-height: 1.6;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            color: white;
+        }
+        .header h1 { font-size: 28px; margin-bottom: 8px; }
+        .header p { opacity: 0.9; font-size: 14px; }
+        .content { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 25px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        @media print { 
+            body { background: white; padding: 10px; } 
+            .header { background: #667eea; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .content { box-shadow: none; border: 1px solid #dee2e6; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>${viewType === 'tree' ? '🌳 Tree View' : '📋 Form View'}</h1>
+            <p>${title}</p>
+        </div>
+        <div class="content">
+            ${generateTreeHtmlContent(data)}
+        </div>
+        <div class="footer">
+            <p>Generated on ${new Date().toLocaleString()} | JSON ${viewType === 'tree' ? 'Tree' : 'Form'} View Export</p>
+        </div>
+    </div>
+</body>
+</html>`;
+  };
+
   // Save: open Save As dialog (File System Access API), no fallback on cancel
   const handleSave = async () => {
     if (!inputCode.trim()) return;
@@ -1782,6 +2010,120 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       // Fallback for browsers that don't support File System Access API
       alert('Save dialog is not supported in your browser. Please use the Export button in the table toolbar instead.');
       return;
+    }
+    
+    // Form View or Tree View: offer saving as Text (.txt/.doc), HTML, or PDF
+    if (activeLanguage === 'json' && (viewFormat === 'form' || viewFormat === 'tree') && outputCode) {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        const viewTitle = viewFormat === 'tree' ? 'Tree View' : 'Form View';
+        
+        // Generate content for different formats
+        const textContent = viewFormat === 'tree' 
+          ? `JSON Tree View Export\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n${generateTreeText(parsedData)}`
+          : `JSON Form View Export\n${'='.repeat(50)}\nGenerated: ${new Date().toLocaleString()}\n${'='.repeat(50)}\n\n${generateFormText(parsedData)}`;
+        
+        const htmlContent = generateViewHtml(parsedData, viewFormat, 'JSON Data Export');
+        
+        // Generate RTF for Word compatibility
+        const generateRtf = (txt: string) => {
+          const esc = (s: string) => s
+            .replace(/\\/g, "\\\\")
+            .replace(/\{/g, "\\{")
+            .replace(/\}/g, "\\}")
+            .replace(/\r?\n/g, "\n");
+          const rtfBody = esc(txt).replace(/\n/g, "\\par ");
+          return `{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0 Consolas;}{\\f1 Segoe UI;}}\\f1\\fs22\\pard\\b JSON ${viewFormat === 'tree' ? 'Tree' : 'Form'} View Export\\b0\\par\\par\\f0\\fs20 ${rtfBody}\\par\\par\\f1\\fs18 Generated: ${new Date().toLocaleString()}}`;
+        };
+        
+        // Generate Doc HTML (Word-compatible)
+        const generateDocHtml = (txt: string) => `<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>JSON ${viewTitle}</title>
+<style>
+  body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 40px; line-height: 1.6; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+  pre { font-family: Consolas, Monaco, monospace; font-size: 11pt; white-space: pre-wrap; background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; }
+  .footer { margin-top: 30px; color: #6c757d; font-size: 10pt; border-top: 1px solid #dee2e6; padding-top: 10px; }
+</style></head>
+<body>
+  <h1>📊 JSON ${viewTitle}</h1>
+  <pre>${txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+  <div class="footer">Generated on ${new Date().toLocaleString()}</div>
+</body></html>`;
+
+        // @ts-ignore
+        if (window.showSaveFilePicker) {
+          try {
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker({
+              suggestedName: `json_${viewFormat}_view.html`,
+              types: [
+                {
+                  description: 'HTML File (Web Page)',
+                  accept: { 'text/html': ['.html'] },
+                },
+                {
+                  description: 'Word Document',
+                  accept: { 'application/msword': ['.doc'] },
+                },
+                {
+                  description: 'Rich Text Format',
+                  accept: { 'application/rtf': ['.rtf'] },
+                },
+                {
+                  description: 'Text File',
+                  accept: { 'text/plain': ['.txt'] },
+                },
+                {
+                  description: 'JSON File',
+                  accept: { 'application/json': ['.json'] },
+                },
+              ],
+            });
+            
+            const fileName = handle.name || '';
+            const lower = fileName.toLowerCase();
+            const writable = await handle.createWritable();
+            
+            if (lower.endsWith('.html') || lower.endsWith('.htm')) {
+              await writable.write(new Blob([htmlContent], { type: 'text/html' }));
+            } else if (lower.endsWith('.doc')) {
+              await writable.write(new Blob([generateDocHtml(textContent)], { type: 'application/msword' }));
+            } else if (lower.endsWith('.rtf')) {
+              await writable.write(new Blob([generateRtf(textContent)], { type: 'application/rtf' }));
+            } else if (lower.endsWith('.json')) {
+              await writable.write(new Blob([outputCode], { type: 'application/json' }));
+            } else {
+              // Default to text
+              await writable.write(new Blob([textContent], { type: 'text/plain' }));
+            }
+            
+            await writable.close();
+            return;
+          } catch (err: any) {
+            if (err.name === 'AbortError') {
+              console.log('Save dialog was cancelled by user');
+              return;
+            }
+            console.warn('Save As dialog error (Form/Tree View):', err);
+          }
+        }
+        
+        // Fallback: download as HTML
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `json_${viewFormat}_view.html`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      } catch (e) {
+        console.error('Form/Tree view save failed:', e);
+        // Continue to generic flow as last resort
+      }
     }
     
     // TOON view: offer saving TOON text as .txt or .doc (Word-compatible)
