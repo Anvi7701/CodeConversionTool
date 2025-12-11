@@ -112,35 +112,56 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     const targetLine = highlightLine || errorLine || (errorLines && errorLines.length ? errorLines[0].line : null);
     if (targetLine) {
       try {
-        const lineInfo = viewRef.current.state.doc.line(targetLine);
+        const view = viewRef.current;
+        const lineInfo = view.state.doc.line(targetLine);
         
-        // Scroll to line
-        if (!disableAutoScroll) {
-          viewRef.current.dispatch({ 
-            effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
-          });
-        }
+        // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
+        // CodeMirror 6 virtualizes content, so the line DOM may not exist until scrolled into view.
+        view.dispatch({ 
+          effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+        });
         
-        // Apply highlight by adding class to line element
+        // Step 2: After scrolling, wait for rendering, then apply highlight.
+        // Use a longer delay to ensure CM6 has finished rendering the scrolled-to content.
         setTimeout(() => {
-          if (!viewRef.current) return;
-          const lines = viewRef.current.dom.querySelectorAll('.cm-line');
-          // Remove previous highlights
-          lines.forEach(line => {
-            line.classList.remove('search-highlight', 'search-highlight-pulse');
-          });
-          
-          // Add highlight to target line
-          if (targetLine > 0 && targetLine <= lines.length) {
-            const lineEl = lines[targetLine - 1];
-            if (lineEl) {
-              lineEl.classList.add('search-highlight');
-              if (highlightPulse) {
-                lineEl.classList.add('search-highlight-pulse');
+          const v = viewRef.current;
+          if (!v) return;
+
+          // Remove previous highlights across the entire editor
+          const container = v.dom as HTMLElement;
+          container
+            .querySelectorAll('.cm-line.search-highlight, .cm-line.search-highlight-pulse')
+            .forEach((el) => el.classList.remove('search-highlight', 'search-highlight-pulse'));
+
+          // Use requestAnimationFrame to ensure DOM is painted after scroll
+          requestAnimationFrame(() => {
+            const vInner = viewRef.current;
+            if (!vInner) return;
+            
+            try {
+              // Re-get lineInfo in case doc changed (unlikely but safe)
+              const currentLineInfo = vInner.state.doc.line(targetLine);
+              const info = vInner.domAtPos(currentLineInfo.from);
+              let target: HTMLElement | null = null;
+              if (info) {
+                const node = info.node as Node;
+                const baseEl = node.nodeType === Node.TEXT_NODE 
+                  ? (node.parentElement as HTMLElement | null) 
+                  : (node as HTMLElement | null);
+                target = baseEl ? (baseEl.closest('.cm-line') as HTMLElement | null) : null;
               }
+
+              if (target) {
+                target.classList.add('search-highlight');
+                if (highlightPulse) {
+                  target.classList.add('search-highlight-pulse');
+                }
+              }
+            } catch (innerErr) {
+              console.error('Error applying highlight after scroll:', innerErr);
             }
-          }
-        }, 10);
+          });
+        }, 80);
       } catch (e) {
         console.error('Error highlighting line:', e);
       }
