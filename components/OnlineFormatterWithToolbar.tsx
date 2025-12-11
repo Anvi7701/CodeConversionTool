@@ -1528,6 +1528,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setOutputHistoryIndex((idx) => idx + 1);
       setOutputError(null);
     } catch (err: any) {
+      try {
+        // Populate detailed syntax errors for Output so the rich JSON error card appears
+        const errors = validateJsonSyntax(trimmedOutput);
+        setErrorLines(errors);
+        setErrorSource('output');
+      } catch {}
+      setIsValidated(false);
+      setShowFixSummary(false);
       setValidationError({
         isValid: false,
         reason: `Sort Output failed: ${err.message}`,
@@ -1628,6 +1636,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   const handleCopyOutput = async () => {
     if (!outputCode || !outputCode.trim()) return; // Don't copy if no output
+    // Pre-validate Output JSON for structured views to ensure consistent error handling
+    if (activeLanguage === 'json' && (viewFormat === 'tree' || viewFormat === 'form')) {
+      setPreviousView(viewFormat);
+      const isValid = validateOutputJson(outputCode, { type: 'copy' });
+      if (!isValid) {
+        // Abort copy; user can fix errors and the action will resume automatically
+        return;
+      }
+    }
     
     // If in table view, copy as tab-separated values (pasteable to Excel/Sheets)
     if (viewFormat === 'table' && tableViewRef.current) {
@@ -2042,6 +2059,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     
     // Form View or Tree View: offer saving as Text (.txt/.doc), HTML, or PDF
     if (activeLanguage === 'json' && (viewFormat === 'form' || viewFormat === 'tree') && outputCode) {
+        // Pre-save validation: ensure Output JSON is valid and route errors to rich card if not
+        const isValidBeforeSave = validateOutputJson(outputCode, { type: 'save' });
+        if (!isValidBeforeSave) {
+          // Abort save; user will see the rich JSON error panel with Auto Fix/Return
+          return;
+        }
       try {
         const parsedData = JSON.parse(outputCode);
         const viewTitle = viewFormat === 'tree' ? 'Tree View' : 'Form View';
@@ -2492,6 +2515,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   const handlePrint = () => {
+    // Pre-validate Output JSON when printing structured views to keep behavior consistent
+    if (activeLanguage === 'json' && outputCode && (viewFormat === 'tree' || viewFormat === 'form')) {
+      setPreviousView(viewFormat);
+      const isValid = validateOutputJson(outputCode, { type: 'print' } as any);
+      if (!isValid) {
+        return;
+      }
+    }
     const content = outputCode || inputCode;
     if (!content) return;
 
@@ -2687,6 +2718,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           });
         }
       }
+    } else if (action.type === 'copy') {
+      // Re-trigger copy of output content (handles structured views)
+      handleCopyOutput();
+    } else if ((action as any).type === 'print') {
+      // Re-trigger print after fixing output JSON
+      handlePrint();
     }
   };
 
@@ -3505,7 +3542,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && (
+                  {isJsonLanguage && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                       <span
                         role="button"
@@ -3657,30 +3694,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
-                    <Tooltip content="Save file">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={handleSave}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                        className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
-                        aria-label="Save"
-                      >
-                        <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
-                    <Tooltip content="Copy to clipboard">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={handleCopy}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
-                        className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                        aria-label="Copy"
-                      >
-                        <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
+                    {!(validationError && errorLines.length > 0) && (
+                      <>
+                        <Tooltip content="Save file">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={handleSave}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
+                            className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            aria-label="Save"
+                          >
+                            <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
+                          </span>
+                        </Tooltip>
+                        <Tooltip content="Copy to clipboard">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={handleCopy}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
+                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            aria-label="Copy"
+                          >
+                            <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
+                          </span>
+                        </Tooltip>
+                      </>
+                    )}
                     <Tooltip content="Print">
                       <span
                         role="button"
@@ -3744,14 +3785,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Output</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
-                  {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && (
+                  {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
                       <Tooltip content="Collapse all fields">
                         <span
@@ -3852,30 +3893,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   {/* Icon Toolbar for special states (validation errors, structure analysis, etc.) */}
                   {(validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
                     <>
-                      <Tooltip content="Save to file">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={handleSave}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                          className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Save"
-                        >
-                          <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={handleCopyOutput}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
-                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Copy"
-                        >
-                          <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
+                      {!(validationError && errorLines.length > 0) && (
+                        <>
+                          <Tooltip content="Save to file">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={handleSave}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
+                              className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Save"
+                            >
+                              <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                          <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={handleCopyOutput}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
+                              className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Copy"
+                            >
+                              <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        </>
+                      )}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
@@ -3895,7 +3940,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </span>
                       </Tooltip>
                       {showToonSettings && (
-                        <div className="absolute right-0 mt-2 z-50 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2">
+                        <div className="absolute right-0 mt-2 z-[9999] w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2 max-h-[80vh] overflow-y-auto">
                           <div className="flex items-center justify-between">
                             <div className="font-medium text-sm">TOON Settings</div>
                             <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
@@ -3941,7 +3986,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && (
+                {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
@@ -3970,8 +4015,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
                   </span>
                 </Tooltip>
-                {/* View Format Dropdown - visible by default for JSON */}
-                {activeLanguage === 'json' && (
+                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON) */}
+                {activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
@@ -4014,7 +4059,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               onClick={() => {
                                 if (isDisabled) return;
                                 
-                                // Validate output JSON before switching views
+                                // Validate output JSON before switching views (including Form/Tree)
                                 if (activeLanguage === 'json' && outputCode && format !== 'code') {
                                   setPreviousView(viewFormat); // Store current view before validation
                                   const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format });
