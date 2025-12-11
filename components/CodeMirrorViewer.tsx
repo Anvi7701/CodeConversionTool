@@ -242,9 +242,9 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       
       // Step 1: Use EditorView.scrollIntoView to scroll AND render the target line.
       // CodeMirror 6 virtualizes content, so coords won't be available until the line is rendered.
-      // Use 'center' to ensure the line is fully scrolled into view for virtualized content.
+      // Use 'nearest' to minimize page movement, but we need to ensure the line renders.
       view.dispatch({
-        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'center' })
+        effects: EditorView.scrollIntoView(lineInfo.from, { y: 'nearest' })
       });
       
       // Step 2: After scrolling, wait for rendering, then apply highlight.
@@ -252,6 +252,19 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       setTimeout(() => {
         const v = editorRef.current?.view;
         if (!v) return;
+
+        // If the line is still not in view (virtualized), force scroll to center
+        // This ensures the line is rendered for highlighting
+        try {
+          const currentLineInfo = v.state.doc.line(highlightLine);
+          const coords = v.coordsAtPos(currentLineInfo.from);
+          if (!coords) {
+            // Line not rendered yet, force scroll with center
+            v.dispatch({
+              effects: EditorView.scrollIntoView(currentLineInfo.from, { y: 'center' })
+            });
+          }
+        } catch {}
 
         // Use requestAnimationFrame to ensure DOM is painted after scroll
         requestAnimationFrame(() => {
