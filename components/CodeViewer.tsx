@@ -131,25 +131,27 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ code, language }) => {
 
   return (
     <div className="absolute inset-0 flex">
-      {/* Line Numbers */}
-      <div
-        ref={lineNumbersRef}
-        className="p-4 text-right bg-slate-100 dark:bg-slate-800/50 text-slate-400 select-none overflow-y-hidden font-mono text-sm leading-relaxed min-w-[50px]"
-        aria-hidden="true"
-      >
-        <LineNumbers 
-          lineCount={lineCount} 
-          foldRegions={foldRegions}
-          collapsedRegions={collapsedRegions}
-          onToggleFold={handleToggleFold}
-          language={language}
-        />
-      </div>
+      {/* Line Numbers (hidden for Text view) */}
+      {language !== 'text' && (
+        <div
+          ref={lineNumbersRef}
+          className="p-4 text-right bg-slate-100 dark:bg-slate-800/50 text-slate-400 select-none overflow-y-hidden font-mono text-sm leading-relaxed min-w-[50px]"
+          aria-hidden="true"
+        >
+          <LineNumbers 
+            lineCount={lineCount} 
+            foldRegions={foldRegions}
+            collapsedRegions={collapsedRegions}
+            onToggleFold={handleToggleFold}
+            language={language}
+          />
+        </div>
+      )}
       {/* Code Content */}
       <pre
         ref={codeRef}
         onScroll={handleScroll}
-        className="flex-1 p-4 font-mono text-sm leading-relaxed bg-slate-50 dark:bg-slate-900/50 overflow-auto whitespace-pre-wrap break-words"
+        className={`flex-1 p-4 font-mono text-sm leading-relaxed bg-slate-50 dark:bg-slate-900/50 overflow-auto whitespace-pre-wrap break-words ${language === 'text' ? '' : ''}`}
       >
         <code>{displayCode}</code>
       </pre>
