@@ -63,6 +63,11 @@ body.is-fullscreen .fullscreen-hide {
   background-image: linear-gradient(90deg, #ec4899, #f472b6, #ef4444);
 }
 .btn-pink:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(236,72,153,0.35); }
+
+.btn-red {
+  background-image: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+}
+.btn-red:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(220,38,38,0.35); }
 /* Reduced motion: minimize transitions and glow effects */
 @media (prefers-reduced-motion: reduce) {
   .icon-btn,

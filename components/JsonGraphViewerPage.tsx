@@ -1,13 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import SEO from './SEO';
-import { GraphViewer } from './GraphViewer';
+import GraphViewer, { GraphViewerRef } from './GraphViewer';
 import { convertJsonToGraphData } from '../utils/graphUtils';
+import { StructureAnalyzerErrorModal } from './StructureAnalyzerErrorModal';
+import { parseJsonSafe } from '../utils/parseJsonSafe';
+import type { FixChange } from '../utils/simpleJsonFixer';
 
 export const JsonGraphViewerPage: React.FC = () => {
   const [inputJson, setInputJson] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
   const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
   const [selectedNodePath, setSelectedNodePath] = useState<string>('');
+  const [isValidating, setIsValidating] = useState(false);
+  const [showGraph, setShowGraph] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const graphViewerRef = useRef<GraphViewerRef>(null);
 
   // Parse JSON and convert to graph data
   const parsedJson = useMemo(() => {
@@ -23,14 +34,14 @@ export const JsonGraphViewerPage: React.FC = () => {
   }, [inputJson]);
 
   const graphData = useMemo(() => {
-    if (!parsedJson) return null;
+    if (!parsedJson || !showGraph) return null;
     try {
       return convertJsonToGraphData(parsedJson, graphCollapsedNodes);
     } catch (error) {
       console.error('Failed to convert JSON to graph:', error);
       return null;
     }
-  }, [parsedJson, graphCollapsedNodes]);
+  }, [parsedJson, graphCollapsedNodes, showGraph]);
 
   // Handler for node selection in graph
   const handleNodeSelect = (selection: { path: string; key: string; value: any }) => {
@@ -155,6 +166,113 @@ export const JsonGraphViewerPage: React.FC = () => {
     setInputJson(JSON.stringify(sampleJson, null, 2));
   };
 
+  // Handle file upload
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = e.target?.result as string;
+      if (content) {
+        try {
+          const text = content.trim();
+          const parseResult = parseJsonSafe(text);
+          if (parseResult.ok) {
+            // Valid JSON, set input
+            setInputJson(text);
+            setParseError(null);
+            setShowErrorModal(false);
+            setShowGraph(false);
+          } else {
+            // Invalid JSON, show error modal
+            setInputJson(text);
+            setShowErrorModal(true);
+            setParseError('Invalid JSON');
+            setShowGraph(false);
+          }
+        } catch (err: any) {
+          setInputJson(content);
+          setShowErrorModal(true);
+          setParseError(err.message);
+        }
+      }
+    };
+    reader.onerror = () => {
+      setShowErrorModal(true);
+      setParseError('Failed to read file');
+    };
+    reader.readAsText(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Validate JSON
+  const handleValidate = () => {
+    const trimmedInput = inputJson.trim();
+    if (!trimmedInput) return;
+
+    setIsValidating(true);
+
+    // Validate JSON using parseJsonSafe
+    const parseResult = parseJsonSafe(trimmedInput);
+    
+    if (parseResult.ok) {
+      // JSON is valid - show success modal
+      setShowSuccessModal(true);
+      setShowErrorModal(false);
+      setParseError(null);
+    } else {
+      // JSON has errors - show error modal
+      setShowErrorModal(true);
+      setShowSuccessModal(false);
+      setParseError('Invalid JSON');
+    }
+
+    setIsValidating(false);
+  };
+
+  // Handle when Auto Fix is applied from error modal
+  const handleFixApplied = (fixedJson: string, changes: FixChange[]) => {
+    setInputJson(fixedJson);
+    setShowErrorModal(false);
+    setParseError(null);
+    setShowGraph(false);
+  };
+
+  // Generate Graph
+  const handleGenerateGraph = () => {
+    const trimmedInput = inputJson.trim();
+    if (!trimmedInput) return;
+
+    // Validate JSON first
+    const parseResult = parseJsonSafe(trimmedInput);
+    if (!parseResult.ok) {
+      // Show error modal instead of inline error
+      setShowErrorModal(true);
+      setShowGraph(false);
+      setParseError('Invalid JSON');
+      return;
+    }
+
+    setIsGenerating(true);
+    setShowErrorModal(false);
+    setParseError(null);
+    setShowGraph(true);
+    
+    // Brief delay for UX
+    setTimeout(() => {
+      setIsGenerating(false);
+    }, 300);
+  };
+
   return (
     <>
       <SEO
@@ -180,26 +298,81 @@ export const JsonGraphViewerPage: React.FC = () => {
 
         {/* Input Section */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">
-              Paste Your JSON Data
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={handleLoadSample}
-                className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700"
-              >
-                Load Sample
-              </button>
-              <button
-                onClick={() => setInputJson('')}
-                disabled={!inputJson.trim()}
-                className="px-3 py-1.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Clear
-              </button>
-            </div>
+          <div className="flex items-center justify-start gap-2 mb-3">
+            <button
+              onClick={handleLoadSample}
+              className="btn btn-blue"
+            >
+              <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+              <span>Load Sample</span>
+            </button>
+            <button
+              onClick={handleUploadClick}
+              className="btn btn-orange"
+            >
+              <i className="fa-solid fa-upload" aria-hidden="true"></i>
+              <span>Upload JSON</span>
+            </button>
+            <button
+              onClick={handleValidate}
+              disabled={!inputJson.trim() || isValidating}
+              className="btn btn-green"
+            >
+              {isValidating ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Validating...</span>
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-check" aria-hidden="true"></i>
+                  <span>Validate</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleGenerateGraph}
+              disabled={!inputJson.trim() || isGenerating}
+              className="btn btn-purple"
+            >
+              {isGenerating ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Generating...</span>
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
+                  <span>Graph View</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setInputJson('');
+                setParseError(null);
+                setShowGraph(false);
+              }}
+              disabled={!inputJson.trim()}
+              className="btn btn-red"
+            >
+              <i className="fa-solid fa-times" aria-hidden="true"></i>
+              <span>Clear</span>
+            </button>
           </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".json,application/json"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
           <textarea
             value={inputJson}
             onChange={(e) => setInputJson(e.target.value)}
@@ -227,7 +400,7 @@ export const JsonGraphViewerPage: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleGraphExpandAll}
-                  className="px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700 flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border-2 border-blue-200 dark:border-blue-700 flex items-center gap-1.5"
                   title="Expand all nodes"
                 >
                   <span>➕</span>
@@ -236,7 +409,7 @@ export const JsonGraphViewerPage: React.FC = () => {
                 
                 <button
                   onClick={handleGraphCollapseAll}
-                  className="px-3 py-1.5 text-xs font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-700 flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-bold text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border-2 border-orange-200 dark:border-orange-700 flex items-center gap-1.5"
                   title="Collapse all nodes"
                 >
                   <span>➖</span>
@@ -245,7 +418,7 @@ export const JsonGraphViewerPage: React.FC = () => {
                 
                 <button
                   onClick={handleSortGraph}
-                  className="px-3 py-1.5 text-xs font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-green-200 dark:border-green-700 flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-bold text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border-2 border-green-200 dark:border-green-700 flex items-center gap-1.5"
                   title="Sort JSON keys alphabetically"
                 >
                   <span>🔼</span>
@@ -257,24 +430,87 @@ export const JsonGraphViewerPage: React.FC = () => {
                     // Force re-render by toggling collapsed state
                     setGraphCollapsedNodes(new Set(graphCollapsedNodes));
                   }}
-                  className="px-3 py-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-700 flex items-center gap-1.5"
+                  className="px-3 py-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border-2 border-purple-200 dark:border-purple-700 flex items-center gap-1.5"
                   title="Reset view and center graph"
                 >
                   <span>🎯</span>
                   <span className="hidden sm:inline">Center</span>
                 </button>
+                
+                <div className="relative">
+                  <button
+                    onClick={(e) => {
+                      setIsDownloadOpen(!isDownloadOpen);
+                      // Store button position for dropdown positioning
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      (e.currentTarget as any).buttonRect = rect;
+                    }}
+                    className="px-3 py-1.5 text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 rounded-lg transition-colors border-2 border-cyan-200 dark:border-cyan-700 flex items-center gap-1.5"
+                    title="Download Graph"
+                    id="download-graph-button"
+                  >
+                    <span>💾</span>
+                    <span className="hidden sm:inline">Download</span>
+                  </button>
+                  
+                  {isDownloadOpen && (
+                    <div 
+                      className="fixed w-44 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
+                      style={{ 
+                        zIndex: 9999,
+                        top: `${document.getElementById('download-graph-button')?.getBoundingClientRect().top! - 100}px`,
+                        right: `${window.innerWidth - document.getElementById('download-graph-button')?.getBoundingClientRect().right!}px`
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button 
+                        onClick={() => {
+                          graphViewerRef.current?.downloadSVG();
+                          setIsDownloadOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
+                      >
+                        <span className="text-sm">📄</span>
+                        <span>Download as SVG</span>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          graphViewerRef.current?.downloadPNG();
+                          setIsDownloadOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
+                      >
+                        <span className="text-sm">🖼️</span>
+                        <span>Download as PNG</span>
+                      </button>
+                      <button 
+                        onClick={() => {
+                          graphViewerRef.current?.downloadJPEG();
+                          setIsDownloadOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
+                      >
+                        <span className="text-sm">📸</span>
+                        <span>Download as JPEG</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Graph Viewer */}
             <div className="h-[600px] relative">
               <GraphViewer
+                ref={graphViewerRef}
                 data={graphData}
                 onSelect={handleNodeSelect}
                 selectedNodePath={selectedNodePath}
                 collapsedNodes={graphCollapsedNodes}
                 onNodeToggle={handleNodeToggle}
                 theme="system"
+                isDownloadOpen={isDownloadOpen}
+                setIsDownloadOpen={setIsDownloadOpen}
               />
               
               {/* Color Legend */}
@@ -319,15 +555,9 @@ export const JsonGraphViewerPage: React.FC = () => {
             <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">
               No JSON Data to Visualize
             </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
               Paste valid JSON data above to see the interactive graph visualization
             </p>
-            <button
-              onClick={handleLoadSample}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-            >
-              Try Sample JSON
-            </button>
           </div>
         )}
 
@@ -358,6 +588,53 @@ export const JsonGraphViewerPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Error Modal - Shows when JSON has syntax errors */}
+      <StructureAnalyzerErrorModal
+        open={showErrorModal}
+        jsonInput={inputJson}
+        onClose={() => setShowErrorModal(false)}
+        onFixApplied={handleFixApplied}
+      />
+
+      {/* Success Modal - Shows when JSON validation is successful */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-lg shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-green-300 dark:border-green-700">
+            {/* Header */}
+            <div className="px-5 py-3 bg-green-500 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">✅</span>
+                <h3 className="text-lg font-semibold">Validation Successful</h3>
+              </div>
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="text-white/80 hover:text-white transition-colors"
+                aria-label="Close"
+              >
+                <i className="fa-solid fa-times text-xl"></i>
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-6">
+              <p className="text-slate-700 dark:text-slate-300 text-center">
+                Your JSON is valid and well-formed! You can now proceed to generate the graph visualization.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="px-5 py-3 bg-slate-50 dark:bg-slate-800 flex justify-end gap-3">
+              <button
+                onClick={() => setShowSuccessModal(false)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

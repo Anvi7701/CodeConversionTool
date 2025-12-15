@@ -4212,7 +4212,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                 </div>
               )}
-              <div className="flex-grow relative bg-slate-50 dark:bg-slate-900/50 min-h-0">
+              <div className="flex-grow relative bg-white dark:bg-slate-900/50 min-h-0">
                 {isLoading ? (
                   <FormattingLoading />
                 ) : isValidating ? (

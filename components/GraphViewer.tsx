@@ -1,11 +1,17 @@
 
 
-import React, { useRef, useEffect, FC, useState } from 'react';
+import React, { useRef, useEffect, FC, useState, forwardRef, useImperativeHandle } from 'react';
 import * as d3 from 'd3';
 import { GraphData, GraphNode, Selection } from '../types';
 import { DownloadIcon, SaveIcon, CopyIcon } from './icons';
 import { Tooltip } from './Tooltip';
 import type { Theme } from './ThemeToggle';
+
+export interface GraphViewerRef {
+    downloadSVG: () => Promise<void>;
+    downloadPNG: () => Promise<void>;
+    downloadJPEG: () => Promise<void>;
+}
 
 interface GraphViewerProps {
     data: GraphData;
@@ -14,6 +20,8 @@ interface GraphViewerProps {
     collapsedNodes: Set<string>;
     onNodeToggle: (nodeId: string) => void;
     theme: Theme;
+    isDownloadOpen?: boolean;
+    setIsDownloadOpen?: (open: boolean) => void;
 }
 
 // --- Font Embedding Logic (for SVG export) ---
@@ -47,9 +55,203 @@ const getFontDataUrl = async (url: string): Promise<string> => {
 };
 
 
-export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNodePath, collapsedNodes, onNodeToggle, theme }) => {
+export const GraphViewer = forwardRef<GraphViewerRef, GraphViewerProps>(({ data, onSelect, selectedNodePath, collapsedNodes, onNodeToggle, theme, isDownloadOpen: externalIsDownloadOpen, setIsDownloadOpen: externalSetIsDownloadOpen }, ref) => {
     const svgRef = useRef<SVGSVGElement>(null);
-    const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+    const [internalIsDownloadOpen, setInternalIsDownloadOpen] = useState(false);
+    
+    // Use external state if provided, otherwise use internal state
+    const isDownloadOpen = externalIsDownloadOpen !== undefined ? externalIsDownloadOpen : internalIsDownloadOpen;
+    const setIsDownloadOpen = externalSetIsDownloadOpen || setInternalIsDownloadOpen;
+
+    // Helper function to get styled SVG string (declared early for useImperativeHandle)
+    const getStyledSvgString = async (): Promise<string> => {
+        const originalSvg = svgRef.current;
+        if (!originalSvg) throw new Error("SVG element not found for export.");
+
+        const originalContentGroup = originalSvg.querySelector('.everything');
+        if (!originalContentGroup) throw new Error("Could not find graph content for export.");
+        
+        const box = (originalContentGroup as SVGGElement).getBBox();
+        const padding = 50;
+        const finalWidth = box.width + padding * 2;
+        const finalHeight = box.height + padding * 2;
+
+        if (box.width === 0 || box.height === 0) {
+            console.warn("Graph content has zero dimensions, export may be empty.");
+        }
+    
+        const svgClone = originalSvg.cloneNode(true) as SVGSVGElement;
+        
+        const contentGroup = svgClone.querySelector('.everything');
+        if (contentGroup) {
+          contentGroup.removeAttribute('transform'); 
+        }
+    
+        svgClone.setAttribute('width', String(finalWidth));
+        svgClone.setAttribute('height', String(finalHeight));
+        svgClone.setAttribute('viewBox', `${box.x - padding} ${box.y - padding} ${finalWidth} ${finalHeight}`);
+    
+        const fontDataUrl = await getFontDataUrl('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        styleElement.textContent = `@font-face { font-family: 'Inter'; src: url(${fontDataUrl}) format('woff2'); } text { font-family: 'Inter', sans-serif; }`;
+    
+        const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        backgroundRect.setAttribute('width', '100%');
+        backgroundRect.setAttribute('height', '100%');
+        backgroundRect.setAttribute('fill', isDarkMode ? '#0f172a' : '#f8fafc');
+        backgroundRect.setAttribute('x', `${box.x - padding}`);
+        backgroundRect.setAttribute('y', `${box.y - padding}`);
+    
+        svgClone.prepend(styleElement);
+        svgClone.prepend(backgroundRect);
+    
+        return new XMLSerializer().serializeToString(svgClone);
+    };
+
+    // Expose download methods via ref
+    useImperativeHandle(ref, () => ({
+        downloadSVG: async () => {
+            try {
+                const svgData = await getStyledSvgString();
+                const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'graph.svg';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                if (externalSetIsDownloadOpen) externalSetIsDownloadOpen(false);
+            } catch (e) {
+                console.error("Failed to download SVG:", e);
+            }
+        },
+        downloadPNG: async () => {
+            try {
+                const svgData = await getStyledSvgString();
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    
+                    const svgElement = new DOMParser().parseFromString(svgData, 'image/svg+xml').querySelector('svg');
+                    const svgWidth = parseFloat(svgElement?.getAttribute('width') || '1200');
+                    const svgHeight = parseFloat(svgElement?.getAttribute('height') || '800');
+
+                    const MAX_CANVAS_DIMENSION = 16384;
+                    const scale = 2;
+
+                    let canvasWidth = svgWidth * scale;
+                    let canvasHeight = svgHeight * scale;
+
+                    if (canvasWidth > MAX_CANVAS_DIMENSION || canvasHeight > MAX_CANVAS_DIMENSION) {
+                        const ratio = Math.min(MAX_CANVAS_DIMENSION / canvasWidth, MAX_CANVAS_DIMENSION / canvasHeight);
+                        canvasWidth *= ratio;
+                        canvasHeight *= ratio;
+                    }
+                    
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const pngUrl = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = pngUrl;
+                                link.download = 'graph.png';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(pngUrl);
+                            }
+                            URL.revokeObjectURL(svgUrl);
+                            if (externalSetIsDownloadOpen) externalSetIsDownloadOpen(false);
+                        }, 'image/png');
+                    } else {
+                        URL.revokeObjectURL(svgUrl);
+                    }
+                };
+                img.onerror = (e) => {
+                    console.error("Failed to load SVG into Image for PNG conversion.", e);
+                    URL.revokeObjectURL(svgUrl);
+                };
+                img.src = svgUrl;
+            } catch (e) {
+                console.error("Failed to download PNG:", e);
+            }
+        },
+        downloadJPEG: async () => {
+            try {
+                const svgData = await getStyledSvgString();
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    
+                    const svgElement = new DOMParser().parseFromString(svgData, 'image/svg+xml').querySelector('svg');
+                    const svgWidth = parseFloat(svgElement?.getAttribute('width') || '1200');
+                    const svgHeight = parseFloat(svgElement?.getAttribute('height') || '800');
+
+                    const MAX_CANVAS_DIMENSION = 16384;
+                    const scale = 2;
+
+                    let canvasWidth = svgWidth * scale;
+                    let canvasHeight = svgHeight * scale;
+
+                    if (canvasWidth > MAX_CANVAS_DIMENSION || canvasHeight > MAX_CANVAS_DIMENSION) {
+                        const ratio = Math.min(MAX_CANVAS_DIMENSION / canvasWidth, MAX_CANVAS_DIMENSION / canvasHeight);
+                        canvasWidth *= ratio;
+                        canvasHeight *= ratio;
+                    }
+                    
+                    canvas.width = canvasWidth;
+                    canvas.height = canvasHeight;
+                    const ctx = canvas.getContext('2d');
+                    
+                    if (ctx) {
+                        // Fill white background for JPEG (no transparency)
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const jpegUrl = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = jpegUrl;
+                                link.download = 'graph.jpg';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(jpegUrl);
+                            }
+                            URL.revokeObjectURL(svgUrl);
+                            if (externalSetIsDownloadOpen) externalSetIsDownloadOpen(false);
+                        }, 'image/jpeg', 0.95);
+                    } else {
+                        URL.revokeObjectURL(svgUrl);
+                    }
+                };
+                img.onerror = (e) => {
+                    console.error("Failed to load SVG into Image for JPEG conversion.", e);
+                    URL.revokeObjectURL(svgUrl);
+                };
+                img.src = svgUrl;
+            } catch (e) {
+                console.error("Failed to download JPEG:", e);
+            }
+        }
+    }));
 
     const isDarkMode =
         theme === 'dark' ||
@@ -239,50 +441,6 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
         }
         return d3.drag().on('start', dragstarted).on('drag', dragged).on('end', dragended);
     }
-    
-    const getStyledSvgString = async (): Promise<string> => {
-        const originalSvg = svgRef.current;
-        if (!originalSvg) throw new Error("SVG element not found for export.");
-
-        const originalContentGroup = originalSvg.querySelector('.everything');
-        if (!originalContentGroup) throw new Error("Could not find graph content for export.");
-        
-        const box = (originalContentGroup as SVGGElement).getBBox();
-        const padding = 50;
-        const finalWidth = box.width + padding * 2;
-        const finalHeight = box.height + padding * 2;
-
-        if (box.width === 0 || box.height === 0) {
-            console.warn("Graph content has zero dimensions, export may be empty.");
-        }
-    
-        const svgClone = originalSvg.cloneNode(true) as SVGSVGElement;
-        
-        const contentGroup = svgClone.querySelector('.everything');
-        if (contentGroup) {
-          contentGroup.removeAttribute('transform'); 
-        }
-    
-        svgClone.setAttribute('width', String(finalWidth));
-        svgClone.setAttribute('height', String(finalHeight));
-        svgClone.setAttribute('viewBox', `${box.x - padding} ${box.y - padding} ${finalWidth} ${finalHeight}`);
-    
-        const fontDataUrl = await getFontDataUrl('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        const styleElement = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-        styleElement.textContent = `@font-face { font-family: 'Inter'; src: url(${fontDataUrl}) format('woff2'); } text { font-family: 'Inter', sans-serif; }`;
-    
-        const backgroundRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        backgroundRect.setAttribute('width', '100%');
-        backgroundRect.setAttribute('height', '100%');
-        backgroundRect.setAttribute('fill', isDarkMode ? '#0f172a' : '#f8fafc');
-        backgroundRect.setAttribute('x', `${box.x - padding}`);
-        backgroundRect.setAttribute('y', `${box.y - padding}`);
-    
-        svgClone.prepend(styleElement);
-        svgClone.prepend(backgroundRect);
-    
-        return new XMLSerializer().serializeToString(svgClone);
-    };
 
     const downloadSVG = async () => {
         try {
@@ -475,6 +633,7 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
                         <CopyIcon className="w-5 h-5" />
                     </button>
                 </Tooltip>
+                {!externalSetIsDownloadOpen && (
                 <div className="relative" style={{ zIndex: 100001 }}>
                     <Tooltip content="Download Graph">
                         <button 
@@ -499,6 +658,7 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
                         </div>
                     )}
                 </div>
+                )}
             </div>
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-max max-w-[90%] text-center text-xs text-slate-500 dark:text-slate-400 p-2 bg-white/90 dark:bg-dark-card/90 rounded-md backdrop-blur-sm pointer-events-none shadow-md" style={{ zIndex: 10 }}>
                 Tip: Click nodes to expand/collapse. Scroll to zoom, and drag to explore the graph.
@@ -593,4 +753,8 @@ export const GraphViewer: FC<GraphViewerProps> = ({ data, onSelect, selectedNode
             `}</style>
         </div>
     );
-};
+});
+
+GraphViewer.displayName = 'GraphViewer';
+
+export default GraphViewer;
