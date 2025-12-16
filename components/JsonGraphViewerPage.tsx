@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import SEO from './SEO';
 import GraphViewer, { GraphViewerRef } from './GraphViewer';
 import { convertJsonToGraphData } from '../utils/graphUtils';
 import { StructureAnalyzerErrorModal } from './StructureAnalyzerErrorModal';
 import { parseJsonSafe } from '../utils/parseJsonSafe';
 import type { FixChange } from '../utils/simpleJsonFixer';
+import { Tooltip } from './Tooltip';
 
 export const JsonGraphViewerPage: React.FC = () => {
   const [inputJson, setInputJson] = useState('');
@@ -17,8 +18,12 @@ export const JsonGraphViewerPage: React.FC = () => {
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isGraphFullscreen, setIsGraphFullscreen] = useState(false);
+  const [showDownloadSuccess, setShowDownloadSuccess] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const graphViewerRef = useRef<GraphViewerRef>(null);
+  const graphContainerRef = useRef<HTMLDivElement>(null);
+  const graphSectionRef = useRef<HTMLDivElement>(null);
 
   // Parse JSON and convert to graph data
   const parsedJson = useMemo(() => {
@@ -164,6 +169,13 @@ export const JsonGraphViewerPage: React.FC = () => {
       }
     };
     setInputJson(JSON.stringify(sampleJson, null, 2));
+    setShowGraph(true);
+    setParseError(null);
+    setShowErrorModal(false);
+    // Scroll to graph after brief delay
+    setTimeout(() => {
+      graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
   };
 
   // Handle file upload
@@ -183,11 +195,15 @@ export const JsonGraphViewerPage: React.FC = () => {
           const text = content.trim();
           const parseResult = parseJsonSafe(text);
           if (parseResult.ok) {
-            // Valid JSON, set input
+            // Valid JSON, set input and auto-generate graph
             setInputJson(text);
             setParseError(null);
             setShowErrorModal(false);
-            setShowGraph(false);
+            setShowGraph(true);
+            // Scroll to graph after brief delay
+            setTimeout(() => {
+              graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
           } else {
             // Invalid JSON, show error modal
             setInputJson(text);
@@ -225,10 +241,15 @@ export const JsonGraphViewerPage: React.FC = () => {
     const parseResult = parseJsonSafe(trimmedInput);
     
     if (parseResult.ok) {
-      // JSON is valid - show success modal
+      // JSON is valid - show success modal and auto-generate graph
       setShowSuccessModal(true);
       setShowErrorModal(false);
       setParseError(null);
+      setShowGraph(true);
+      // Scroll to graph after brief delay
+      setTimeout(() => {
+        graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
     } else {
       // JSON has errors - show error modal
       setShowErrorModal(true);
@@ -267,11 +288,36 @@ export const JsonGraphViewerPage: React.FC = () => {
     setParseError(null);
     setShowGraph(true);
     
-    // Brief delay for UX
+    // Brief delay for UX, then scroll to graph
     setTimeout(() => {
       setIsGenerating(false);
+      // Scroll to Interactive Graph View section
+      graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 300);
   };
+
+  // Handle fullscreen toggle for graph viewer
+  const handleToggleGraphFullscreen = () => {
+    if (!graphSectionRef.current) return;
+    
+    if (!isGraphFullscreen) {
+      graphSectionRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  // Sync fullscreen state with browser fullscreen
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsGraphFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   return (
     <>
@@ -287,11 +333,11 @@ export const JsonGraphViewerPage: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         {/* Page Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-3">
-            <span className="text-4xl">📊</span>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+            <span className="text-lg">📊</span>
             JSON Graph Viewer
           </h1>
-          <p className="text-slate-600 dark:text-slate-300">
+          <p className="text-sm text-slate-600 dark:text-slate-300">
             Visualize your JSON data as an interactive graph with nodes and connections. Explore complex JSON structures visually.
           </p>
         </div>
@@ -348,7 +394,7 @@ export const JsonGraphViewerPage: React.FC = () => {
                 </>
               ) : (
                 <>
-                  <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
+                  <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
                   <span>Graph View</span>
                 </>
               )}
@@ -376,20 +422,31 @@ export const JsonGraphViewerPage: React.FC = () => {
           <textarea
             value={inputJson}
             onChange={(e) => setInputJson(e.target.value)}
-            placeholder='Paste your JSON here, e.g., {"name": "John", "age": 30, "skills": ["JavaScript", "React"]}'
+            onPaste={(e) => {
+              // Auto-generate graph after paste if JSON is valid
+              setTimeout(() => {
+                const text = e.currentTarget.value.trim();
+                if (text) {
+                  const parseResult = parseJsonSafe(text);
+                  if (parseResult.ok) {
+                    setShowGraph(true);
+                    setParseError(null);
+                    setShowErrorModal(false);
+                    setTimeout(() => {
+                      graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                  }
+                }
+              }, 100);
+            }}
+            placeholder='Paste or upload your JSON here, e.g., {"name": "John", "age": 30, "skills": ["JavaScript", "React"]}'
             className="w-full h-48 px-4 py-3 font-mono text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           />
-          {parseError && (
-            <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400 font-medium">❌ JSON Parse Error:</p>
-              <p className="text-sm text-red-600 dark:text-red-400 mt-1">{parseError}</p>
-            </div>
-          )}
         </div>
 
         {/* Graph Viewer Section */}
         {graphData && parsedJson ? (
-          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden">
+          <div ref={graphSectionRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg overflow-hidden relative">
             {/* Graph Header */}
             <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-800">
               <h2 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
@@ -455,8 +512,12 @@ export const JsonGraphViewerPage: React.FC = () => {
                   
                   {isDownloadOpen && (
                     <div 
-                      className="fixed w-44 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden"
-                      style={{ 
+                      className={`w-44 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden ${
+                        isGraphFullscreen ? 'absolute top-full right-0 mt-2' : 'fixed'
+                      }`}
+                      style={isGraphFullscreen ? { 
+                        zIndex: 9999
+                      } : { 
                         zIndex: 9999,
                         top: `${document.getElementById('download-graph-button')?.getBoundingClientRect().top! - 100}px`,
                         right: `${window.innerWidth - document.getElementById('download-graph-button')?.getBoundingClientRect().right!}px`
@@ -464,9 +525,11 @@ export const JsonGraphViewerPage: React.FC = () => {
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button 
-                        onClick={() => {
-                          graphViewerRef.current?.downloadSVG();
+                        onClick={async () => {
+                          await graphViewerRef.current?.downloadSVG();
                           setIsDownloadOpen(false);
+                          setShowDownloadSuccess(true);
+                          setTimeout(() => setShowDownloadSuccess(false), 3000);
                         }}
                         className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
                       >
@@ -474,9 +537,11 @@ export const JsonGraphViewerPage: React.FC = () => {
                         <span>Download as SVG</span>
                       </button>
                       <button 
-                        onClick={() => {
-                          graphViewerRef.current?.downloadPNG();
+                        onClick={async () => {
+                          await graphViewerRef.current?.downloadPNG();
                           setIsDownloadOpen(false);
+                          setShowDownloadSuccess(true);
+                          setTimeout(() => setShowDownloadSuccess(false), 3000);
                         }}
                         className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
                       >
@@ -484,9 +549,11 @@ export const JsonGraphViewerPage: React.FC = () => {
                         <span>Download as PNG</span>
                       </button>
                       <button 
-                        onClick={() => {
-                          graphViewerRef.current?.downloadJPEG();
+                        onClick={async () => {
+                          await graphViewerRef.current?.downloadJPEG();
                           setIsDownloadOpen(false);
+                          setShowDownloadSuccess(true);
+                          setTimeout(() => setShowDownloadSuccess(false), 3000);
                         }}
                         className="w-full px-3 py-2 text-left text-xs text-slate-700 dark:text-slate-200 hover:bg-cyan-50 dark:hover:bg-cyan-900/30 transition-colors flex items-center gap-2"
                       >
@@ -496,11 +563,22 @@ export const JsonGraphViewerPage: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                <Tooltip content={isGraphFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}>
+                  <button
+                    onClick={handleToggleGraphFullscreen}
+                    className="px-3 py-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border-2 border-indigo-200 dark:border-indigo-700 flex items-center gap-1.5"
+                    title={isGraphFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+                    disabled={!showGraph}
+                  >
+                    <i className={`fa-solid ${isGraphFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`}></i>
+                  </button>
+                </Tooltip>
               </div>
             </div>
 
             {/* Graph Viewer */}
-            <div className="h-[600px] relative">
+            <div ref={graphContainerRef} className="h-[600px] relative">
               <GraphViewer
                 ref={graphViewerRef}
                 data={graphData}
@@ -548,6 +626,16 @@ export const JsonGraphViewerPage: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Download Success Toast - positioned inside graph section for fullscreen */}
+            {showDownloadSuccess && (
+              <div className="absolute top-4 right-4 z-[100] animate-fade-in">
+                <div className="bg-green-500 dark:bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                  <i className="fa-solid fa-check-circle text-xl"></i>
+                  <span className="font-medium">File downloaded successfully!</span>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="bg-slate-50 dark:bg-slate-800/50 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-12 text-center">
@@ -632,6 +720,16 @@ export const JsonGraphViewerPage: React.FC = () => {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Download Success Toast - for normal view when not in fullscreen */}
+      {showDownloadSuccess && !isGraphFullscreen && (
+        <div className="fixed top-4 right-4 z-[10000] animate-fade-in">
+          <div className="bg-green-500 dark:bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3">
+            <i className="fa-solid fa-check-circle text-xl"></i>
+            <span className="font-medium">File downloaded successfully!</span>
           </div>
         </div>
       )}

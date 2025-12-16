@@ -121,9 +121,20 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
         }
       }
     };
-    setInputJson(JSON.stringify(sampleJson, null, 2));
-    setAnalysisResult(null);
+    const jsonString = JSON.stringify(sampleJson, null, 2);
+    setInputJson(jsonString);
     setShowErrorModal(false);
+    
+    // Auto-analyze and scroll
+    try {
+      const analysis = analyzeJsonStructure(jsonString);
+      setAnalysisResult(analysis);
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    } catch (err: any) {
+      console.error('Analysis failed:', err);
+    }
   };
 
   // Handle file upload
@@ -149,10 +160,18 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
           // Validate JSON format using parseJsonSafe
           const parseResult = parseJsonSafe(text);
           if (parseResult.ok) {
-            // Valid JSON, set input
+            // Valid JSON, set input and auto-analyze
             setInputJson(text);
-            setAnalysisResult(null);
             setShowErrorModal(false);
+            try {
+              const analysis = analyzeJsonStructure(text);
+              setAnalysisResult(analysis);
+              setTimeout(() => {
+                resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 300);
+            } catch (err: any) {
+              console.error('Analysis failed:', err);
+            }
           } else {
             // Invalid JSON, show error modal
             setInputJson(text);
@@ -420,6 +439,27 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
           <textarea
             value={inputJson}
             onChange={(e) => handleInputChange(e.target.value)}
+            onPaste={(e) => {
+              // Auto-analyze after paste if JSON is valid
+              setTimeout(() => {
+                const text = e.currentTarget.value.trim();
+                if (text) {
+                  const parseResult = parseJsonSafe(text);
+                  if (parseResult.ok) {
+                    try {
+                      const analysis = analyzeJsonStructure(text);
+                      setAnalysisResult(analysis);
+                      setShowErrorModal(false);
+                      setTimeout(() => {
+                        resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }, 300);
+                    } catch (err: any) {
+                      console.error('Analysis failed:', err);
+                    }
+                  }
+                }
+              }, 100);
+            }}
             placeholder='Paste or Upload your JSON here, e.g., {"users": [{"name": "John", "age": 30}], "count": 1}'
             className="w-full h-64 px-4 py-3 font-mono text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
           />
