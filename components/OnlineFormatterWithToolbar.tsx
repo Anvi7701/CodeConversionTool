@@ -30,6 +30,9 @@ import { ValidationModal } from './ValidationModal';
 import { JMESPathTransform } from './JMESPathTransform';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
+import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
+import { convertJsonToCsv } from '../utils/codeGenerator';
+import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
 type ValidationResult = { isValid: boolean; reason: string; isFixableSyntaxError: boolean; suggestedLanguage?: string };
@@ -108,6 +111,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Modal state
   const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
+
+  // Conversion mode state (track if output is from XML/CSV/YAML conversion)
+  const [isConversionOutput, setIsConversionOutput] = useState<boolean>(false);
 
   // AI Error state
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
@@ -968,6 +974,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setShowFixSummary(false);
     setAiError(null);
     setHasCommentsInInput(false);
+    setIsConversionOutput(false); // Reset conversion output flag
 
     try {
       // For JSON, use centralized parsing + detection
@@ -1256,6 +1263,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setSuccessMessage(null);
     setOutputCode(null);
     setIsStructureAnalysisMode(false); // Reset structure analysis mode
+    setIsConversionOutput(false); // Reset conversion output flag
 
     try {
       let formattedCode = '';
@@ -1384,6 +1392,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!trimmedInput || activeLanguage !== 'json') return;
 
     setIsStructureAnalysisMode(false); // Reset structure analysis mode
+    setIsConversionOutput(false); // Reset conversion output flag
     try {
       const jsonObj = JSON.parse(trimmedInput);
       const minified = JSON.stringify(jsonObj);
@@ -1409,6 +1418,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (!trimmedInput || activeLanguage !== 'json') return;
 
     setIsStructureAnalysisMode(false); // Reset structure analysis mode
+    setIsConversionOutput(false); // Reset conversion output flag
     try {
       const jsonObj = JSON.parse(trimmedInput);
       const compacted = JSON.stringify(jsonObj); // Remove all whitespaces
@@ -1753,22 +1763,48 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     // Note: Download button behavior remains simple (downloads to default folder)
     // For table view, the Download button is hidden - users should use "Save to File" for folder selection
     
-    // Validate output JSON before downloading
-    if (activeLanguage === 'json' && outputCode) {
-      setPreviousView(viewFormat); // Store current view before validation
-      const isValid = validateOutputJson(outputCode, { type: 'download' });
-      if (!isValid) {
-        // Don't proceed with download if JSON is invalid - pending action stored
-        return;
+    // Determine file extension and MIME type based on output format
+    let ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
+    let mimeType = 'text/plain';
+    let fileName = 'formatted';
+    
+    // Check if output is from conversion (XML, CSV, YAML)
+    if (isConversionOutput && outputCode) {
+      // Detect format from content
+      const trimmedOutput = outputCode.trim();
+      
+      if (trimmedOutput.startsWith('<?xml')) {
+        ext = 'xml';
+        mimeType = 'application/xml';
+        fileName = 'converted';
+      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[')) {
+        // CSV detection: contains commas and doesn't look like JSON
+        ext = 'csv';
+        mimeType = 'text/csv';
+        fileName = 'converted';
+      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml')) {
+        // YAML detection: contains colons, no JSON brackets, not XML
+        ext = 'yaml';
+        mimeType = 'text/yaml';
+        fileName = 'converted';
+      }
+    } else {
+      // Validate output JSON before downloading (only for non-conversion outputs)
+      if (activeLanguage === 'json' && outputCode) {
+        setPreviousView(viewFormat); // Store current view before validation
+        const isValid = validateOutputJson(outputCode, { type: 'download' });
+        if (!isValid) {
+          // Don't proceed with download if JSON is invalid - pending action stored
+          return;
+        }
       }
     }
     
-    const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `formatted.${ext}`;
+    a.download = `${fileName}.${ext}`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -2461,7 +2497,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
     
     // Validate output JSON before saving
-    if (activeLanguage === 'json' && outputCode) {
+    if (activeLanguage === 'json' && outputCode && !isConversionOutput) {
       setPreviousView(viewFormat); // Store current view before validation
       const isValid = validateOutputJson(outputCode, { type: 'save' });
       if (!isValid) {
@@ -2470,19 +2506,49 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       }
     }
     
-    const ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
-    const fileName = `formatted.${ext}`;
+    // Determine file extension and MIME type based on output format
+    let ext = activeLanguage === 'typescript' ? 'ts' : activeLanguage === 'javascript' ? 'js' : activeLanguage;
+    let mimeType = 'text/plain';
+    let fileName = 'formatted';
+    let fileDescription = `${activeLanguage.toUpperCase()} File`;
+    
+    // Check if output is from conversion (XML, CSV, YAML)
+    if (isConversionOutput && outputCode) {
+      // Detect format from content
+      const trimmedOutput = outputCode.trim();
+      
+      if (trimmedOutput.startsWith('<?xml')) {
+        ext = 'xml';
+        mimeType = 'application/xml';
+        fileName = 'converted';
+        fileDescription = 'XML File';
+      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[')) {
+        // CSV detection: contains commas and doesn't look like JSON
+        ext = 'csv';
+        mimeType = 'text/csv';
+        fileName = 'converted';
+        fileDescription = 'CSV File';
+      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml')) {
+        // YAML detection: contains colons, no JSON brackets, not XML
+        ext = 'yaml';
+        mimeType = 'text/yaml';
+        fileName = 'converted';
+        fileDescription = 'YAML File';
+      }
+    }
+    
+    const fullFileName = `${fileName}.${ext}`;
     // Try File System Access API
     // @ts-ignore
     if (window.showSaveFilePicker) {
       try {
         // @ts-ignore
         const handle = await window.showSaveFilePicker({
-          suggestedName: fileName,
+          suggestedName: fullFileName,
           types: [
             {
-              description: `${activeLanguage.toUpperCase()} File`,
-              accept: { 'text/plain': [`.${ext}`] },
+              description: fileDescription,
+              accept: { [mimeType]: [`.${ext}`] },
             },
           ],
         });
@@ -2503,11 +2569,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       }
     }
     // If File System Access API is not supported, fallback to simple download
-    const blob = new Blob([content], { type: 'text/plain' });
+    const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = fileName;
+    a.download = fullFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -3315,6 +3381,105 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* To XML button - converts JSON to XML */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      JSON.parse(inputCode); // Validate JSON first
+                      const xmlOutput = convertJsonToXmlCode(inputCode);
+                      setOutputCode(xmlOutput);
+                      setIsConversionOutput(true);
+                      // Save to output history
+                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), xmlOutput]);
+                      setOutputHistoryIndex(prev => prev + 1);
+                    } catch (error: any) {
+                      setValidationError({ 
+                        isValid: false, 
+                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to XML.', 
+                        isFixableSyntaxError: true, 
+                        suggestedLanguage: undefined 
+                      });
+                    }
+                  }}
+                  className="btn btn-orange"
+                  title="Convert JSON to XML"
+                >
+                  <i className="fa-solid fa-code" aria-hidden="true"></i>
+                  <span>To XML</span>
+                </button>
+              )}
+
+              {/* To CSV button - converts JSON to CSV */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      const jsonData = JSON.parse(inputCode); // Validate JSON first
+                      const csvOutput = convertJsonToCsv(jsonData);
+                      if (!csvOutput) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: 'Cannot convert to CSV. Input must be an array of objects or a single object.', 
+                          isFixableSyntaxError: false, 
+                          suggestedLanguage: undefined 
+                        });
+                        return;
+                      }
+                      setOutputCode(csvOutput);
+                      setIsConversionOutput(true);
+                      // Save to output history
+                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), csvOutput]);
+                      setOutputHistoryIndex(prev => prev + 1);
+                    } catch (error: any) {
+                      setValidationError({ 
+                        isValid: false, 
+                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to CSV.', 
+                        isFixableSyntaxError: true, 
+                        suggestedLanguage: undefined 
+                      });
+                    }
+                  }}
+                  className="btn btn-green"
+                  title="Convert JSON to CSV"
+                >
+                  <i className="fa-solid fa-table" aria-hidden="true"></i>
+                  <span>To CSV</span>
+                </button>
+              )}
+
+              {/* To YAML button - converts JSON to YAML */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      JSON.parse(inputCode); // Validate JSON first
+                      const yamlOutput = convertJsonToYaml(inputCode);
+                      setOutputCode(yamlOutput);
+                      setIsConversionOutput(true);
+                      // Save to output history
+                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), yamlOutput]);
+                      setOutputHistoryIndex(prev => prev + 1);
+                    } catch (error: any) {
+                      setValidationError({ 
+                        isValid: false, 
+                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to YAML.', 
+                        isFixableSyntaxError: true, 
+                        suggestedLanguage: undefined 
+                      });
+                    }
+                  }}
+                  className="btn btn-red"
+                  title="Convert JSON to YAML"
+                >
+                  <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+                  <span>To YAML</span>
+                </button>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -3791,6 +3956,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Output</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
+                {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
+                {!isConversionOutput && (
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
                   {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
@@ -3983,10 +4150,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   )}
                   {/* Undo/Redo buttons removed; replaced by icon-only pills at the end of this toolbar */}
                 </div>
+                )}
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
+                {!isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
@@ -4015,8 +4183,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
                   </span>
                 </Tooltip>
-                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON) */}
-                {activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
+                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON) and when output is from conversion */}
+                {!isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {

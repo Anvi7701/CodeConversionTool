@@ -16,6 +16,7 @@ export const JsonTransformPage: React.FC = () => {
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
+  const [showCopyToast, setShowCopyToast] = useState(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -112,6 +113,16 @@ export const JsonTransformPage: React.FC = () => {
     setInputJson(fixedJson);
     setShowErrorModal(false);
     setError(null);
+  };
+
+  const handleCopyOutput = async () => {
+    try {
+      await navigator.clipboard.writeText(output);
+      setShowCopyToast(true);
+      setTimeout(() => setShowCopyToast(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
+    }
   };
 
   const handleOpen = () => {
@@ -240,8 +251,28 @@ export const JsonTransformPage: React.FC = () => {
 
         {output && (
           <div className="mb-6">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Last Applied Result</label>
-            <pre className="mt-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-4 text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{output}</pre>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-200">Last Applied Result</label>
+              <button
+                onClick={handleCopyOutput}
+                className="btn btn-blue"
+                title="Copy to clipboard"
+              >
+                <i className="fa-solid fa-copy"></i>
+                <span>Copy</span>
+              </button>
+            </div>
+            <div className="relative">
+              <pre className="bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-4 text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap">{output}</pre>
+              
+              {/* Copy Success Toast */}
+              {showCopyToast && (
+                <div className="absolute top-2 right-2 bg-green-500 dark:bg-green-600 text-white px-3 py-2 rounded-lg shadow-lg flex items-center gap-2 text-sm animate-fade-in">
+                  <i className="fa-solid fa-check-circle"></i>
+                  <span>Copied!</span>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
