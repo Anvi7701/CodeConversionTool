@@ -354,9 +354,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           try {
             const formatted = JSON.stringify(res.value, null, 2);
             setOutputCode(formatted);
-            // Default to View mode for beautifier experience
+            // Preserve the current view format (e.g., TOON on TOON page)
+            // Otherwise default to View mode for beautifier experience
             setIsStructureAnalysisMode(false);
-            setViewFormat('view');
+            if (viewFormat !== 'toon' && viewFormat !== 'table' && viewFormat !== 'tree' && viewFormat !== 'form') {
+              setViewFormat('view');
+            }
             // Trigger expand-all for structured views by toggling expandAllTrigger
             setExpandAllTrigger(true);
             setTimeout(() => setExpandAllTrigger(false), 120);
