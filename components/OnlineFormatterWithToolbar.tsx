@@ -4393,7 +4393,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
-                {isFullscreen && (
+                {isFullscreen && viewFormat !== 'toon' && (
                   <Tooltip content="Exit fullscreen">
                     <button
                       onClick={handleToggleFullscreen}
