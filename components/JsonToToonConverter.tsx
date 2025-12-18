@@ -33,7 +33,7 @@ export const JsonToToonConverter: React.FC = () => {
         structuredData={structuredData}
       />
       <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-        Tip: Paste your JSON on the left. Use the View dropdown → TOON to generate token-friendly output.
+        Tip: Paste your JSON on the left. Output is locked to TOON view for token-friendly output.
       </div>
       {/* Mirror the JSON Beautifier page with full toolbar and purple theme */}
       <OnlineFormatterWithToolbar
@@ -45,6 +45,7 @@ export const JsonToToonConverter: React.FC = () => {
         colorTheme="purple"
         hideFormatButtons={true}
         initialViewFormat="toon"
+        lockViewTo="toon"
       />
     </>
   );

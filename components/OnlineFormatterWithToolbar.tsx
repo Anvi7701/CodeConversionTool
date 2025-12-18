@@ -63,9 +63,11 @@ interface OnlineFormatterWithToolbarProps {
   colorTheme?: 'default' | 'purple';
   hideFormatButtons?: boolean; // Hide Format/Beautify/Minify buttons (e.g., for TOON page)
   initialViewFormat?: ViewFormat; // Set initial view on page load (e.g., 'toon' for TOON page)
+  // Lock the view to a specific format and hide the View dropdown (e.g., lock to 'toon')
+  lockViewTo?: ViewFormat;
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code' }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -89,6 +91,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showOutputSortDropdown, setShowOutputSortDropdown] = useState(false);
   const [showViewDropdown, setShowViewDropdown] = useState(false);
   const [showToonSettings, setShowToonSettings] = useState(false);
+  const [showOutputTableExportDropdown, setShowOutputTableExportDropdown] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   // Output-only fullscreen state and ref
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
@@ -189,6 +192,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       setViewFormat(initialViewFormat);
     }
   }, [initialViewFormat]);
+
+  // Enforce locked view when specified (prevents switching via UI or programmatically)
+  useEffect(() => {
+    if (lockViewTo && viewFormat !== lockViewTo) {
+      setViewFormat(lockViewTo);
+      if (showViewDropdown) setShowViewDropdown(false);
+    }
+  }, [lockViewTo, viewFormat, showViewDropdown]);
 
   // Keyboard shortcuts: Undo/Redo/Compact and test error toggles
   useEffect(() => {
@@ -574,15 +585,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (showInlineSortDropdown) setShowInlineSortDropdown(false);
         if (showOutputSortDropdown) setShowOutputSortDropdown(false);
         if (showViewDropdown) setShowViewDropdown(false);
+        if (showOutputTableExportDropdown) setShowOutputTableExportDropdown(false);
       }
     };
 
-    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown || showOutputSortDropdown || showViewDropdown) {
+    if (showBeautifyDropdown || showSortDropdown || showInlineSortDropdown || showOutputSortDropdown || showViewDropdown || showOutputTableExportDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
 
-  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown, showViewDropdown]);
+  }, [showBeautifyDropdown, showSortDropdown, showInlineSortDropdown, showOutputSortDropdown, showViewDropdown, showOutputTableExportDropdown]);
 
   // Build a per-line style map for gutter markers in the input editor
   const inputLineStyleMap = useMemo(() => {
@@ -1810,6 +1822,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return;
         }
       }
+      // Table view: download as CSV using TableView processed data
+      if (activeLanguage === 'json' && viewFormat === 'table' && tableViewRef.current) {
+        try {
+          const csv: string = tableViewRef.current.generateCSV();
+          content = csv;
+          ext = 'csv';
+          mimeType = 'text/csv;charset=utf-8;';
+          fileName = 'table_export_' + new Date().toISOString().slice(0, 10);
+        } catch (e) {
+          // If CSV generation fails, fall back to JSON download behavior
+        }
+      }
       // TOON view: download as plain text (.txt) with TOON-rendered content instead of JSON
       if (activeLanguage === 'json' && viewFormat === 'toon' && outputCode) {
         try {
@@ -2974,6 +2998,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
               onEdit={(value) => setOutputCode(value)}
+              showExportControl={!(lockViewTo === 'table')}
             />
           );
         case 'view':
@@ -3648,6 +3673,53 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Table-friendly) – placed to the left of Collapse (Table page only) */}
+                  {isJsonLanguage && lockViewTo === 'table' && (
+                    <Tooltip content="Insert sample JSON (Table-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify([
+                            { id: 1, name: 'Alice Johnson', role: 'Engineer', department: 'Platform', salary: 120000, startDate: '2022-03-14', remote: true, location: 'Seattle' },
+                            { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
+                            { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' },
+                            { id: 4, name: 'Diego Ruiz', role: 'Data Analyst', department: 'Analytics', salary: 112500, startDate: '2023-01-09', remote: false, location: 'Denver' },
+                            { id: 5, name: 'Eva Müller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
+                          ], null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('table');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify([
+                              { id: 1, name: 'Alice Johnson', role: 'Engineer', department: 'Platform', salary: 120000, startDate: '2022-03-14', remote: true, location: 'Seattle' },
+                              { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
+                              { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' },
+                              { id: 4, name: 'Diego Ruiz', role: 'Data Analyst', department: 'Analytics', salary: 112500, startDate: '2023-01-09', remote: false, location: 'Denver' },
+                              { id: 5, name: 'Eva Müller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
+                            ], null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('table');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
@@ -4290,6 +4362,76 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
+                {/* Table Export (Table page only) - placed to the left of Output Fullscreen */}
+                {lockViewTo === 'table' && viewFormat === 'table' && outputCode?.trim() && (
+                  <div className="relative dropdown-container mr-1">
+                    <Tooltip content="Export table data">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setShowOutputTableExportDropdown(!showOutputTableExportDropdown)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowOutputTableExportDropdown(!showOutputTableExportDropdown); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center hover:bg-green-700 dark:hover:bg-green-600 cursor-pointer bg-green-600 dark:bg-green-500`}
+                        aria-label="Export table data"
+                        title="Export table data"
+                      >
+                        <i className="fa-solid fa-arrow-up-from-bracket text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                    {showOutputTableExportDropdown && (
+                      <div className="absolute right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[170px] overflow-hidden">
+                        <button
+                          onClick={() => {
+                            if (!tableViewRef.current) return;
+                            const csv = tableViewRef.current.generateCSV();
+                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = `table_export_${new Date().toISOString().slice(0, 10)}.csv`;
+                            a.click();
+                            setShowOutputTableExportDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-[13px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center gap-2"
+                        >
+                          <i className="fa-solid fa-file-csv w-4 text-slate-600 dark:text-slate-300" aria-hidden="true"></i>
+                          Export as CSV
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!tableViewRef.current) return;
+                            const xls = tableViewRef.current.generateExcel();
+                            const blob = new Blob([xls], { type: 'application/vnd.ms-excel' });
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = `table_export_${new Date().toISOString().slice(0, 10)}.xls`;
+                            a.click();
+                            setShowOutputTableExportDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-[13px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center gap-2"
+                        >
+                          <i className="fa-solid fa-file-excel w-4 text-slate-600 dark:text-slate-300" aria-hidden="true"></i>
+                          Export as Excel
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!tableViewRef.current) return;
+                            const json = JSON.stringify(tableViewRef.current.getProcessedData(), null, 2);
+                            const blob = new Blob([json], { type: 'application/json' });
+                            const a = document.createElement('a');
+                            a.href = URL.createObjectURL(blob);
+                            a.download = `table_export_${new Date().toISOString().slice(0, 10)}.json`;
+                            a.click();
+                            setShowOutputTableExportDropdown(false);
+                          }}
+                          className="w-full text-left px-3 py-2 text-[13px] hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 flex items-center gap-2"
+                        >
+                          <i className="fa-solid fa-file-code w-4 text-slate-600 dark:text-slate-300" aria-hidden="true"></i>
+                          Export as JSON
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {/* Output Fullscreen toggle - immediately after icons */}
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
@@ -4304,8 +4446,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
                   </span>
                 </Tooltip>
-                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON) and when output is from conversion */}
-                {!isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
+                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON), when output is from conversion, or when view is locked */}
+                {!lockViewTo && !isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
@@ -4393,19 +4535,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
-                {isFullscreen && viewFormat !== 'toon' && (
-                  <Tooltip content="Exit fullscreen">
-                    <button
-                      onClick={handleToggleFullscreen}
-                      className="px-3 py-1.5 text-sm bg-slate-800 dark:bg-slate-700 text-white rounded-md hover:bg-slate-700 dark:hover:bg-slate-600 transition-all cursor-pointer flex items-center gap-1.5"
-                      aria-label="Exit Fullscreen"
-                      
-                    >
-                      <span>⮾</span>
-                      <span>Exit</span>
-                    </button>
-                  </Tooltip>
-                )}
+                {/* Removed textual Exit button in fullscreen; use icon-based toggle only */}
               </div>
             </div>
 

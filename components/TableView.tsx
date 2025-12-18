@@ -5,6 +5,8 @@ interface TableViewProps {
   expandAll?: boolean;
   collapseAll?: boolean;
   onEdit?: (jsonString: string) => void;
+  // Show or hide the built-in export control; parent may relocate export to header toolbar
+  showExportControl?: boolean;
 }
 
 export interface TableViewRef {
@@ -15,7 +17,7 @@ export interface TableViewRef {
   getProcessedData: () => any[];
 }
 
-export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expandAll, collapseAll, onEdit }, ref) => {
+export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expandAll, collapseAll, onEdit, showExportControl = true }, ref) => {
   const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>(null);
@@ -422,14 +424,15 @@ export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expan
             <span>{columns.length} columns</span>
           </div>
           
-          {/* Export Button with Emoji Icon */}
+          {/* Export Button with Emoji Icon (can be hidden by parent) */}
+          {showExportControl && (
           <div className="relative export-dropdown-container">
             <button
               onClick={() => setShowExportDropdown(!showExportDropdown)}
               className="px-2 py-1.5 text-lg bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
               title="Export table data"
             >
-              📥
+              📤
             </button>
             
             {showExportDropdown && (
@@ -464,6 +467,7 @@ export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expan
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
 
