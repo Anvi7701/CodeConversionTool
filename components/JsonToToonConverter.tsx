@@ -1,6 +1,6 @@
 import React from 'react';
 import SEO from './SEO';
-import { OnlineFormatter } from './OnlineFormatter';
+import { OnlineFormatterWithToolbar } from './OnlineFormatterWithToolbar';
 
 export const JsonToToonConverter: React.FC = () => {
   const structuredData = {
@@ -33,9 +33,17 @@ export const JsonToToonConverter: React.FC = () => {
         structuredData={structuredData}
       />
       <div className="mb-4 text-sm text-slate-600 dark:text-slate-300">
-        Tip: Paste your JSON on the left, then choose the View dropdown → TOON to generate token-friendly output.
+        Tip: Paste your JSON on the left. Use the View dropdown → TOON to generate token-friendly output.
       </div>
-      <OnlineFormatter initialLanguage="json" />
+      {/* Mirror the JSON Beautifier page with full toolbar and purple theme */}
+      <OnlineFormatterWithToolbar
+        initialLanguage="json"
+        showLeftInputActions={true}
+        inlineStructureAnalysisIcon={false}
+        inlineSortValidateIcons={false}
+        showMinifyNextToBeautify={true}
+        colorTheme="purple"
+      />
     </>
   );
 };
