@@ -3563,8 +3563,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                   <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
-                  {/* Sample Data (TOON-friendly) – placed to the left of Collapse */}
-                  {isJsonLanguage && (
+                  {/* Sample Data (TOON-friendly) – placed to the left of Collapse (TOON page only) */}
+                  {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
                       <span
                         role="button"
@@ -3640,10 +3640,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             setViewFormat('toon');
                           }
                         }}
-                        className={`${iconButtonClass} ml-1`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
                         aria-label="Insert Sample Data"
                       >
-                        <i className={`fa-solid fa-table ${iconTextClass}`} aria-hidden="true"></i>
+                        <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
