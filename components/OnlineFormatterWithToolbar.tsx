@@ -1769,7 +1769,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Download: always downloads to default folder
   const handleDownload = () => {
     if (!inputCode.trim()) return;
-    const content = outputCode || inputCode;
+    let content = outputCode || inputCode;
     if (!content) return;
     
     // Note: Download button behavior remains simple (downloads to default folder)
@@ -1808,6 +1808,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (!isValid) {
           // Don't proceed with download if JSON is invalid - pending action stored
           return;
+        }
+      }
+      // TOON view: download as plain text (.txt) with TOON-rendered content instead of JSON
+      if (activeLanguage === 'json' && viewFormat === 'toon' && outputCode) {
+        try {
+          const parsedData = JSON.parse(outputCode);
+          const toonText: string = jsonToToon(parsedData, {
+            flattenDepth: Math.max(0, Number.isFinite(toonFlattenDepth) ? toonFlattenDepth : 1),
+            arrayJoin: toonArrayJoin || '|',
+            nullToken: toonNullToken || '-',
+            headerName: 'item',
+            path: toonPath.trim() ? toonPath.trim() : undefined
+          });
+          content = toonText;
+          ext = 'txt';
+          mimeType = 'text/plain';
+          fileName = 'toon';
+        } catch (e) {
+          // If TOON generation fails, fall back to JSON download behavior
         }
       }
     }
