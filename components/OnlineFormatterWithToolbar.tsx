@@ -4211,63 +4211,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                     </>
                   )}
-                  {/* TOON Settings in header toolbar to avoid overlapping content controls */}
-                  {activeLanguage === 'json' && viewFormat === 'toon' && (
-                    <div className="relative toon-settings-popover">
-                      <Tooltip content="TOON settings">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setShowToonSettings(v => !v)}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowToonSettings(v => !v); } }}
-                          className={iconButtonClass}
-                          aria-label="TOON Settings"
-                        >
-                          <i className={`fa-solid fa-gear ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      {showToonSettings && (
-                        <div className="absolute right-0 mt-2 z-[9999] w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2 max-h-[80vh] overflow-y-auto">
-                          <div className="flex items-center justify-between">
-                            <div className="font-medium text-sm">TOON Settings</div>
-                            <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
-                          </div>
-                          <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
-                          <input
-                            type="number"
-                            min={0}
-                            max={6}
-                            value={toonFlattenDepth}
-                            onChange={(e) => setToonFlattenDepth(Math.max(0, Math.min(6, Number(e.target.value) || 0)))}
-                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                          />
-                          <label className="block text-xs text-slate-600 dark:text-slate-300">Array join token</label>
-                          <input
-                            type="text"
-                            value={toonArrayJoin}
-                            onChange={(e) => setToonArrayJoin(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                          />
-                          <label className="block text-xs text-slate-600 dark:text-slate-300">Null token</label>
-                          <input
-                            type="text"
-                            value={toonNullToken}
-                            onChange={(e) => setToonNullToken(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                          />
-                          <label className="block text-xs text-slate-600 dark:text-slate-300">Root path (optional)</label>
-                          <input
-                            type="text"
-                            placeholder="e.g. data.items[]"
-                            value={toonPath}
-                            onChange={(e) => setToonPath(e.target.value)}
-                            className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
-                          />
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">Examples: <code>data.items[]</code>, <code>payload.records[0]</code></div>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                  {/* TOON Settings moved near Output Fullscreen */}
                   {/* Undo/Redo buttons removed; replaced by icon-only pills at the end of this toolbar */}
                 </div>
                 )}
@@ -4288,6 +4232,63 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <i className="fa-solid fa-check text-white text-sm" aria-hidden="true"></i>
                     </span>
                   </Tooltip>
+                )}
+                {/* Output Fullscreen toggle - immediately after icons */}
+                {activeLanguage === 'json' && viewFormat === 'toon' && (
+                  <div className="relative toon-settings-popover">
+                    <Tooltip content="TOON settings">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setShowToonSettings(v => !v)}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setShowToonSettings(v => !v); } }}
+                        className={iconButtonClass}
+                        aria-label="TOON Settings"
+                      >
+                        <i className={`fa-solid fa-gear ${iconTextClass}`} aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                    {showToonSettings && (
+                      <div className="absolute right-0 mt-2 z-[9999] w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2 max-h-[80vh] overflow-y-auto">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-sm">TOON Settings</div>
+                          <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
+                        </div>
+                        <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
+                        <input
+                          type="number"
+                          min={0}
+                          max={6}
+                          value={toonFlattenDepth}
+                          onChange={(e) => setToonFlattenDepth(Math.max(0, Math.min(6, Number(e.target.value) || 0)))}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                        />
+                        <label className="block text-xs text-slate-600 dark:text-slate-300">Array join token</label>
+                        <input
+                          type="text"
+                          value={toonArrayJoin}
+                          onChange={(e) => setToonArrayJoin(e.target.value)}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                        />
+                        <label className="block text-xs text-slate-600 dark:text-slate-300">Null token</label>
+                        <input
+                          type="text"
+                          value={toonNullToken}
+                          onChange={(e) => setToonNullToken(e.target.value)}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                        />
+                        <label className="block text-xs text-slate-600 dark:text-slate-300">Root path (optional)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. data.items[]"
+                          value={toonPath}
+                          onChange={(e) => setToonPath(e.target.value)}
+                          className="w-full px-2 py-1 text-sm rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800"
+                        />
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400">Examples: <code>data.items[]</code>, <code>payload.records[0]</code></div>
+                      </div>
+                    )}
+                  </div>
                 )}
                 {/* Output Fullscreen toggle - immediately after icons */}
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
