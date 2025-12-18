@@ -3544,6 +3544,91 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <h2 className="text-lg font-semibold">Input</h2>
                 {/* Icon Toolbar - positioned next to "Input" heading */}
                   <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
+                  {/* Sample Data (TOON-friendly) – placed to the left of Collapse */}
+                  {isJsonLanguage && (
+                    <Tooltip content="Insert sample JSON (TOON-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify([
+                            {
+                              id: 101,
+                              name: 'Alice',
+                              email: 'alice@example.com',
+                              active: true,
+                              tags: ['pro', 'beta'],
+                              profile: { age: 29, city: 'Seattle' }
+                            },
+                            {
+                              id: 102,
+                              name: 'Bob',
+                              email: 'bob@example.com',
+                              active: false,
+                              tags: ['basic'],
+                              profile: { age: 34, city: 'Austin' }
+                            },
+                            {
+                              id: 103,
+                              name: 'Cara',
+                              email: 'cara@example.com',
+                              active: true,
+                              tags: ['pro'],
+                              profile: { age: 31, city: 'Boston' }
+                            }
+                          ], null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('toon');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify([
+                              {
+                                id: 101,
+                                name: 'Alice',
+                                email: 'alice@example.com',
+                                active: true,
+                                tags: ['pro', 'beta'],
+                                profile: { age: 29, city: 'Seattle' }
+                              },
+                              {
+                                id: 102,
+                                name: 'Bob',
+                                email: 'bob@example.com',
+                                active: false,
+                                tags: ['basic'],
+                                profile: { age: 34, city: 'Austin' }
+                              },
+                              {
+                                id: 103,
+                                name: 'Cara',
+                                email: 'cara@example.com',
+                                active: true,
+                                tags: ['pro'],
+                                profile: { age: 31, city: 'Boston' }
+                              }
+                            ], null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('toon');
+                          }
+                        }}
+                        className={`${iconButtonClass} ml-1`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className={`fa-solid fa-table ${iconTextClass}`} aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
