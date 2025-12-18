@@ -61,9 +61,11 @@ interface OnlineFormatterWithToolbarProps {
   showMinifyNextToBeautify?: boolean; // Beautifier page: move Compact to a Minify button next to Beautify
   // Optional color theme override for specific pages (e.g., JSON Beautifier)
   colorTheme?: 'default' | 'purple';
+  hideFormatButtons?: boolean; // Hide Format/Beautify/Minify buttons (e.g., for TOON page)
+  initialViewFormat?: ViewFormat; // Set initial view on page load (e.g., 'toon' for TOON page)
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default' }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code' }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -180,6 +182,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setHighlightedType(null);
     setHighlightPulse(false);
   }, []);
+
+  // Initialize view format on mount if specified
+  useEffect(() => {
+    if (initialViewFormat && initialViewFormat !== 'code') {
+      setViewFormat(initialViewFormat);
+    }
+  }, [initialViewFormat]);
 
   // Keyboard shortcuts: Undo/Redo/Compact and test error toggles
   useEffect(() => {
@@ -3231,82 +3240,86 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20">
             <div className="flex items-center gap-2 overflow-visible">
               {/* Format (Input JSON) - placed before Beautify */}
-              <div className="relative dropdown-container overflow-visible">
-                <button
-                  onClick={() => {
-                    if (isActionDisabled || !inputCode.trim()) return;
-                    handleFormatInputJson();
-                  }}
-                  className="btn btn-blue"
-                  title="Format Input JSON (Ctrl+L)"
-                >
-                  <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                  <span>Format</span>
-                </button>
-              </div>
+              {!hideFormatButtons && (
+                <div className="relative dropdown-container overflow-visible">
+                  <button
+                    onClick={() => {
+                      if (isActionDisabled || !inputCode.trim()) return;
+                      handleFormatInputJson();
+                    }}
+                    className="btn btn-blue"
+                    title="Format Input JSON (Ctrl+L)"
+                  >
+                    <i className="fa-solid fa-align-left" aria-hidden="true"></i>
+                    <span>Format</span>
+                  </button>
+                </div>
+              )}
 
               {/* Beautify button with dropdown */}
-              <div className="relative dropdown-container overflow-visible">
-                <button
-                  onClick={() => {
-                    if (isActionDisabled || !inputCode.trim()) return;
-                    setShowBeautifyDropdown(!showBeautifyDropdown);
-                  }}
-                  className="btn btn-purple"
-                >
-                  <i className="fa-solid fa-magic" aria-hidden="true"></i>
-                  <span>Beautify</span>
-                  <span className="text-xs">▼</span>
-                </button>
-                {/* Dropdown menu */}
-                {showBeautifyDropdown && (
-                  <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleFormat(2);
-                        setShowBeautifyDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      2 Spaces
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleFormat(3);
-                        setShowBeautifyDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      3 Spaces
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleFormat(4);
-                        setShowBeautifyDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      4 Spaces
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        handleFormat(0);
-                        setShowBeautifyDropdown(false);
-                      }}
-                      className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
-                    >
-                      Tab
-                    </button>
-                  </div>
-                )}
-              </div>
+              {!hideFormatButtons && (
+                <div className="relative dropdown-container overflow-visible">
+                  <button
+                    onClick={() => {
+                      if (isActionDisabled || !inputCode.trim()) return;
+                      setShowBeautifyDropdown(!showBeautifyDropdown);
+                    }}
+                    className="btn btn-purple"
+                  >
+                    <i className="fa-solid fa-magic" aria-hidden="true"></i>
+                    <span>Beautify</span>
+                    <span className="text-xs">▼</span>
+                  </button>
+                  {/* Dropdown menu */}
+                  {showBeautifyDropdown && (
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(2);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        2 Spaces
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(3);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        3 Spaces
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(4);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        4 Spaces
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(0);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        Tab
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Minify button (Beautifier page only) */}
-              {showMinifyNextToBeautify && (
+              {showMinifyNextToBeautify && !hideFormatButtons && (
                 <button
                   onClick={() => {
                     if (isActionDisabled || !inputCode.trim()) return;

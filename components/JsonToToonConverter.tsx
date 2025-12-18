@@ -43,6 +43,8 @@ export const JsonToToonConverter: React.FC = () => {
         inlineSortValidateIcons={false}
         showMinifyNextToBeautify={true}
         colorTheme="purple"
+        hideFormatButtons={true}
+        initialViewFormat="toon"
       />
     </>
   );
