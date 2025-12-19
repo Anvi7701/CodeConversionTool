@@ -25,13 +25,12 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ code, language }) => {
   }, [code, language]);
 
   // Calculate visible lines with line number mapping
-  const { visibleLines, lineNumberMap } = useMemo(() => {
+  const { visibleLines } = useMemo(() => {
     if (language === 'json' && collapsedRegions.size > 0) {
       return getVisibleLines(code, collapsedRegions, foldRegions);
     }
     return { 
-      visibleLines: code.split('\n'), 
-      lineNumberMap: new Map(code.split('\n').map((_, i) => [i, i])) 
+      visibleLines: code.split('\n')
     };
   }, [code, language, foldRegions, collapsedRegions]);
 

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface DropdownItem {
   label: string;
@@ -17,7 +17,6 @@ export const GlobalNavDropdown: React.FC<GlobalNavDropdownProps> = ({ label, ari
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLDivElement | null>(null);
-  const navigate = useNavigate();
 
   // Close on outside click
   useEffect(() => {

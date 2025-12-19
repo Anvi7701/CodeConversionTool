@@ -35,13 +35,13 @@ const ToggleButton: React.FC<{
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => {
   return (
     <div className="flex items-center gap-1 p-1 bg-slate-200/70 dark:bg-slate-800 rounded-lg">
-        <ToggleButton isActive={theme === 'light'} onClick={() => setTheme('light')} aria-label="Light Mode">
+                <ToggleButton isActive={theme === 'light'} onClick={() => setTheme('light')} title="Light Mode" aria-label="Light Mode">
             <SunIcon className="h-5 w-5" />
         </ToggleButton>
-        <ToggleButton isActive={theme === 'dark'} onClick={() => setTheme('dark')} aria-label="Dark Mode">
+                <ToggleButton isActive={theme === 'dark'} onClick={() => setTheme('dark')} title="Dark Mode" aria-label="Dark Mode">
             <MoonIcon className="h-5 w-5" />
         </ToggleButton>
-        <ToggleButton isActive={theme === 'system'} onClick={() => setTheme('system')} aria-label="System Preference">
+                <ToggleButton isActive={theme === 'system'} onClick={() => setTheme('system')} title="System Preference" aria-label="System Preference">
             <DesktopIcon className="h-5 w-5" />
         </ToggleButton>
     </div>

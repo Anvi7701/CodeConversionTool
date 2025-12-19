@@ -67,7 +67,7 @@ function jsonToXmlRecursive(
     if (obj.length === 0) {
       xml += `${currentIndent}<${rootName}/>\n`;
     } else {
-      obj.forEach((item, index) => {
+      obj.forEach((item) => {
         const itemName = toXmlElementName(rootName.replace(/s$/, '')); // Try to singularize
         xml += jsonToXmlRecursive(item, itemName, indent, level);
       });
@@ -160,7 +160,6 @@ export function convertJsonToXmlWithAttributes(
     
     function toXmlWithAttrs(obj: any, name: string, indent: string = '', level: number = 0): string {
       const currentIndent = indent.repeat(level);
-      const nextIndent = indent.repeat(level + 1);
       
       if (obj === null) {
         return `${currentIndent}<${name}/>\n`;

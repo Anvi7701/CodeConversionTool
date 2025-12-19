@@ -203,10 +203,10 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
   };
 
   // Handle when Auto Fix is applied from error modal
-  const handleFixApplied = (fixedJson: string, changes: FixChange[]) => {
-    setInputJson(fixedJson);
-    setShowErrorModal(false);
-    setAnalysisResult(null);
+  const handleFixApplied = (fixedJson: string, _changes: FixChange[]) => {
+     setInputJson(fixedJson);
+      setShowErrorModal(false);
+      setAnalysisResult(null);
   };
 
   // Handle input change and validate

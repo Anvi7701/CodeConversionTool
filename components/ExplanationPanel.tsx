@@ -146,13 +146,6 @@ export const ExplanationPanel: React.FC<ExplanationPanelProps> = ({
     );
   };
 
-  const getTabClassName = (tabName: Tab) => 
-    `px-4 py-2 text-sm rounded-t-lg transition-colors ${
-      activeTab === tabName
-        ? 'font-semibold border-b-2 border-brand-primary text-brand-primary dark:text-brand-secondary'
-        : 'font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white border-b-2 border-transparent'
-    }`;
-
 
   return (
     <div className="h-full flex flex-col">

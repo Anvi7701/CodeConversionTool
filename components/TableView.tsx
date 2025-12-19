@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
+import { useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 
 interface TableViewProps {
   data: any;
@@ -17,7 +17,7 @@ export interface TableViewRef {
   getProcessedData: () => any[];
 }
 
-export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expandAll, collapseAll, onEdit, showExportControl = true }, ref) => {
+export const TableView = forwardRef<TableViewRef, TableViewProps>(({ data, expandAll: _expandAll, collapseAll: _collapseAll, onEdit, showExportControl = true }, ref) => {
   const [editingCell, setEditingCell] = useState<{ row: number; col: string } | null>(null);
   const [editValue, setEditValue] = useState('');
   const [sortColumn, setSortColumn] = useState<string | null>(null);

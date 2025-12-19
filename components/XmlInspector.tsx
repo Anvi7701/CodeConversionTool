@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
-import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, CheckIcon, UploadIcon, TreeIcon } from './icons';
+import { XmlIcon, CodeBracketIcon, UploadIcon, TreeIcon } from './icons';
 import { formatXml, minifyXml } from '../utils/formatters';
 import { convertXmlToJson } from '../utils/reverseParser';
 import { XmlTreeView } from './XmlTreeView';
@@ -165,7 +163,6 @@ export const XmlInspector: React.FC = () => {
   };
 
   const isActionDisabled = isCorrecting || isValidating;
-  const hasError = !!validationError;
 
   return (
     <>

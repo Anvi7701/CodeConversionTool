@@ -224,7 +224,7 @@ export const formatCodeWithAi = async (code: string, language: string): Promise<
     });
 };
 
-const getAiPromptForConversion = (fromLanguage: string, toLanguage: string): string => {
+const getAiPromptForConversion = (toLanguage: string): string => {
     const baseInstruction = `You are an expert polyglot programmer specializing in semantic code translation. Your primary goal is to translate the LOGIC and FUNCTIONALITY of a program from a source language to a target language.
     CRITICAL INSTRUCTION: Do NOT simply extract data structures. You must translate the entire program's behavior, including loops, conditionals, function calls, and algorithms.
     The output must be only the raw code for the target language.`;
@@ -257,7 +257,7 @@ const getAiPromptForConversion = (fromLanguage: string, toLanguage: string): str
 const convertCodeWithAi = async (code: string, fromLanguage: string, toLanguage: string): Promise<string> => {
      try {
         const truncatedCode = code.length > 15000 ? code.substring(0, 15000) : code;
-        const instruction = getAiPromptForConversion(fromLanguage, toLanguage);
+        const instruction = getAiPromptForConversion(toLanguage);
         const prompt = `${instruction}
         **Source Language:** ${fromLanguage}
         **Target Language:** ${toLanguage}

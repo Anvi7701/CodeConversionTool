@@ -1,9 +1,7 @@
 import React, { useState, useRef } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
-import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon } from './icons';
+import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava } from '../utils/codeGenerator';
 import { CodeViewer } from './CodeViewer';
@@ -44,7 +42,7 @@ export const OnlineFormatter: React.FC<OnlineFormatterProps> = ({ initialLanguag
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [validationError, setValidationError] = useState<ValidationResult | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isValidated, setIsValidated] = useState(false);
+  const [_isValidated, setIsValidated] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const resetState = (keepInput = false) => {

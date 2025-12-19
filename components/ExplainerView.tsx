@@ -8,7 +8,7 @@ import { TreeIcon, GraphIcon, CopyIcon, CheckIcon, UploadIcon } from './icons';
 import { GraphViewer } from './GraphViewer';
 import { Tooltip } from './Tooltip';
 import type { Theme } from './ThemeToggle';
-import { CodeEditor } from './CodeEditor';
+// removed unused CodeEditor import
 
 type ViewMode = 'tree' | 'graph';
 type ExplanationTab = 'details' | 'summary';

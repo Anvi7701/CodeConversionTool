@@ -1,12 +1,10 @@
 import React, { useState, useRef } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeViewer } from './CodeViewer';
-import { SpinnerIcon, JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CodeBracketIcon, UploadIcon, CubeStackIcon, CSharpIcon, GoIcon, SwiftIcon, RubyIcon, DartIcon } from './icons';
-import { CodeEditor } from './CodeEditor';
+import { JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CodeBracketIcon, UploadIcon, CubeStackIcon, CSharpIcon, GoIcon, SwiftIcon, RubyIcon, DartIcon } from './icons';
 import { Tooltip } from './Tooltip';
 import { convertXmlToJson } from '../utils/reverseParser';
-import { generateClassFromJSON, TargetLanguage } from '../utils/classGenerator';
+import { generateClassFromJSON } from '../utils/classGenerator';
 import { validateSyntaxLocally } from '../utils/localAnalyzers';
 
 

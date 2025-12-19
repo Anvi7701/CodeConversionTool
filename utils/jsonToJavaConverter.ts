@@ -121,7 +121,6 @@ function analyzeObject(obj: any, className: string): JavaClass {
 function generateJavaClass(javaClass: JavaClass, isNested: boolean = false): string {
   const indent = isNested ? '    ' : '';
   const fieldIndent = indent + '    ';
-  const methodIndent = indent + '    ';
   
   let code = '';
   

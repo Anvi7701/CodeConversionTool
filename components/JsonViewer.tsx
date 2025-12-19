@@ -44,8 +44,6 @@ const JsonNode: FC<JsonNodeProps> = ({ nodeKey, value, currentPath, onSelect, se
   if (isObject) {
     const entries = Object.entries(value);
     const itemType = Array.isArray(value) ? 'Array' : 'Object';
-    const bracketOpen = Array.isArray(value) ? '[' : '{';
-    const bracketClose = Array.isArray(value) ? ']' : '}';
 
     return (
       <div className={!isRoot ? 'ml-6' : ''}>

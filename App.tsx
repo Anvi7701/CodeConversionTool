@@ -9,7 +9,6 @@ import { GlobalNavDropdown } from './components/GlobalNavDropdown';
 const JsonExplainerPage = lazy(() => import('./components/JsonExplainerPage.tsx').then(m => ({ default: m.JsonExplainerPage })));
 const CodeToJsonConverter = lazy(() => import('./components/CodeToJsonConverter.tsx').then(m => ({ default: m.CodeToJsonConverter })));
 const CodeToXmlConverter = lazy(() => import('./components/CodeToXmlConverter.tsx').then(m => ({ default: m.CodeToXmlConverter })));
-const CodeToHtmlConverter = lazy(() => import('./components/CodeToHtmlConverter.tsx').then(m => ({ default: m.CodeToHtmlConverter })));
 const CodeToPythonConverter = lazy(() => import('./components/CodeToPythonConverter.tsx').then(m => ({ default: m.CodeToPythonConverter })));
 const CodeToJsConverter = lazy(() => import('./components/CodeToJsConverter.tsx').then(m => ({ default: m.CodeToJsConverter })));
 const JsonToPythonPrettyPrintConverter = lazy(() => import('./components/JsonToPythonPrettyPrintConverter.tsx').then(m => ({ default: m.JsonToPythonPrettyPrintConverter })));
@@ -18,6 +17,8 @@ const DataToClassConverter = lazy(() => import('./components/DataToClassConverte
 const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').then(m => ({ default: m.OnlineFormatter })));
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlView')); 
+const JsonToCsvConverter = lazy(() => import('./components/JsonToCsvView'));
+const JsonToYamlConverter = lazy(() => import('./components/JsonToYamlView'));
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
 const JsonToTableConverter = lazy(() => import('./components/JsonToTableConverter.tsx').then(m => ({ default: m.JsonToTableConverter })));
 const JsonTransformPage = lazy(() => import('./components/JsonTransformPage').then(m => ({ default: m.JsonTransformPage })));
@@ -80,8 +81,6 @@ const App: React.FC = () => {
               <span className="text-slate-400">|</span>
               <Link to="/code-to-xml" onClick={(e) => handleNavLinkClick(e, '/code-to-xml')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Convert To XML</Link>
               <span className="text-slate-400">|</span>
-              <Link to="/code-to-html" onClick={(e) => handleNavLinkClick(e, '/code-to-html')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Convert To HTML</Link>
-              <span className="text-slate-400">|</span>
               <Link to="/code-to-python" onClick={(e) => handleNavLinkClick(e, '/code-to-python')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Convert To Python</Link>
               <span className="text-slate-400">|</span>
               <Link to="/code-to-js" onClick={(e) => handleNavLinkClick(e, '/code-to-js')} className="text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap">Convert To JavaScript</Link>
@@ -111,10 +110,21 @@ const App: React.FC = () => {
                   items={[
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
-                    { label: 'JSON To XML', to: '/json-to-xml', icon: '🗎' },
                     { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
                     { label: 'JSON To Tree View', to: '/json-tree-view', icon: '🌳' }
+                  ]}
+                />
+              </span>
+
+              {/* New dropdown: JSON Converter */}
+              <span className="inline-flex ml-2">
+                <GlobalNavDropdown
+                  label="JSON Converter"
+                  items={[
+                    { label: 'JSON To XML', to: '/json-to-xml', icon: '🗎' },
+                    { label: 'JSON To CSV', to: '/json-to-csv', icon: '🧾' },
+                    { label: 'JSON To YAML', to: '/json-to-yaml', icon: '📜' }
                   ]}
                 />
               </span>
@@ -133,7 +143,6 @@ const App: React.FC = () => {
             <Route path="/" element={<JsonExplainerPage />} />
             <Route path="/code-to-json" element={<CodeToJsonConverter />} />
             <Route path="/code-to-xml" element={<CodeToXmlConverter />} />
-            <Route path="/code-to-html" element={<CodeToHtmlConverter />} />
             <Route path="/code-to-python" element={<CodeToPythonConverter />} />
             <Route path="/code-to-js" element={<CodeToJsConverter />} />
             <Route path="/json-to-python-pretty" element={<JsonToPythonPrettyPrintConverter />} />
@@ -142,6 +151,8 @@ const App: React.FC = () => {
             <Route path="/online-formatter" element={<OnlineFormatter />} />
             <Route path="/json-to-java" element={<JsonToJavaConverter />} />
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
+            <Route path="/json-to-csv" element={<JsonToCsvConverter />} />
+            <Route path="/json-to-yaml" element={<JsonToYamlConverter />} />
             <Route path="/json-to-toon" element={<JsonToToonConverter />} />
             <Route path="/json-to-table" element={<JsonToTableConverter />} />
             

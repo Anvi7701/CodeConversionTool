@@ -1,6 +1,6 @@
 
 
-import React, { useRef, useEffect, FC, useState, forwardRef, useImperativeHandle } from 'react';
+import { useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import * as d3 from 'd3';
 import { GraphData, GraphNode, Selection } from '../types';
 import { DownloadIcon, SaveIcon, CopyIcon } from './icons';

@@ -1,116 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
-import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
-import { EditorView, Decoration, DecorationSet, WidgetType, ViewPlugin, ViewUpdate } from '@codemirror/view';
-import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
-import { keymap } from '@codemirror/view';
-import { StateField, StateEffect } from '@codemirror/state';
+import { EditorView } from '@codemirror/view';
 import { TableView } from './TableView';
 
-// Create custom fold gutter with solid arrow icons
-const customFoldGutter = foldGutter({
-  markerDOM: (open) => {
-    const marker = document.createElement('span');
-    marker.textContent = open ? '▼' : '▶';
-    marker.style.cursor = 'pointer';
-    marker.style.userSelect = 'none';
-    marker.title = open ? 'Fold' : 'Unfold';
-    return marker;
-  }
-});
+// (removed unused custom fold gutter)
 
-// Boolean checkbox widget for CodeMirror
-class BooleanCheckboxWidget extends WidgetType {
-  constructor(readonly value: boolean, readonly pos: number, readonly onChange: (pos: number, newValue: boolean) => void) {
-    super();
-  }
+// (removed unused BooleanCheckboxWidget)
 
-  eq(other: BooleanCheckboxWidget) {
-    return other.value === this.value && other.pos === this.pos;
-  }
+// (removed unused toggleBooleanEffect)
 
-  toDOM() {
-    const wrap = document.createElement('span');
-    wrap.className = 'inline-flex items-center gap-1.5 align-middle mx-1 px-1.5 py-0.5 rounded bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30';
-    wrap.style.verticalAlign = 'middle';
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.checked = this.value;
-    checkbox.className = 'w-3.5 h-3.5 cursor-pointer accent-purple-600 dark:accent-purple-400 rounded';
-    checkbox.title = this.value ? 'Checked (true) - Click to toggle' : 'Unchecked (false) - Click to toggle';
-    checkbox.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.onChange(this.pos, !this.value);
-    };
-    
-    wrap.appendChild(checkbox);
-    return wrap;
-  }
+// (removed unused boolean decorations creator)
 
-  ignoreEvent() {
-    return false;
-  }
-}
-
-// State effect for toggling boolean
-const toggleBooleanEffect = StateEffect.define<{ pos: number; newValue: boolean }>();
-
-// Create decorations for boolean values with checkboxes
-function createBooleanDecorations(view: EditorView, onChange: (pos: number, newValue: boolean) => void) {
-  const decorations: any[] = [];
-  const doc = view.state.doc;
-  const text = doc.toString();
-  
-  // Match boolean values in JSON (true/false not in strings)
-  const booleanRegex = /\b(true|false)\b/g;
-  let match;
-  
-  while ((match = booleanRegex.exec(text)) !== null) {
-    const pos = match.index;
-    const value = match[1] === 'true';
-    
-    // Check if it's inside a string by counting quotes before this position
-    const beforeText = text.substring(0, pos);
-    const quoteCount = (beforeText.match(/"/g) || []).length;
-    const isInString = quoteCount % 2 !== 0;
-    
-    if (!isInString) {
-      const deco = Decoration.widget({
-        widget: new BooleanCheckboxWidget(value, pos, onChange),
-        side: -1
-      });
-      decorations.push(deco.range(pos));
-    }
-  }
-  
-  return Decoration.set(decorations);
-}
-
-// ViewPlugin for managing boolean decorations
-const booleanDecorationsPlugin = (onChange: (pos: number, newValue: boolean) => void) => ViewPlugin.fromClass(
-  class {
-    decorations: DecorationSet;
-
-    constructor(view: EditorView) {
-      this.decorations = createBooleanDecorations(view, onChange);
-    }
-
-    update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
-        this.decorations = createBooleanDecorations(update.view, onChange);
-      }
-    }
-  },
-  {
-    decorations: v => v.decorations
-  }
-);
+// (removed unused booleanDecorationsPlugin)
 
 interface TreeNodeProps { keyName: string; value: any; level: number; isLast: boolean; segments: (string|number)[]; rootData: any; onRootUpdate:(d:any)=>void; expandAll?:boolean; collapseAll?:boolean; selectedPath?:string; onSelectPath?:(segments:(string|number)[])=>void; }
-const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast, segments, rootData, onRootUpdate, expandAll, collapseAll, selectedPath, onSelectPath }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({ keyName, value, level, isLast: _isLast, segments, rootData, onRootUpdate, expandAll, collapseAll, selectedPath, onSelectPath }) => {
   const [isExpanded,setIsExpanded]=useState(level<1);
   const [isEditingValue,setIsEditingValue]=useState(false);
   const [editedValue,setEditedValue]=useState('');
@@ -350,7 +255,6 @@ export const TreeView: React.FC<{ data:any; expandAll?:boolean; collapseAll?:boo
   const scrollRef=useRef<HTMLDivElement|null>(null);
   const dropdownRef=useRef<HTMLDivElement|null>(null);
   useEffect(()=>{ setTreeData(data); },[data]);
-  const handleEditClick=()=>{ setEditValue(JSON.stringify(treeData,null,2)); setEditMode(true); };
   const handleSave=()=>{ try{ JSON.parse(editValue); onEdit?.(editValue); setEditMode(false);} catch{ alert('Invalid JSON. Fix errors before saving.'); } };
   const handleCancel=()=>{ setEditMode(false); setEditValue(''); };
   const handleTreeUpdate=(newData:any)=>{ const prev=scrollRef.current?.scrollTop||0; setTreeData(newData); onEdit?.(JSON.stringify(newData,null,2)); requestAnimationFrame(()=>{ if(scrollRef.current) scrollRef.current.scrollTop=prev; }); };

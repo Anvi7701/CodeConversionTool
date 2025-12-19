@@ -1,11 +1,8 @@
-import React, { useRef, useEffect, useState, useMemo, useImperativeHandle } from 'react';
+import React, { useRef, useEffect, useMemo, useImperativeHandle } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { foldGutter, foldAll, unfoldAll } from '@codemirror/language';
-import { lineNumbers } from '@codemirror/view';
-import { EditorView, Decoration } from '@codemirror/view';
-import { EditorState, StateField, StateEffect } from '@codemirror/state';
-import { syntaxTree } from '@codemirror/language';
+import { EditorView } from '@codemirror/view';
 
 interface ErrorPosition {
   line: number;
@@ -34,29 +31,12 @@ interface CodeEditorProps {
   gutterColorDark?: string;  // e.g., 'rgba(76, 29, 149, 0.35)' (purple-900 tint)
 }
 
-// Simple CSS-injected line decorations for error/comment/simple markers
-const markerClassFor = (style?: 'simple' | 'complex' | 'comment') => {
-  if (style === 'complex') return 'cm-ln-bg-complex';
-  if (style === 'comment') return 'cm-ln-bg-comment';
-  if (style === 'simple') return 'cm-ln-bg-simple';
-  return '';
-};
-
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap, highlightLine, highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail, editorApiRef, showLineNumbers = true, gutterColorLight, gutterColorDark }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap: _lineStyleMap, highlightLine, highlightStyle: _highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail: _renderLeftRail, editorApiRef, showLineNumbers: _showLineNumbers = true, gutterColorLight, gutterColorDark }) => {
   const viewRef = useRef<EditorView | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Build line decorations for error/comment/simple markers
-  const decorations = useMemo(() => {
-    if (!lineStyleMap && !errorLines) return [];
-    const map: Record<number, 'simple' | 'complex' | 'comment'> = { ...(lineStyleMap || {}) };
-    if (errorLines) {
-      for (const e of errorLines) {
-        if (!map[e.line]) map[e.line] = 'complex';
-      }
-    }
-    return Object.entries(map).map(([line, style]) => ({ line: Number(line), style }));
-  }, [lineStyleMap, errorLines]);
+  // (Removed old decoration plumbing; not used)
 
   // Custom theme & gutter styling
   const theme = useMemo(() => EditorView.theme({
@@ -87,9 +67,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#fff' },
   }), []);
 
-  // Dynamic extension to apply background classes to lines
-  // NOTE: Line background markers removed for now to resolve TS issues.
-  const markerExtension = useMemo(() => [], [decorations]);
+  // (Removed unused marker extension)
 
   // Imperative folding API
   useImperativeHandle(editorApiRef, () => ({
@@ -168,10 +146,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     }
   }, [highlightLine, errorLine, errorLines, disableAutoScroll, highlightPulse]);
 
-  // Handle paste to parent
-  const handlePaste = (text: string) => {
-    if (onPaste) onPaste(text);
-  };
+  // Handle paste to parent (inlined below)
 
   const extensions = useMemo(() => {
     // Match Output's customFoldGutter using markerDOM (single solid arrow, black)

@@ -28,5 +28,9 @@
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
-  }
+  },
+  "exclude": [
+    "_prev_OutsideGutter_OnlineFormatterWithToolbar.tsx",
+    "components/JsonToXmlConverter.tsx"
+  ]
 }

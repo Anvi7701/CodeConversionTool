@@ -1,15 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { JsonSyntaxHighlighter } from './JsonSyntaxHighlighter';
-import { SpinnerIcon, JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CsvIcon, HtmlIcon, CodeBracketIcon, CheckIcon, YamlIcon, CopyIcon, UploadIcon } from './icons';
+import { JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CsvIcon, HtmlIcon, CodeBracketIcon, CheckIcon, YamlIcon, UploadIcon } from './icons';
 import { convertCodeToJson, validateCodeSyntax, correctCodeSyntax } from '../services/geminiService';
-import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
 import { convertHtmlToJson, convertXmlToJson, convertCsvToJson } from '../utils/reverseParser';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';
 import { useLanguageDetector } from '../hooks/useLanguageDetector';
-import { LanguageDetectionBanner } from './LanguageDetectionBanner';
+// removed unused LanguageDetectionBanner import
 import { validateSyntaxLocally } from '../utils/localAnalyzers';
 import { AutoCorrectionLoading } from './AutoCorrectionLoading';
 import { ValidationLoading } from './ValidationLoading';
@@ -75,7 +73,7 @@ export const CodeToJsonConverter: React.FC = () => {
     return defaultTabOrder;
   });
   
-  const { suggestion, handlePaste, handleSwitch, handleDismiss } = useLanguageDetector({
+  const { suggestion: _suggestion, handlePaste: _handlePaste, handleSwitch: _handleSwitch, handleDismiss } = useLanguageDetector({
     activeTab,
     onSwitchTab: (lang) => setActiveTab(lang as InputLanguage),
     languageOptions: defaultTabOrder,

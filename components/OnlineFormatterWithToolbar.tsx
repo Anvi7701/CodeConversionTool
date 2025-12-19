@@ -1,9 +1,8 @@
 ﻿// @ts-nocheck
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { jsonToToon } from '../utils/jsonToToon';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
+import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava, generatePythonPrettyPrintScript } from '../utils/codeGenerator';
 import { CodeEditor } from './CodeEditor';
@@ -207,9 +206,59 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON To CSV page, auto-convert to CSV once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-csv') {
+        try {
+          const parsed = JSON.parse(stateInput);
+          const csvOutput = convertJsonToCsv(parsed);
+          if (csvOutput) {
+            setOutputCode(csvOutput);
+            setIsConversionOutput(true);
+          }
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
+      // If coming to the dedicated JSON To YAML page, auto-convert to YAML once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-yaml') {
+        try {
+          JSON.parse(stateInput);
+          const yamlOutput = convertJsonToYaml(stateInput);
+          setOutputCode(yamlOutput);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
+
+  // Auto-convert on dedicated conversion pages when input JSON changes and is valid
+  useEffect(() => {
+    if (!inputCode.trim()) return;
+    const path = typeof location?.pathname === 'string' ? location.pathname : '';
+    try {
+      const parsed = JSON.parse(inputCode);
+      if (path === '/json-to-xml') {
+        const xmlOutput = convertJsonToXmlCode(inputCode);
+        setOutputCode(xmlOutput);
+        setIsConversionOutput(true);
+      } else if (path === '/json-to-csv') {
+        const csvOutput = convertJsonToCsv(parsed);
+        if (csvOutput) {
+          setOutputCode(csvOutput);
+          setIsConversionOutput(true);
+        }
+      } else if (path === '/json-to-yaml') {
+        const yamlOutput = convertJsonToYaml(inputCode);
+        setOutputCode(yamlOutput);
+        setIsConversionOutput(true);
+      }
+    } catch {
+      // Ignore while user is typing invalid JSON; normal validation will handle
+    }
+  }, [inputCode, location]);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -394,17 +443,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         // Skip auto-sync if this input change comes from an Input-only action (e.g., Sort)
         if (!suppressOutputSyncRef.current) {
           try {
-            const formatted = JSON.stringify(res.value, null, 2);
-            setOutputCode(formatted);
-            // Preserve the current view format (e.g., TOON on TOON page)
-            // Otherwise default to View mode for beautifier experience
-            setIsStructureAnalysisMode(false);
-            if (viewFormat !== 'toon' && viewFormat !== 'table' && viewFormat !== 'tree' && viewFormat !== 'form') {
-              setViewFormat('view');
+            const path = typeof location?.pathname === 'string' ? location.pathname : '';
+            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml';
+            // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
+            if (!isDedicatedConversionPage) {
+              const formatted = JSON.stringify(res.value, null, 2);
+              setOutputCode(formatted);
+              // Preserve the current view format (e.g., TOON on TOON page)
+              // Otherwise default to View mode for beautifier experience
+              setIsStructureAnalysisMode(false);
+              if (viewFormat !== 'toon' && viewFormat !== 'table' && viewFormat !== 'tree' && viewFormat !== 'form') {
+                setViewFormat('view');
+              }
+              // Trigger expand-all for structured views by toggling expandAllTrigger
+              setExpandAllTrigger(true);
+              setTimeout(() => setExpandAllTrigger(false), 120);
             }
-            // Trigger expand-all for structured views by toggling expandAllTrigger
-            setExpandAllTrigger(true);
-            setTimeout(() => setExpandAllTrigger(false), 120);
           } catch {
             // Ignore formatting issues; keep existing output state
           }
@@ -3621,35 +3675,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-              {/* To CSV button - converts JSON to CSV */}
+              {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
               {activeLanguage === 'json' && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
-                    try {
-                      const jsonData = JSON.parse(inputCode); // Validate JSON first
-                      const csvOutput = convertJsonToCsv(jsonData);
-                      if (!csvOutput) {
+                    // If already on the dedicated JSON To CSV page, convert in place; otherwise navigate to that page with state
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-csv') {
+                      try {
+                        const jsonData = JSON.parse(inputCode); // Validate JSON first
+                        const csvOutput = convertJsonToCsv(jsonData);
+                        if (!csvOutput) {
+                          setValidationError({ 
+                            isValid: false, 
+                            reason: 'Cannot convert to CSV. Input must be an array of objects or a single object.', 
+                            isFixableSyntaxError: false, 
+                            suggestedLanguage: undefined 
+                          });
+                          return;
+                        }
+                        setOutputCode(csvOutput);
+                        setIsConversionOutput(true);
+                        // Save to output history
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), csvOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
                         setValidationError({ 
                           isValid: false, 
-                          reason: 'Cannot convert to CSV. Input must be an array of objects or a single object.', 
-                          isFixableSyntaxError: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to CSV.', 
+                          isFixableSyntaxError: true, 
                           suggestedLanguage: undefined 
                         });
-                        return;
                       }
-                      setOutputCode(csvOutput);
-                      setIsConversionOutput(true);
-                      // Save to output history
-                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), csvOutput]);
-                      setOutputHistoryIndex(prev => prev + 1);
-                    } catch (error: any) {
-                      setValidationError({ 
-                        isValid: false, 
-                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to CSV.', 
-                        isFixableSyntaxError: true, 
-                        suggestedLanguage: undefined 
-                      });
+                    } else {
+                      navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }
                   }}
                   className="btn btn-green"
@@ -3660,26 +3719,30 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-              {/* To YAML button - converts JSON to YAML */}
+              {/* To YAML button - converts JSON to YAML or navigates to JSON To YAML page */}
               {activeLanguage === 'json' && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
-                    try {
-                      JSON.parse(inputCode); // Validate JSON first
-                      const yamlOutput = convertJsonToYaml(inputCode);
-                      setOutputCode(yamlOutput);
-                      setIsConversionOutput(true);
-                      // Save to output history
-                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), yamlOutput]);
-                      setOutputHistoryIndex(prev => prev + 1);
-                    } catch (error: any) {
-                      setValidationError({ 
-                        isValid: false, 
-                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to YAML.', 
-                        isFixableSyntaxError: true, 
-                        suggestedLanguage: undefined 
-                      });
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-yaml') {
+                      try {
+                        JSON.parse(inputCode); // Validate JSON first
+                        const yamlOutput = convertJsonToYaml(inputCode);
+                        setOutputCode(yamlOutput);
+                        setIsConversionOutput(true);
+                        // Save to output history
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), yamlOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to YAML.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-yaml', { state: { inputJson: inputCode } });
                     }
                   }}
                   className="btn btn-red"
@@ -3813,6 +3876,175 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             setInputCode(sample);
                             addToHistory(sample);
                             setViewFormat('toon');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (XML-friendly) – JSON To XML page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-xml' && (
+                    <Tooltip content="Insert sample JSON (XML-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            company: {
+                              name: 'Acme Corp',
+                              established: 1999,
+                              active: true,
+                              departments: ['Engineering', 'Product', 'Analytics'],
+                              employees: [
+                                { id: 1, name: 'Alice Johnson', role: 'Engineer', remote: true },
+                                { id: 2, name: 'Bob Smith', role: 'Designer', remote: false }
+                              ],
+                              metadata: { region: 'NA', offices: ['Seattle', 'Austin'] }
+                            }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              company: {
+                                name: 'Acme Corp',
+                                established: 1999,
+                                active: true,
+                                departments: ['Engineering', 'Product', 'Analytics'],
+                                employees: [
+                                  { id: 1, name: 'Alice Johnson', role: 'Engineer', remote: true },
+                                  { id: 2, name: 'Bob Smith', role: 'Designer', remote: false }
+                                ],
+                                metadata: { region: 'NA', offices: ['Seattle', 'Austin'] }
+                              }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (YAML-friendly) – JSON To YAML page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-yaml' && (
+                    <Tooltip content="Insert sample JSON (YAML-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            config: {
+                              version: '1.0.0',
+                              app: {
+                                name: 'JsonTools',
+                                enabled: true,
+                                ports: [3000, 3001, 8080]
+                              },
+                              database: {
+                                host: 'db.local',
+                                port: 5432,
+                                user: 'admin',
+                                ssl: false
+                              },
+                              features: {
+                                caching: { enabled: true, ttlSeconds: 600 },
+                                logging: { level: 'info', destinations: ['console', 'file'] }
+                              }
+                            }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              config: {
+                                version: '1.0.0',
+                                app: {
+                                  name: 'JsonTools',
+                                  enabled: true,
+                                  ports: [3000, 3001, 8080]
+                                },
+                                database: {
+                                  host: 'db.local',
+                                  port: 5432,
+                                  user: 'admin',
+                                  ssl: false
+                                },
+                                features: {
+                                  caching: { enabled: true, ttlSeconds: 600 },
+                                  logging: { level: 'info', destinations: ['console', 'file'] }
+                                }
+                              }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (CSV-friendly) – JSON To CSV page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-csv' && (
+                    <Tooltip content="Insert sample JSON (CSV-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify([
+                            { id: 1, name: 'Alice Johnson', role: 'Engineer', department: 'Platform', salary: 120000, startDate: '2022-03-14', remote: true, location: 'Seattle' },
+                            { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
+                            { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' }
+                          ], null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify([
+                              { id: 1, name: 'Alice Johnson', role: 'Engineer', department: 'Platform', salary: 120000, startDate: '2022-03-14', remote: true, location: 'Seattle' },
+                              { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
+                              { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' }
+                            ], null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
                           }
                         }}
                         className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}

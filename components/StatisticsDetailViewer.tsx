@@ -34,7 +34,7 @@ interface StatisticsDetailViewerProps {
 
 type DetailViewType = 'strings' | 'numbers' | 'booleans' | 'nulls' | 'objects' | 'arrays' | null;
 
-export const StatisticsDetailViewer: React.FC<StatisticsDetailViewerProps> = ({ data, expandAll, collapseAll, onClose }) => {
+export const StatisticsDetailViewer: React.FC<StatisticsDetailViewerProps> = ({ data, expandAll: _expandAll, collapseAll: _collapseAll, onClose }) => {
   const [activeView, setActiveView] = useState<DetailViewType>(null);
 
   const handleStatClick = (type: string) => {

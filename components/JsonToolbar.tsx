@@ -33,12 +33,12 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   onUndo,
   onRedo,
   onGenerateSample,
-  onViewGraph,
-  onSave,
-  onPrint,
+  onViewGraph: _onViewGraph,
+  onSave: _onSave,
+  onPrint: _onPrint,
   onValidate,
-  onClear,
-  onCopy,
+  onClear: _onClear,
+  onCopy: _onCopy,
   onFullscreen,
   canUndo = false,
   canRedo = false,
@@ -46,7 +46,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   errorCount,
   isFullscreen = false,
   disabled = false,
-  language = 'json',
+  language: _language = 'json',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);

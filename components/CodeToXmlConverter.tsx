@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeViewer } from './CodeViewer';
-import { SpinnerIcon, XmlIcon, HtmlIcon, CodeBracketIcon, CheckIcon, CopyIcon, UploadIcon, TreeIcon } from './icons';
+import { XmlIcon, HtmlIcon, CodeBracketIcon, CheckIcon, UploadIcon, TreeIcon } from './icons';
 import { convertCodeToXml, validateCodeSyntax, correctCodeSyntax } from '../services/geminiService';
-import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
 import { convertJsonToXml } from '../utils/reverseParser';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';

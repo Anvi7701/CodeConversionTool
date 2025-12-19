@@ -1,12 +1,11 @@
 import React from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface FooterProps {
   className?: string;
 }
 
 export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {

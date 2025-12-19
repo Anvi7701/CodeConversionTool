@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeViewer } from './CodeViewer';
 import { SpinnerIcon, JavaIcon, CodeBracketIcon, UploadIcon, LightningIcon } from './icons';
@@ -7,7 +6,7 @@ import { convertJsonToJava, correctCodeSyntax } from '../services/geminiService'
 import { convertJsonToJavaCode } from '../utils/jsonToJavaConverter';
 import { Tooltip } from './Tooltip';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';
-import { extractErrorPosition, getSurroundingLines, validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
+import { validateJsonSyntax, ErrorPosition } from '../utils/errorHighlighter';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 
 type ConversionMode = 'fast' | 'smart';
@@ -24,7 +23,7 @@ export const JsonToJavaConverter: React.FC = () => {
   const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
   const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
   const [showFixSummary, setShowFixSummary] = useState(false);
-  const [switchedToSmartMode, setSwitchedToSmartMode] = useState(false); // Track if user switched via "Switch to Smart AI Mode" button
+  const [_switchedToSmartMode, setSwitchedToSmartMode] = useState(false); // Track if user switched via "Switch to Smart AI Mode" button
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const lineNumbersRef = useRef<HTMLDivElement>(null);
@@ -283,12 +282,10 @@ Since you're using Smart Mode (AI), I can attempt to automatically fix these syn
     }
 
     // Validate JSON syntax
-    let jsonParseError: string | null = null;
     try {
       JSON.parse(trimmedInput);
       setErrorLines([]);
     } catch (e: any) {
-      jsonParseError = e.message;
       
       // Validate and find all errors
       const allErrors = validateJsonSyntax(trimmedInput);

@@ -9,7 +9,6 @@ import { Tooltip } from './Tooltip';
 
 export const JsonGraphViewerPage: React.FC = () => {
   const [inputJson, setInputJson] = useState('');
-  const [parseError, setParseError] = useState<string | null>(null);
   const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
   const [selectedNodePath, setSelectedNodePath] = useState<string>('');
   const [isValidating, setIsValidating] = useState(false);
@@ -30,10 +29,8 @@ export const JsonGraphViewerPage: React.FC = () => {
     if (!inputJson.trim()) return null;
     try {
       const parsed = JSON.parse(inputJson);
-      setParseError(null);
       return parsed;
     } catch (err: any) {
-      setParseError(err.message);
       return null;
     }
   }, [inputJson]);
@@ -170,7 +167,6 @@ export const JsonGraphViewerPage: React.FC = () => {
     };
     setInputJson(JSON.stringify(sampleJson, null, 2));
     setShowGraph(true);
-    setParseError(null);
     setShowErrorModal(false);
     // Scroll to graph after brief delay
     setTimeout(() => {
@@ -197,7 +193,6 @@ export const JsonGraphViewerPage: React.FC = () => {
           if (parseResult.ok) {
             // Valid JSON, set input and auto-generate graph
             setInputJson(text);
-            setParseError(null);
             setShowErrorModal(false);
             setShowGraph(true);
             // Scroll to graph after brief delay
@@ -208,19 +203,16 @@ export const JsonGraphViewerPage: React.FC = () => {
             // Invalid JSON, show error modal
             setInputJson(text);
             setShowErrorModal(true);
-            setParseError('Invalid JSON');
             setShowGraph(false);
           }
         } catch (err: any) {
           setInputJson(content);
           setShowErrorModal(true);
-          setParseError(err.message);
         }
       }
     };
     reader.onerror = () => {
       setShowErrorModal(true);
-      setParseError('Failed to read file');
     };
     reader.readAsText(file);
 
@@ -244,7 +236,6 @@ export const JsonGraphViewerPage: React.FC = () => {
       // JSON is valid - show success modal and auto-generate graph
       setShowSuccessModal(true);
       setShowErrorModal(false);
-      setParseError(null);
       setShowGraph(true);
       // Scroll to graph after brief delay
       setTimeout(() => {
@@ -254,17 +245,15 @@ export const JsonGraphViewerPage: React.FC = () => {
       // JSON has errors - show error modal
       setShowErrorModal(true);
       setShowSuccessModal(false);
-      setParseError('Invalid JSON');
     }
 
     setIsValidating(false);
   };
 
   // Handle when Auto Fix is applied from error modal
-  const handleFixApplied = (fixedJson: string, changes: FixChange[]) => {
+  const handleFixApplied = (fixedJson: string, _changes: FixChange[]) => {
     setInputJson(fixedJson);
     setShowErrorModal(false);
-    setParseError(null);
     setShowGraph(false);
   };
 
@@ -279,13 +268,11 @@ export const JsonGraphViewerPage: React.FC = () => {
       // Show error modal instead of inline error
       setShowErrorModal(true);
       setShowGraph(false);
-      setParseError('Invalid JSON');
       return;
     }
 
     setIsGenerating(true);
     setShowErrorModal(false);
-    setParseError(null);
     setShowGraph(true);
     
     // Brief delay for UX, then scroll to graph
@@ -402,7 +389,6 @@ export const JsonGraphViewerPage: React.FC = () => {
             <button
               onClick={() => {
                 setInputJson('');
-                setParseError(null);
                 setShowGraph(false);
               }}
               disabled={!inputJson.trim()}
@@ -430,7 +416,6 @@ export const JsonGraphViewerPage: React.FC = () => {
                   const parseResult = parseJsonSafe(text);
                   if (parseResult.ok) {
                     setShowGraph(true);
-                    setParseError(null);
                     setShowErrorModal(false);
                     setTimeout(() => {
                       graphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });

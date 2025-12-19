@@ -27,11 +27,6 @@ const COMMON_QUERIES: CommonQuery[] = [
   { label: 'Values', query: 'values(@)', description: 'Get all values of an object' },
 ];
 
-const JMESPATH_KEYWORDS = [
-  '@', 'length', 'keys', 'values', 'sort', 'sort_by', 'max', 'min', 'sum', 'avg',
-  'type', 'to_string', 'to_number', 'join', 'reverse', 'contains', 'starts_with',
-  'ends_with', 'merge', 'max_by', 'min_by', 'group_by', 'map', 'not_null', 'flatten'
-];
 
 export const JMESPathTransform: React.FC<JMESPathTransformProps> = ({ inputJson, onApply, onClose }) => {
   const [query, setQuery] = useState<string>('');
@@ -148,32 +143,7 @@ export const JMESPathTransform: React.FC<JMESPathTransformProps> = ({ inputJson,
     }
   };
 
-  // Syntax highlighting for JMESPath query
-  const highlightSyntax = (text: string): string => {
-    let highlighted = text;
-    
-    // Highlight keywords
-    JMESPATH_KEYWORDS.forEach(keyword => {
-      const regex = new RegExp(`\\b${keyword}\\b`, 'g');
-      highlighted = highlighted.replace(regex, `<span class="text-purple-600 dark:text-purple-400 font-semibold">${keyword}</span>`);
-    });
-    
-    // Highlight operators
-    highlighted = highlighted.replace(/([?*&|<>=!+\-])/g, '<span class="text-orange-600 dark:text-orange-400">$1</span>');
-    
-    // Highlight strings
-    highlighted = highlighted.replace(/`([^`]*)`/g, '<span class="text-green-600 dark:text-green-400">`$1`</span>');
-    highlighted = highlighted.replace(/'([^']*)'/g, '<span class="text-green-600 dark:text-green-400">\'$1\'</span>');
-    highlighted = highlighted.replace(/"([^"]*)"/g, '<span class="text-green-600 dark:text-green-400">"$1"</span>');
-    
-    // Highlight numbers
-    highlighted = highlighted.replace(/\b(\d+)\b/g, '<span class="text-blue-600 dark:text-blue-400">$1</span>');
-    
-    // Highlight brackets
-    highlighted = highlighted.replace(/([[\]{}()])/g, '<span class="text-slate-700 dark:text-slate-300 font-bold">$1</span>');
-    
-    return highlighted;
-  };
+  // (removed unused highlightSyntax helper)
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

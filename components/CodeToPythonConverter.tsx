@@ -1,10 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { CodeViewer } from './CodeViewer';
-import { SpinnerIcon, JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CodeBracketIcon, CheckIcon, CIcon, CppIcon, CopyIcon, LightBulbIcon, GoIcon, UploadIcon } from './icons';
+import { JavascriptIcon, PythonIcon, JavaIcon, XmlIcon, CodeBracketIcon, CheckIcon, CIcon, CppIcon, LightBulbIcon, GoIcon, UploadIcon } from './icons';
 import { convertCodeToPython, validateCodeSyntax, correctCodeSyntax, analyzeAndExecuteCode } from '../services/geminiService';
-import { CodeEditor } from './CodeEditor';
 import { Tooltip } from './Tooltip';
 import { convertJsonToPython, convertXmlToPython } from '../utils/reverseParser';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';

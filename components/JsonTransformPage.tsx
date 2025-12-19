@@ -12,7 +12,7 @@ export const JsonTransformPage: React.FC = () => {
   const [inputJson, setInputJson] = useState<string>(initial);
   const [showTransform, setShowTransform] = useState<boolean>(false);
   const [output, setOutput] = useState<string>('');
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -109,7 +109,7 @@ export const JsonTransformPage: React.FC = () => {
     }, 100);
   };
 
-  const handleFixApplied = (fixedJson: string, changes: FixChange[]) => {
+  const handleFixApplied = (fixedJson: string, _changes: FixChange[]) => {
     setInputJson(fixedJson);
     setShowErrorModal(false);
     setError(null);

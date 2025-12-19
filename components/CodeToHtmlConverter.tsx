@@ -1,68 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { TwoColumnLayout } from './Layout/TwoColumnLayout';
-import SEO from './SEO';
-import { HtmlRenderer, Analysis } from './HtmlRenderer';
-import { SpinnerIcon, XmlIcon, CodeBracketIcon, HtmlIcon, CheckIcon, CopyIcon, UploadIcon } from './icons';
-import { CodeEditor } from './CodeEditor';
-import { Tooltip } from './Tooltip';
-import { convertJsonToHtml, convertXmlToHtml } from '../utils/reverseParser';
-import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';
-import { validateCodeSyntax, correctCodeSyntax, analyzeHtmlCode } from '../services/geminiService';
-import { validateSyntaxLocally } from '../utils/localAnalyzers';
-import { AutoCorrectionLoading } from './AutoCorrectionLoading';
-import { ValidationLoading } from './ValidationLoading';
-
-type InputLanguage = 'json' | 'xml';
-type InputCodeMap = { [key in InputLanguage]?: string };
-type ValidationResult = { isValid: boolean; reason: string; isFixableSyntaxError: boolean; suggestedLanguage?: string };
-
-const languageDetails: { [key in InputLanguage]: { label: string; icon: React.ReactNode } } = {
-  json: { label: 'JSON', icon: <CodeBracketIcon className="h-5 w-5" /> },
-  xml: { label: 'XML', icon: <XmlIcon className="h-5 w-5" /> },
-};
-
-const allowedExtensions: { [key in InputLanguage]: string[] } = {
-    json: ['.json', '.txt'],
-    xml: ['.xml', '.txt'],
-};
-
-const defaultTabOrder: InputLanguage[] = ['json', 'xml'];
-
-export const CodeToHtmlConverter: React.FC = () => {
-  const [inputCodes, setInputCodes] = useState<InputCodeMap>(() => {
-    try {
-     const stored = localStorage.getItem('codeToHtmlInputs');
-     return stored ? JSON.parse(stored) : {};
-   } catch {
-     return {};
-   }
- });
-  const [activeTab, setActiveTab] = useState<InputLanguage>('json');
-  const [outputHtml, setOutputHtml] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
-  const [isCorrecting, setIsCorrecting] = useState(false);
-  const [outputError, setOutputError] = useState<string | null>(null);
-  const [validationError, setValidationError] = useState<ValidationResult | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isValidated, setIsValidated] = useState(false);
-  const [isConverted, setIsConverted] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [aiAnalysis, setAiAnalysis] = useState<Analysis | null>(null);
-
-  const [tabOrder, setTabOrder] = useState<InputLanguage[]>(() => {
-    try {
-        const storedOrder = localStorage.getItem('htmlConverterTabOrder');
-        if (storedOrder) {
-          const parsed = JSON.parse(storedOrder) as InputLanguage[];
-          const validOrder = parsed.filter(t => defaultTabOrder.includes(t));
-          const allPresent = defaultTabOrder.every(t => validOrder.includes(t));
-          return allPresent ? validOrder : defaultTabOrder;
-        }
-    } catch (e) { console.error("Failed to parse tab order from localStorage", e); }
-    return defaultTabOrder;
-  });
+// This file has been intentionally retired. The HTML converter page has been removed.
+// Keeping an empty stub prevents accidental re-imports from causing build errors if referenced.
+export const CodeToHtmlConverter: React.FC = () => null;
+export default CodeToHtmlConverter;
   
+/*
   const debounceTimeoutRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -384,3 +325,5 @@ export const CodeToHtmlConverter: React.FC = () => {
     </>
   );
 };
+
+*/

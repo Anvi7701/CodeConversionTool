@@ -1,5 +1,5 @@
 import React from 'react';
-import { SpinnerIcon, WandIcon } from './icons';
+// removed unused icons
 
 export const AutoCorrectionLoading: React.FC = () => {
   return (

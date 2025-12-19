@@ -30,7 +30,7 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, children, className }
     <div
       className={`relative inline-flex ${className || ''}`}
       data-has-tooltip
-      onMouseEnter={(e) => {
+      onMouseEnter={() => {
         // Show this tooltip and broadcast to close others
         setIsVisible(true);
         const evt = new CustomEvent('tooltip-open', { detail: { id: myIdRef.current } });
