@@ -3487,7 +3487,27 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
-                    navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                    if (lockViewTo === 'tree') {
+                      try {
+                        const obj = JSON.parse(inputCode.trim());
+                        const formatted = JSON.stringify(obj, null, 2);
+                        setOutputCode(formatted);
+                        setIsConversionOutput(false);
+                        setIsStructureAnalysisMode(false);
+                        setViewFormat('tree');
+                        setExpandAllTrigger(true);
+                        setTimeout(() => setExpandAllTrigger(false), 120);
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: `Invalid JSON. Please fix syntax errors before switching to Tree View. Details: ${err?.message || ''}`,
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    } else {
+                      navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                    }
                   }}
                   className="btn btn-green"
                   title="Open JSON Tree View in a separate page"
