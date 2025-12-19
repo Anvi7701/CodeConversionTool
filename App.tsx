@@ -17,7 +17,7 @@ const XmlInspector = lazy(() => import('./components/XmlInspector.tsx').then(m =
 const DataToClassConverter = lazy(() => import('./components/DataToClassConverter.tsx').then(m => ({ default: m.DataToClassConverter })));
 const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').then(m => ({ default: m.OnlineFormatter })));
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
-const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlConverter'));
+const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlView')); 
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
 const JsonToTableConverter = lazy(() => import('./components/JsonToTableConverter.tsx').then(m => ({ default: m.JsonToTableConverter })));
 const JsonTransformPage = lazy(() => import('./components/JsonTransformPage').then(m => ({ default: m.JsonTransformPage })));
@@ -111,6 +111,7 @@ const App: React.FC = () => {
                   items={[
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
+                    { label: 'JSON To XML', to: '/json-to-xml', icon: '🗎' },
                     { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
                     { label: 'JSON To Tree View', to: '/json-tree-view', icon: '🌳' }

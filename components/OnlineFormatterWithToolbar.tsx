@@ -23,7 +23,7 @@ import type { ParseResultErr } from '../utils/parseJsonSafe';
 import { fixSimpleJsonErrors, getFixSummary, FixChange } from '../utils/simpleJsonFixer';
 import { AIErrorDisplay, parseAIError, type AIErrorType } from './AIErrorDisplay';
 import { TreeView, FormView, TextView, ConsoleView, TableView, type TableViewRef } from './UnifiedJsonViewRenderer';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import { ValidationModal } from './ValidationModal';
@@ -89,6 +89,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // UI dropdowns and fullscreen state
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
@@ -186,6 +187,29 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Global UI setting: hide Output toolbar icons except Fullscreen
   const hideOutputToolbarIconsExceptFullscreen = true;
+
+  // Initialize input (and optional conversion) from navigation state when provided
+  const hasInitializedFromRouteRef = useRef<boolean>(false);
+  useEffect(() => {
+    if (hasInitializedFromRouteRef.current) return;
+    // @ts-ignore - location.state may be undefined
+    const stateInput: string | undefined = location && (location as any).state && (location as any).state.inputJson;
+    if (stateInput && !inputCode) {
+      setInputCode(stateInput);
+      // If coming to the dedicated JSON To XML page, auto-convert to XML once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-xml') {
+        try {
+          JSON.parse(stateInput);
+          const xmlOutput = convertJsonToXmlCode(stateInput);
+          setOutputCode(xmlOutput);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
+      hasInitializedFromRouteRef.current = true;
+    }
+  }, [location, inputCode]);
 
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
@@ -3562,26 +3586,31 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-              {/* To XML button - converts JSON to XML */}
+              {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
               {activeLanguage === 'json' && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
-                    try {
-                      JSON.parse(inputCode); // Validate JSON first
-                      const xmlOutput = convertJsonToXmlCode(inputCode);
-                      setOutputCode(xmlOutput);
-                      setIsConversionOutput(true);
-                      // Save to output history
-                      setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), xmlOutput]);
-                      setOutputHistoryIndex(prev => prev + 1);
-                    } catch (error: any) {
-                      setValidationError({ 
-                        isValid: false, 
-                        reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to XML.', 
-                        isFixableSyntaxError: true, 
-                        suggestedLanguage: undefined 
-                      });
+                    // If already on the dedicated JSON To XML page, convert in place; otherwise navigate to that page with state
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-xml') {
+                      try {
+                        JSON.parse(inputCode); // Validate JSON first
+                        const xmlOutput = convertJsonToXmlCode(inputCode);
+                        setOutputCode(xmlOutput);
+                        setIsConversionOutput(true);
+                        // Save to output history
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), xmlOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to XML.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }
                   }}
                   className="btn btn-orange"
