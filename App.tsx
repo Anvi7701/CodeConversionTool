@@ -19,7 +19,7 @@ const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').th
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlConverter'));
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
-const JsonToTableConverter = lazy(() => import('./components/JsonToTableConverter').then(m => ({ default: m.JsonToTableConverter })));
+const JsonToTableConverter = lazy(() => import('./components/JsonToTableConverter.tsx').then(m => ({ default: m.JsonToTableConverter })));
 const JsonTransformPage = lazy(() => import('./components/JsonTransformPage').then(m => ({ default: m.JsonTransformPage })));
 
 // SEO-optimized formatter pages
@@ -112,7 +112,8 @@ const App: React.FC = () => {
                   items={[
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
-                    { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' }
+                    { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
+                    { label: 'JSON To Tree View', to: '/json-tree-view', icon: '🌳' }
                   ]}
                 />
               </span>
