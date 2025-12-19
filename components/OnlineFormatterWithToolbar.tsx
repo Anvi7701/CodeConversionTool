@@ -5,7 +5,7 @@ import { TwoColumnLayout } from './Layout/TwoColumnLayout';
 import SEO from './SEO';
 import { SpinnerIcon, XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
-import { beautifyJava } from '../utils/codeGenerator';
+import { beautifyJava, generatePythonPrettyPrintScript } from '../utils/codeGenerator';
 import { CodeEditor } from './CodeEditor';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { ErrorAnalysisDisplay } from './ErrorAnalysisDisplay';
@@ -65,9 +65,11 @@ interface OnlineFormatterWithToolbarProps {
   initialViewFormat?: ViewFormat; // Set initial view on page load (e.g., 'toon' for TOON page)
   // Lock the view to a specific format and hide the View dropdown (e.g., lock to 'toon')
   lockViewTo?: ViewFormat;
+  // Optional: customize text view output rendering (plain vs generated script)
+  textOutputMode?: 'plain' | 'python-pretty';
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo, textOutputMode = 'plain' }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -1710,6 +1712,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       }
       return;
     }
+    // If in text view with python-pretty mode, copy generated Python script
+    if (viewFormat === 'text' && textOutputMode === 'python-pretty') {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        // Generate a Python pretty print script from JSON
+        const script = generatePythonPrettyPrintScript(parsedData);
+        await navigator.clipboard.writeText(script);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      } catch (error) {
+        console.error('Failed to copy Python script:', error);
+      }
+      return;
+    }
     
     // If in Tree View, copy as plain text with tree connectors (├──, └──, │)
     if (viewFormat === 'tree') {
@@ -1851,6 +1867,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           fileName = 'toon';
         } catch (e) {
           // If TOON generation fails, fall back to JSON download behavior
+        }
+      }
+      // Text view (python-pretty): download as .py with generated Python script
+      if (activeLanguage === 'json' && viewFormat === 'text' && textOutputMode === 'python-pretty' && outputCode) {
+        try {
+          const parsedData = JSON.parse(outputCode);
+          const script = generatePythonPrettyPrintScript(parsedData);
+          content = script;
+          ext = 'py';
+          mimeType = 'text/x-python';
+          fileName = 'pretty_print';
+        } catch (e) {
+          // If script generation fails, fall back to JSON download behavior
         }
       }
     }
@@ -2982,9 +3011,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             />
           );
         case 'text':
+          // Render plain text or generated Python script in TextView
+          let textCode = outputCode;
+          if (textOutputMode === 'python-pretty' && outputCode) {
+            try {
+              const parsed = JSON.parse(outputCode);
+              textCode = generatePythonPrettyPrintScript(parsed);
+            } catch {
+              // If parsing fails, keep existing outputCode (error handling handled elsewhere)
+            }
+          }
           return (
             <TextView
-              code={outputCode}
+              code={textCode}
               onChange={(value) => setOutputCode(value)}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
