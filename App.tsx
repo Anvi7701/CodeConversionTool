@@ -100,7 +100,6 @@ const App: React.FC = () => {
                     { label: 'JSON Formatter', to: '/json-formatter', icon: '🧹' },
                     { label: 'JSON Structure Analyzer', to: '/json-structure-analyzer', icon: (<i className="fa-solid fa-diagram-project" aria-hidden="true"></i>) },
                     { label: 'JSON Transform', to: '/json-transform', icon: '🛠️' },
-                    { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Parser', to: '/json-parser', icon: '🧪' }
                   ]}
                 />
@@ -112,6 +111,7 @@ const App: React.FC = () => {
                   items={[
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
+                    { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
                     { label: 'JSON To Tree View', to: '/json-tree-view', icon: '🌳' }
                   ]}
