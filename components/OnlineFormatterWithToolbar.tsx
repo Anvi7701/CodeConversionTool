@@ -182,6 +182,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [currentOutputSearchIndex, setCurrentOutputSearchIndex] = useState<number>(-1);
   const [outputHighlightTrigger, setOutputHighlightTrigger] = useState<number>(0);
 
+  // Global UI setting: hide Output toolbar icons except Fullscreen
+  const hideOutputToolbarIconsExceptFullscreen = true;
+
   const clearHighlight = useCallback(() => {
     setHighlightedLine(null);
     setHighlightedType(null);
@@ -4304,7 +4307,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
                 {!isConversionOutput && (
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
-                  {activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
+                  {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
                       <Tooltip content="Collapse all fields">
                         <span
@@ -4403,7 +4406,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </>
                   )}
                   {/* Icon Toolbar for special states (validation errors, structure analysis, etc.) */}
-                  {(validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
+                  {!hideOutputToolbarIconsExceptFullscreen && (validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
                     <>
                       {!(validationError && errorLines.length > 0) && (
                         <>
@@ -4443,7 +4446,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {!isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
+                {!hideOutputToolbarIconsExceptFullscreen && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
@@ -4459,7 +4462,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                 )}
                 {/* Output Fullscreen toggle - immediately after icons */}
-                {activeLanguage === 'json' && viewFormat === 'toon' && (
+                {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && viewFormat === 'toon' && (
                   <div className="relative toon-settings-popover">
                     <Tooltip content="TOON settings">
                       <span
