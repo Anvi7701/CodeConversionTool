@@ -3081,7 +3081,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <TextView
               code={textCode}
-              onChange={(value) => setOutputCode(value)}
+              onChange={textOutputMode === 'python-pretty' ? undefined : (value) => setOutputCode(value)}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
             />
