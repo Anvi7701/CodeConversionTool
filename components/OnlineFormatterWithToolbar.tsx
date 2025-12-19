@@ -2127,6 +2127,63 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
     const content = outputCode || inputCode;
     if (!content) return;
+
+    // Text view (python-pretty): Save as .py or .txt via Save As dialog
+    if (activeLanguage === 'json' && viewFormat === 'text' && textOutputMode === 'python-pretty' && outputCode) {
+      try {
+        const parsedData = JSON.parse(outputCode);
+        const script = generatePythonPrettyPrintScript(parsedData);
+        // @ts-ignore
+        if (window.showSaveFilePicker) {
+          try {
+            // @ts-ignore
+            const handle = await window.showSaveFilePicker({
+              suggestedName: 'pretty_print.py',
+              types: [
+                {
+                  description: 'Python Script',
+                  accept: { 'text/x-python': ['.py'] },
+                },
+                {
+                  description: 'Text File',
+                  accept: { 'text/plain': ['.txt'] },
+                },
+              ],
+            });
+            const fileName = handle.name || '';
+            const lower = fileName.toLowerCase();
+            const writable = await handle.createWritable();
+            if (lower.endsWith('.py')) {
+              await writable.write(new Blob([script], { type: 'text/x-python' }));
+            } else {
+              await writable.write(new Blob([script], { type: 'text/plain' }));
+            }
+            await writable.close();
+            return;
+          } catch (err: any) {
+            if (err.name === 'AbortError') {
+              console.log('Save dialog was cancelled by user');
+              return;
+            }
+            console.warn('Save As dialog error (Python Pretty):', err);
+          }
+        }
+        // Fallback: simple download as .py
+        const blob = new Blob([script], { type: 'text/x-python' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pretty_print.py';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      } catch (e) {
+        console.error('Python pretty save failed:', e);
+        // Continue to generic flow as last resort
+      }
+    }
     
     // If in table view, open Save As dialog with both CSV and Excel format options
     if (viewFormat === 'table' && tableViewRef.current) {
