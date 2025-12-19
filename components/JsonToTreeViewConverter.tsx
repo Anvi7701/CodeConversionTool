@@ -45,6 +45,7 @@ export const JsonToTreeViewConverter: React.FC = () => {
         hideFormatButtons={true}
         initialViewFormat="tree"
         lockViewTo="tree"
+        hideStructureAnalysisAndTransform={true}
       />
     </>
   );

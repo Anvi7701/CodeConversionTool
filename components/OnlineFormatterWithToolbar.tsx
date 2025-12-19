@@ -67,9 +67,11 @@ interface OnlineFormatterWithToolbarProps {
   lockViewTo?: ViewFormat;
   // Optional: customize text view output rendering (plain vs generated script)
   textOutputMode?: 'plain' | 'python-pretty';
+  // Hide Structure Analysis and Transform ribbon buttons (page-specific control)
+  hideStructureAnalysisAndTransform?: boolean;
 }
 
-export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo, textOutputMode = 'plain' }) => {
+export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo, textOutputMode = 'plain', hideStructureAnalysisAndTransform = false }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
@@ -3508,7 +3510,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Structure Analysis button - opens dedicated analyzer page */}
-              {activeLanguage === 'json' && (
+              {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3523,7 +3525,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Transform button - opens JMESPath Transform modal (same workflow) */}
-              {activeLanguage === 'json' && (
+              {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;

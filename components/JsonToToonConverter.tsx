@@ -46,6 +46,7 @@ export const JsonToToonConverter: React.FC = () => {
         hideFormatButtons={true}
         initialViewFormat="toon"
         lockViewTo="toon"
+        hideStructureAnalysisAndTransform={true}
       />
     </>
   );

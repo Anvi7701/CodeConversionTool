@@ -28,6 +28,7 @@ export const JsonToPythonPrettyPrintConverter: React.FC = () => {
         initialViewFormat="text"
         lockViewTo="text"
         textOutputMode="python-pretty"
+        hideStructureAnalysisAndTransform={true}
       />
     </>
   );

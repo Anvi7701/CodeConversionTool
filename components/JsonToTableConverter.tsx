@@ -45,6 +45,7 @@ export const JsonToTableConverter: React.FC = () => {
         hideFormatButtons={true}
         initialViewFormat="table"
         lockViewTo="table"
+        hideStructureAnalysisAndTransform={true}
       />
     </>
   );
