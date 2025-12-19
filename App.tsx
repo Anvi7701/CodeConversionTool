@@ -104,10 +104,10 @@ const App: React.FC = () => {
                   ]}
                 />
               </span>
-              {/* New dropdown: JSON Converter */}
+              {/* New dropdown: JSON Views (renamed from JSON Converter) */}
               <span className="inline-flex ml-2">
                 <GlobalNavDropdown
-                  label="🔄 JSON Converter"
+                  label="🔄 JSON Views"
                   items={[
                     { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
