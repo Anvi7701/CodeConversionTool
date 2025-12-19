@@ -3759,6 +3759,63 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Python Pretty) – placed to the left of Collapse (Python page only) */}
+                  {isJsonLanguage && lockViewTo === 'text' && textOutputMode === 'python-pretty' && (
+                    <Tooltip content="Insert sample JSON (Python script)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            company: {
+                              name: 'Acme Corp',
+                              location: 'USA',
+                              departments: ['Engineering', 'Product', 'Analytics']
+                            },
+                            employees: [
+                              { id: 1, name: 'Alice Johnson', role: 'Engineer', remote: true, skills: ['ts', 'react', 'api'] },
+                              { id: 2, name: 'Bob Smith', role: 'Designer', remote: false, skills: ['figma', 'ux'] },
+                              { id: 3, name: 'Cara Lee', role: 'PM', remote: true, skills: ['roadmap', 'analytics'] }
+                            ]
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('text');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              company: {
+                                name: 'Acme Corp',
+                                location: 'USA',
+                                departments: ['Engineering', 'Product', 'Analytics']
+                              },
+                              employees: [
+                                { id: 1, name: 'Alice Johnson', role: 'Engineer', remote: true, skills: ['ts', 'react', 'api'] },
+                                { id: 2, name: 'Bob Smith', role: 'Designer', remote: false, skills: ['figma', 'ux'] },
+                                { id: 3, name: 'Cara Lee', role: 'PM', remote: true, skills: ['roadmap', 'analytics'] }
+                              ]
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('text');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Collapse/Expand All – moved to be first after Input label */}
                   {isJsonLanguage && (
                     <>
