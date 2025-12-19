@@ -42,7 +42,7 @@ const AngularFormatterPage = lazy(() => import('./components/formatters/AngularF
 // JSON Tools with SEO
 const JsonGraphViewerPage = lazy(() => import('./components/JsonGraphViewerPage.tsx').then(m => ({ default: m.JsonGraphViewerPage })));
 const JsonStructureAnalyzerPage = lazy(() => import('./components/JsonStructureAnalyzerPage.tsx').then(m => ({ default: m.JsonStructureAnalyzerPage })));
-const JsonTreeViewPage = lazy(() => import('./components/JsonTreeViewPage'));
+const JsonToTreeViewConverter = lazy(() => import('./components/JsonToTreeViewConverter').then(m => ({ default: m.JsonToTreeViewConverter })));
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -164,7 +164,7 @@ const App: React.FC = () => {
             {/* JSON Visualization & Analysis routes */}
             <Route path="/json-graph-viewer" element={<JsonGraphViewerPage />} />
             <Route path="/json-structure-analyzer" element={<JsonStructureAnalyzerPage />} />
-            <Route path="/json-tree-view" element={<JsonTreeViewPage />} />
+            <Route path="/json-tree-view" element={<JsonToTreeViewConverter />} />
             <Route path="/json-transform" element={<JsonTransformPage />} />
           </Routes>
         </Suspense>
