@@ -3794,6 +3794,79 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Tree-friendly) – placed to the left of Collapse (Tree page only) */}
+                  {isJsonLanguage && lockViewTo === 'tree' && (
+                    <Tooltip content="Insert sample JSON (Tree-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            project: {
+                              name: 'GeminiAI',
+                              metadata: {
+                                version: '1.2.0',
+                                tags: ['ai', 'json', 'viewer']
+                              },
+                              team: [
+                                { name: 'Alice', roles: ['frontend', 'ux'], active: true },
+                                { name: 'Bob', roles: ['backend', 'apis'], active: false }
+                              ],
+                              milestones: [
+                                { id: 1, title: 'MVP', tasks: [{ id: 't1', done: false }, { id: 't2', done: true }] }
+                              ],
+                              settings: {
+                                theme: { mode: 'dark', accent: 'purple' },
+                                features: { treeView: true, tableView: true, pythonPretty: true }
+                              }
+                            }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('tree');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              project: {
+                                name: 'GeminiAI',
+                                metadata: {
+                                  version: '1.2.0',
+                                  tags: ['ai', 'json', 'viewer']
+                                },
+                                team: [
+                                  { name: 'Alice', roles: ['frontend', 'ux'], active: true },
+                                  { name: 'Bob', roles: ['backend', 'apis'], active: false }
+                                ],
+                                milestones: [
+                                  { id: 1, title: 'MVP', tasks: [{ id: 't1', done: false }, { id: 't2', done: true }] }
+                                ],
+                                settings: {
+                                  theme: { mode: 'dark', accent: 'purple' },
+                                  features: { treeView: true, tableView: true, pythonPretty: true }
+                                }
+                              }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('tree');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-tree text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Sample Data (Table-friendly) – placed to the left of Collapse (Table page only) */}
                   {isJsonLanguage && lockViewTo === 'table' && (
                     <Tooltip content="Insert sample JSON (Table-friendly)">
