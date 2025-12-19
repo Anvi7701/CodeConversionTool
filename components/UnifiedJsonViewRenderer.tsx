@@ -711,6 +711,7 @@ export const TextView:React.FC<{ code:string; onChange?:(v:string)=>void; expand
           // Keep JSON highlighting for readability, but omit folding and gutters
           json(),
           EditorView.lineWrapping,
+          EditorView.editable.of(!!onChange),
           theme,
         ]} 
         basicSetup={{
