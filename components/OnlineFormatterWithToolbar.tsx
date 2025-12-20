@@ -4944,7 +4944,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
-                {/* Output Fullscreen toggle - immediately after icons */}
+                {/* Output Fullscreen toggle - moved to right-aligned group */}
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
                     role="button"
@@ -4958,6 +4958,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
                   </span>
                 </Tooltip>
+                
                 {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON), when output is from conversion, or when view is locked */}
                 {!lockViewTo && !isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
                   <div className="relative dropdown-container">
