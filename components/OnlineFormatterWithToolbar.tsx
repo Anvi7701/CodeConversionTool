@@ -4410,7 +4410,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
-                <div className="flex items-center gap-1 ml-auto pr-2">
+                <div className="flex items-center gap-1 ml-auto">
                   {isJsonLanguage && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                       <span
@@ -4951,7 +4951,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     tabIndex={0}
                     onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
                     onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
