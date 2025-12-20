@@ -175,8 +175,8 @@ export const convertJsonToHtml = async (json: any): Promise<string> => {
         if (Array.isArray(data)) {
             if (data.length > 0 && typeof data[0] === 'object' && data[0] !== null) {
                 // Array of objects -> Table
-                const headers = Array.from(new Set(data.flatMap(item => Object.keys(item))));
-                const headerRow = `<thead><tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>`;
+        const headers = Array.from(new Set(data.flatMap(item => Object.keys(item))));
+        const headerRow = `<thead><tr>${headers.map(h => `<th class="html-key">${escapeHtml(h)}</th>`).join('')}</tr></thead>`;
                 const bodyRows = data.map(row => 
                     `<tr>${headers.map(h => `<td>${buildHtml(row[h])}</td>`).join('')}</tr>`
                 ).join('');
@@ -189,9 +189,15 @@ export const convertJsonToHtml = async (json: any): Promise<string> => {
         }
         
         // Plain object -> Description List
-        const items = Object.entries(data).map(([key, value]) => 
-            `<dt>${escapeHtml(key)}</dt><dd>${buildHtml(value)}</dd>`
-        ).join('');
+    const items = Object.entries(data).map(([key, value]) => {
+      const content = buildHtml(value);
+      const wrapped = Array.isArray(value)
+        ? `<div class="html-array">${content}</div>`
+        : (typeof value === 'object' && value !== null)
+          ? `<div class="html-object">${content}</div>`
+          : content;
+      return `<dt class="html-key">${escapeHtml(key)}</dt><dd>${wrapped}</dd>`;
+    }).join('');
         return `<dl>${items}</dl>`;
     };
     
@@ -204,12 +210,15 @@ export const convertJsonToHtml = async (json: any): Promise<string> => {
     tr:hover { background-color: #f1f5f9; }
     ul { list-style-type: disc; padding-left: 20px; }
     dl { border: 1px solid #e2e8f0; border-radius: 8px; padding: 1em; }
-    dt { font-weight: 600; color: #475569; }
+  dt { font-weight: 600; color: #475569; }
     dd { margin-left: 20px; margin-bottom: 1em; }
     .html-string { color: #166534; }
     .html-number { color: #1d4ed8; }
     .html-boolean { color: #7e22ce; }
     .html-null { color: #64748b; font-style: italic; }
+  .html-key { color: #0f172a; font-weight: 600; }
+  .html-object { background-color: #f8fafc; border-left: 3px solid #e2e8f0; padding: 8px; border-radius: 6px; margin: 4px 0; }
+  .html-array { background-color: #f8fafc; border-left: 3px solid #cbd5e1; padding: 8px; border-radius: 6px; margin: 4px 0; }
 </style>`;
     
     const rawHtml = `<!DOCTYPE html>
