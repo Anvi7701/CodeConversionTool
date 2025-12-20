@@ -99,8 +99,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [isFullscreen, setIsFullscreen] = useState(false);
   // Output-only fullscreen state and ref
   const outputContainerRef = useRef<HTMLDivElement | null>(null);
-  // Route helpers
-  const isCsvPage = typeof location?.pathname === 'string' && location.pathname === '/json-to-csv';
 
   // Expand/collapse triggers for structured views
   const [expandAllTrigger, setExpandAllTrigger] = useState<boolean>(false);
@@ -4412,7 +4410,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
-                <div className="flex items-center gap-1 ml-auto">
+                <div className="flex items-center gap-1 ml-auto pr-2">
                   {isJsonLanguage && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                       <span
@@ -4658,7 +4656,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
           <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Output heading with View selector and Exit fullscreen button */}
-            <div className={`flex items-center justify-between ${isCsvPage ? 'pr-12' : ''}`}>
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-semibold">Output</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
@@ -4946,32 +4944,43 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
-                {/* View Format Dropdown and Fullscreen toggle */}
-                {/* On CSV page, render View first, then Fullscreen to align fullscreen with right rail */}
+                {/* Output Fullscreen toggle - immediately after icons */}
+                <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
+                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
+                    aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                    title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                  >
+                    <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
+                  </span>
+                </Tooltip>
+                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON), when output is from conversion, or when view is locked */}
                 {!lockViewTo && !isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
-                  <div className="flex items-center gap-2">
-                    {/* View Format Dropdown */}
-                    <div className="relative dropdown-container">
-                      <button
-                        onClick={() => {
-                          if (isStructureAnalysisMode || !outputCode?.trim()) return;
-                          console.log('View dropdown clicked, current format:', viewFormat);
-                          setShowViewDropdown(!showViewDropdown);
-                        }}
-                        disabled={isStructureAnalysisMode || !outputCode?.trim()}
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
-                          (isStructureAnalysisMode || !outputCode?.trim())
-                            ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
-                            : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
-                        } text-white`}
-                        aria-label="Select View Format"
-                      >
-                        <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
-                        <span className="text-xs">▼</span>
-                      </button>
-                      {showViewDropdown && (
-                        <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
-                          {(['code', 'form', 'text', 'tree', 'table', 'view', 'toon'] as ViewFormat[]).map((format) => {
+                  <div className="relative dropdown-container">
+                    <button
+                      onClick={() => {
+                        if (isStructureAnalysisMode || !outputCode?.trim()) return;
+                        console.log('View dropdown clicked, current format:', viewFormat);
+                        setShowViewDropdown(!showViewDropdown);
+                      }}
+                      disabled={isStructureAnalysisMode || !outputCode?.trim()}
+                      className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
+                        (isStructureAnalysisMode || !outputCode?.trim())
+                          ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
+                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                      } text-white`}
+                      aria-label="Select View Format"
+                    >
+                      <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
+                      <span className="text-xs">▼</span>
+                    </button>
+                    {showViewDropdown && (
+                      <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
+                        {(['code', 'form', 'text', 'tree', 'table', 'view', 'toon'] as ViewFormat[]).map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
                           
                           // Define emoji and colors for each format
@@ -5033,25 +5042,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <span className={`${viewFormat === format ? config.color : 'text-slate-800 dark:text-slate-200'} tracking-tight`}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
                             </button>
                           );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Fullscreen toggle */}
-                    <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
-                        aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                        title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                      >
-                        <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-white text-sm`} aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
+                        })}
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Removed textual Exit button in fullscreen; use icon-based toggle only */}
