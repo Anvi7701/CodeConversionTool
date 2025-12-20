@@ -1920,17 +1920,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         ext = 'xml';
         mimeType = 'application/xml';
         fileName = 'converted';
-      } else if (trimmedOutput.startsWith('<!DOCTYPE html') || trimmedOutput.startsWith('<html')) {
-        // HTML detection: typical HTML document markers
+      } else if (/^<!DOCTYPE\s+html/i.test(trimmedOutput) || /^<html/i.test(trimmedOutput) || /<table|<ul|<dl/i.test(trimmedOutput)) {
+        // HTML detection: typical HTML document markers or common tags
         ext = 'html';
         mimeType = 'text/html';
         fileName = 'converted';
-      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[')) {
+      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !trimmedOutput.includes('<')) {
         // CSV detection: contains commas and doesn't look like JSON
         ext = 'csv';
         mimeType = 'text/csv';
         fileName = 'converted';
-      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml')) {
+      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml') && !trimmedOutput.includes('<')) {
         // YAML detection: contains colons, no JSON brackets, not XML
         ext = 'yaml';
         mimeType = 'text/yaml';
