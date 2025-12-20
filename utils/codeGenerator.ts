@@ -225,5 +225,17 @@ ${buildHtml(json)}
 </body>
 </html>`;
 
-    return await formatCodeWithAi(rawHtml, 'html');
+    try {
+      // Prefer fast local formatting if Prettier is available in the browser
+      if (typeof window !== 'undefined' && (window as any).prettier) {
+        const prettier = (window as any).prettier;
+        const plugins = (window as any).prettierPlugins || [];
+        return prettier.format(rawHtml, { parser: 'html', plugins });
+      }
+    } catch {
+      // Fallback to raw HTML if local formatting fails
+    }
+
+    // Fallback: return raw HTML immediately (no network latency)
+    return rawHtml;
 };
