@@ -1911,7 +1911,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let mimeType = 'text/plain';
     let fileName = 'formatted';
     
-    // Check if output is from conversion (XML, CSV, YAML)
+    // Check if output is from conversion (XML, CSV, YAML, HTML)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -1919,6 +1919,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       if (trimmedOutput.startsWith('<?xml')) {
         ext = 'xml';
         mimeType = 'application/xml';
+        fileName = 'converted';
+      } else if (trimmedOutput.startsWith('<!DOCTYPE html') || trimmedOutput.startsWith('<html')) {
+        // HTML detection: typical HTML document markers
+        ext = 'html';
+        mimeType = 'text/html';
         fileName = 'converted';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[')) {
         // CSV detection: contains commas and doesn't look like JSON
