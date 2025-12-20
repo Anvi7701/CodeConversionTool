@@ -30,7 +30,7 @@ import { JMESPathTransform } from './JMESPathTransform';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
-import { convertJsonToCsv } from '../utils/codeGenerator';
+import { convertJsonToCsv, convertJsonToHtml } from '../utils/codeGenerator';
 import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -230,6 +230,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON To HTML page, auto-convert to HTML once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-html') {
+        try {
+          const parsed = JSON.parse(stateInput);
+          convertJsonToHtml(parsed).then(htmlOutput => {
+            setOutputCode(htmlOutput);
+            setIsConversionOutput(true);
+          }).catch(() => {});
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
@@ -254,6 +266,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         const yamlOutput = convertJsonToYaml(inputCode);
         setOutputCode(yamlOutput);
         setIsConversionOutput(true);
+      } else if (path === '/json-to-html') {
+        (async () => {
+          try {
+            const htmlOutput = await convertJsonToHtml(parsed);
+            setOutputCode(htmlOutput);
+            setIsConversionOutput(true);
+          } catch {}
+        })();
       }
     } catch {
       // Ignore while user is typing invalid JSON; normal validation will handle
@@ -444,7 +464,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (!suppressOutputSyncRef.current) {
           try {
             const path = typeof location?.pathname === 'string' ? location.pathname : '';
-            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml';
+            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html';
             // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
             if (!isDedicatedConversionPage) {
               const formatted = JSON.stringify(res.value, null, 2);
@@ -3753,6 +3773,48 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* To HTML button - converts JSON to HTML or navigates to JSON To HTML page */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-html') {
+                      try {
+                        const parsed = JSON.parse(inputCode); // Validate JSON first
+                        convertJsonToHtml(parsed).then(htmlOutput => {
+                          setOutputCode(htmlOutput);
+                          setIsConversionOutput(true);
+                          // Save to output history
+                          setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), htmlOutput]);
+                          setOutputHistoryIndex(prev => prev + 1);
+                        }).catch((error: any) => {
+                          setValidationError({ 
+                            isValid: false, 
+                            reason: error?.message || 'Failed to convert to HTML. Please try again.', 
+                            isFixableSyntaxError: false, 
+                            suggestedLanguage: undefined 
+                          });
+                        });
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to HTML.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-html', { state: { inputJson: inputCode } });
+                    }
+                  }}
+                  className="btn btn-purple"
+                  title="Convert JSON to HTML"
+                >
+                  <i className="fa-solid fa-code" aria-hidden="true"></i>
+                  <span>To HTML</span>
+                </button>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -4051,6 +4113,47 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (HTML-friendly) – JSON To HTML page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-html' && (
+                    <Tooltip content="Insert sample JSON (HTML-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify([
+                            { id: 101, title: 'Getting Started', category: 'Docs', published: true, url: '/docs/getting-started' },
+                            { id: 102, title: 'API Reference', category: 'Docs', published: true, url: '/docs/api' },
+                            { id: 201, title: 'Release Notes', category: 'Updates', published: false, url: '/updates' }
+                          ], null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify([
+                              { id: 101, title: 'Getting Started', category: 'Docs', published: true, url: '/docs/getting-started' },
+                              { id: 102, title: 'API Reference', category: 'Docs', published: true, url: '/docs/api' },
+                              { id: 201, title: 'Release Notes', category: 'Updates', published: false, url: '/updates' }
+                            ], null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-code text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
