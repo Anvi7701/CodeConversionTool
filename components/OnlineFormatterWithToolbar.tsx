@@ -498,7 +498,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (!suppressOutputSyncRef.current) {
           try {
             const path = typeof location?.pathname === 'string' ? location.pathname : '';
-            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html' || path === '/json-to-javascript';
+            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html' || path === '/json-to-javascript' || path === '/json-to-python';
             // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
             if (!isDedicatedConversionPage) {
               const formatted = JSON.stringify(res.value, null, 2);
