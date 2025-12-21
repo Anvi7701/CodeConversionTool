@@ -2761,24 +2761,35 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let fileName = 'formatted';
     let fileDescription = `${activeLanguage.toUpperCase()} File`;
     
-    // Check if output is from conversion (XML, CSV, YAML)
+    // Check if output is from conversion (XML, CSV, YAML, HTML)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
+      const looksLikeHtml = (
+        /^<!DOCTYPE\s+html/i.test(trimmedOutput) ||
+        /^<html\b/i.test(trimmedOutput) ||
+        /<head\b|<body\b|<table\b|<div\b|<span\b|<p\b|<h[1-6]\b/i.test(trimmedOutput)
+      );
       
       if (trimmedOutput.startsWith('<?xml')) {
         ext = 'xml';
         mimeType = 'application/xml';
         fileName = 'converted';
         fileDescription = 'XML File';
-      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[')) {
-        // CSV detection: contains commas and doesn't look like JSON
+      } else if (looksLikeHtml) {
+        // Robust HTML detection first to avoid misclassification
+        ext = 'html';
+        mimeType = 'text/html';
+        fileName = 'converted';
+        fileDescription = 'HTML File';
+      } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !/[<]/.test(trimmedOutput)) {
+        // CSV detection: contains commas, doesn't look like JSON or HTML
         ext = 'csv';
         mimeType = 'text/csv';
         fileName = 'converted';
         fileDescription = 'CSV File';
-      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml')) {
-        // YAML detection: contains colons, no JSON brackets, not XML
+      } else if (!trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && trimmedOutput.includes(':') && !trimmedOutput.includes('<?xml') && !/[<]/.test(trimmedOutput)) {
+        // YAML detection: contains colons, no JSON brackets, not XML or HTML
         ext = 'yaml';
         mimeType = 'text/yaml';
         fileName = 'converted';
