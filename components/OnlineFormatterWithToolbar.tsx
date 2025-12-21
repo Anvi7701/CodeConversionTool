@@ -30,7 +30,7 @@ import { JMESPathTransform } from './JMESPathTransform';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
-import { convertJsonToCsv, convertJsonToHtml, convertJsonToJavaScript } from '../utils/codeGenerator';
+import { convertJsonToCsv, convertJsonToHtml, convertJsonToJavaScript, convertJsonToPython } from '../utils/codeGenerator';
 import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -257,6 +257,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON To Python page, auto-convert to Python once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-python') {
+        try {
+          const parsed = JSON.parse(stateInput);
+          const pyOutput = convertJsonToPython(parsed, { varName: 'data', includePrettyPrint: false });
+          setOutputCode(pyOutput);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
@@ -292,6 +303,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       } else if (path === '/json-to-javascript') {
         const jsOutput = convertJsonToJavaScript(parsed, { varName: 'data', exportStyle: 'none' });
         setOutputCode(jsOutput);
+        setIsConversionOutput(true);
+      } else if (path === '/json-to-python') {
+        const pyOutput = convertJsonToPython(parsed, { varName: 'data', includePrettyPrint: false });
+        setOutputCode(pyOutput);
         setIsConversionOutput(true);
       }
     } catch {
@@ -1930,7 +1945,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let mimeType = 'text/plain';
     let fileName = 'formatted';
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -1948,6 +1963,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         // JavaScript detection: variable/exports declarations
         ext = 'js';
         mimeType = 'application/javascript';
+        fileName = 'converted';
+      } else if (/^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*[{\[]/.test(trimmedOutput) || /\b(True|False|None)\b/.test(trimmedOutput)) {
+        // Python detection: variable assignment to dict/list or Python-specific literals
+        ext = 'py';
+        mimeType = 'text/x-python';
         fileName = 'converted';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !trimmedOutput.includes('<')) {
         // CSV detection: contains commas and doesn't look like JSON
@@ -2785,7 +2805,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let fileName = 'formatted';
     let fileDescription = `${activeLanguage.toUpperCase()} File`;
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -2795,6 +2815,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         /<head\b|<body\b|<table\b|<div\b|<span\b|<p\b|<h[1-6]\b/i.test(trimmedOutput)
       );
       const looksLikeJs = /^(export\s+(default|const|let|var)\s+|const\s+|let\s+|var\s+)/.test(trimmedOutput);
+      const looksLikePy = /^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*[{\[]/.test(trimmedOutput) || /\b(True|False|None)\b/.test(trimmedOutput) || /^\s*import\s+json/.test(trimmedOutput);
       
       if (trimmedOutput.startsWith('<?xml')) {
         ext = 'xml';
@@ -2812,6 +2833,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         mimeType = 'application/javascript';
         fileName = 'converted';
         fileDescription = 'JavaScript File';
+      } else if (looksLikePy) {
+        ext = 'py';
+        mimeType = 'text/x-python';
+        fileName = 'converted';
+        fileDescription = 'Python File';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !/[<]/.test(trimmedOutput)) {
         // CSV detection: contains commas, doesn't look like JSON or HTML
         ext = 'csv';
@@ -3894,6 +3920,41 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* To Python button - only on JSON Converter pages; converts JSON to Python or navigates to JSON To Python page */}
+              {activeLanguage === 'json'
+                && typeof location?.pathname === 'string'
+                && ['/json-to-xml','/json-to-csv','/json-to-yaml','/json-to-html','/json-to-javascript','/json-to-python'].includes(location.pathname) && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-python') {
+                      try {
+                        const parsed = JSON.parse(inputCode); // Validate JSON first
+                        const pyOutput = convertJsonToPython(parsed, { varName: 'data', includePrettyPrint: false });
+                        setOutputCode(pyOutput);
+                        setIsConversionOutput(true);
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), pyOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to Python.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-python', { state: { inputJson: inputCode } });
+                    }
+                  }}
+                  className="btn btn-blue"
+                  title="Convert JSON to Python"
+                >
+                  <i className="fa-brands fa-python" aria-hidden="true"></i>
+                  <span>To Python</span>
+                </button>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -4296,6 +4357,61 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-brands fa-js text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (Python-friendly) – JSON To Python page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-python' && (
+                    <Tooltip content="Insert sample JSON (Python-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            settings: {
+                              debug: true,
+                              retries: 3,
+                              timeoutSeconds: 15,
+                            },
+                            users: [
+                              { id: 1, name: 'Alice', roles: ['admin', 'editor'], active: true },
+                              { id: 2, name: 'Bob', roles: ['viewer'], active: false }
+                            ],
+                            metadata: { region: 'us-east', version: '1.0.0' }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              settings: {
+                                debug: true,
+                                retries: 3,
+                                timeoutSeconds: 15,
+                              },
+                              users: [
+                                { id: 1, name: 'Alice', roles: ['admin', 'editor'], active: true },
+                                { id: 2, name: 'Bob', roles: ['viewer'], active: false }
+                              ],
+                              metadata: { region: 'us-east', version: '1.0.0' }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-brands fa-python text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}

@@ -300,3 +300,17 @@ export const convertJsonToJavaScript = (json: any, options?: { varName?: string;
   }
   return header;
 };
+
+// Convert JSON to Python code (no AI; pure code-based)
+export const convertJsonToPython = (json: any, options?: { varName?: string; includePrettyPrint?: boolean }): string => {
+  const varName = options?.varName && /^[A-Za-z_][A-Za-z0-9_]*$/.test(options.varName) ? options.varName : 'data';
+
+  // Reuse toPython to produce a Python literal for the JSON
+  const literal = toPython(json, 4);
+  let code = `${varName} = ${literal}`;
+
+  if (options?.includePrettyPrint) {
+    code = `import json\n\n${code}\n\nprint(json.dumps(${varName}, indent=2, sort_keys=True))`;
+  }
+  return code;
+};
