@@ -110,7 +110,7 @@ const App: React.FC = () => {
                 <GlobalNavDropdown
                   label="🔄 JSON Views"
                   items={[
-                    { label: 'JSON to TOON', to: '/json-to-toon', icon: '🎭' },
+                      { label: 'JSON to Toon', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
                     { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
