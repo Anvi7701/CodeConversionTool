@@ -3882,7 +3882,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-javascript', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-yellow"
+                  className="btn btn-blue"
                   title="Convert JSON to JavaScript"
                 >
                   <i className="fa-brands fa-js" aria-hidden="true"></i>
