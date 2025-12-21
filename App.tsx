@@ -112,7 +112,7 @@ const App: React.FC = () => {
                   items={[
                       { label: 'JSON to Toon', to: '/json-to-toon', icon: '🎭' },
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
-                    { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
+                    { label: 'JSON to Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON to Graph', to: '/json-graph-viewer', icon: '📊' },
                     { label: 'JSON to Tree', to: '/json-tree-view', icon: '🌳' }
                   ]}
@@ -124,11 +124,11 @@ const App: React.FC = () => {
                 <GlobalNavDropdown
                   label="JSON Converter"
                   items={[
-                    { label: 'JSON To XML', to: '/json-to-xml', icon: '🗎' },
-                    { label: 'JSON To JavaScript', to: '/json-to-javascript', icon: '🟨' },
-                    { label: 'JSON To HTML', to: '/json-to-html', icon: '🌐' },
-                    { label: 'JSON To CSV', to: '/json-to-csv', icon: '🧾' },
-                    { label: 'JSON To YAML', to: '/json-to-yaml', icon: '📜' }
+                    { label: 'JSON to XML', to: '/json-to-xml', icon: '🗎' },
+                    { label: 'JSON to JavaScript', to: '/json-to-javascript', icon: '🟨' },
+                    { label: 'JSON to HTML', to: '/json-to-html', icon: '🌐' },
+                    { label: 'JSON to CSV', to: '/json-to-csv', icon: '🧾' },
+                    { label: 'JSON to YAML', to: '/json-to-yaml', icon: '📜' }
                   ]}
                 />
               </span>
