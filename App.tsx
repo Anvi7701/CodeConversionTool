@@ -114,7 +114,7 @@ const App: React.FC = () => {
                     { label: 'JSON to Table', to: '/json-to-table', icon: '▦' },
                     { label: 'JSON To Python Pretty Print', to: '/json-to-python-pretty', icon: '🐍' },
                     { label: 'JSON Graph Viewer', to: '/json-graph-viewer', icon: '📊' },
-                    { label: 'JSON To Tree View', to: '/json-tree-view', icon: '🌳' }
+                    { label: 'JSON to Tree', to: '/json-tree-view', icon: '🌳' }
                   ]}
                 />
               </span>
