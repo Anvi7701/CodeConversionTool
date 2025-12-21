@@ -92,6 +92,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const isParserPage = typeof location?.pathname === 'string' && location.pathname === '/json-parser';
   const isBeautifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-beautifier';
   const isEditorPage = typeof location?.pathname === 'string' && location.pathname === '/json-editor';
+  const isFormatterPage = typeof location?.pathname === 'string' && location.pathname === '/json-formatter';
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
@@ -3819,7 +3820,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To HTML button - converts JSON to HTML or navigates to JSON To HTML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3861,7 +3862,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To JavaScript button - converts JSON to JavaScript or navigates to JSON To JavaScript page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
