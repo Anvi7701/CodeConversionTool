@@ -248,3 +248,55 @@ ${buildHtml(json)}
     // Fallback: return raw HTML immediately (no network latency)
     return rawHtml;
 };
+
+// Convert JSON to JavaScript code (no AI; pure code-based)
+export const convertJsonToJavaScript = (json: any, options?: { varName?: string; exportStyle?: 'none' | 'named' | 'default' }): string => {
+  const varName = options?.varName && /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(options.varName) ? options.varName : 'data';
+  const exportStyle = options?.exportStyle || 'none';
+
+  const isValidIdentifier = (key: string): boolean => /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key);
+
+  const escapeString = (s: string): string => s
+    .replace(/\\/g, '\\\\')
+    .replace(/\n/g, '\\n')
+    .replace(/\r/g, '\\r')
+    .replace(/\t/g, '\\t')
+    .replace(/'/g, "\\'");
+
+  const toJsLiteral = (obj: any, indent = 2): string => {
+    const indentStr = ' '.repeat(indent);
+    const outerIndent = ' '.repeat(Math.max(0, indent - 2));
+
+    if (obj === null) return 'null';
+    if (typeof obj === 'boolean') return obj ? 'true' : 'false';
+    if (typeof obj === 'string') return `'${escapeString(obj)}'`;
+    if (typeof obj === 'number') return String(obj);
+
+    if (Array.isArray(obj)) {
+      if (obj.length === 0) return '[]';
+      const items = obj.map(item => `${indentStr}${toJsLiteral(item, indent + 2)}`).join(',\n');
+      return `[\n${items}\n${outerIndent}]`;
+    }
+
+    if (typeof obj === 'object') {
+      const keys = Object.keys(obj);
+      if (keys.length === 0) return '{}';
+      const items = keys.map((key) => {
+        const k = isValidIdentifier(key) ? key : `'${escapeString(key)}'`;
+        return `${indentStr}${k}: ${toJsLiteral(obj[key], indent + 2)}`;
+      }).join(',\n');
+      return `{\n${items}\n${outerIndent}}`;
+    }
+
+    return 'undefined';
+  };
+
+  const literal = toJsLiteral(json, 2);
+  let header = `const ${varName} = ${literal};`;
+  if (exportStyle === 'named') {
+    header += `\nexport { ${varName} };`;
+  } else if (exportStyle === 'default') {
+    header += `\nexport default ${varName};`;
+  }
+  return header;
+};

@@ -30,7 +30,7 @@ import { JMESPathTransform } from './JMESPathTransform';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
-import { convertJsonToCsv, convertJsonToHtml } from '../utils/codeGenerator';
+import { convertJsonToCsv, convertJsonToHtml, convertJsonToJavaScript } from '../utils/codeGenerator';
 import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
@@ -242,6 +242,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON To JavaScript page, auto-convert to JS once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-javascript') {
+        try {
+          const parsed = JSON.parse(stateInput);
+          const jsOutput = convertJsonToJavaScript(parsed, { varName: 'data', exportStyle: 'none' });
+          setOutputCode(jsOutput);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
@@ -274,6 +285,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             setIsConversionOutput(true);
           } catch {}
         })();
+      } else if (path === '/json-to-javascript') {
+        const jsOutput = convertJsonToJavaScript(parsed, { varName: 'data', exportStyle: 'none' });
+        setOutputCode(jsOutput);
+        setIsConversionOutput(true);
       }
     } catch {
       // Ignore while user is typing invalid JSON; normal validation will handle
@@ -464,7 +479,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (!suppressOutputSyncRef.current) {
           try {
             const path = typeof location?.pathname === 'string' ? location.pathname : '';
-            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html';
+            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html' || path === '/json-to-javascript';
             // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
             if (!isDedicatedConversionPage) {
               const formatted = JSON.stringify(res.value, null, 2);
@@ -1911,7 +1926,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let mimeType = 'text/plain';
     let fileName = 'formatted';
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -1924,6 +1939,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         // HTML detection: typical HTML document markers or common tags
         ext = 'html';
         mimeType = 'text/html';
+        fileName = 'converted';
+      } else if (/^(export\s+(default|const|let|var)\s+|const\s+|let\s+|var\s+)/.test(trimmedOutput)) {
+        // JavaScript detection: variable/exports declarations
+        ext = 'js';
+        mimeType = 'application/javascript';
         fileName = 'converted';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !trimmedOutput.includes('<')) {
         // CSV detection: contains commas and doesn't look like JSON
@@ -2761,7 +2781,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let fileName = 'formatted';
     let fileDescription = `${activeLanguage.toUpperCase()} File`;
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -2770,6 +2790,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         /^<html\b/i.test(trimmedOutput) ||
         /<head\b|<body\b|<table\b|<div\b|<span\b|<p\b|<h[1-6]\b/i.test(trimmedOutput)
       );
+      const looksLikeJs = /^(export\s+(default|const|let|var)\s+|const\s+|let\s+|var\s+)/.test(trimmedOutput);
       
       if (trimmedOutput.startsWith('<?xml')) {
         ext = 'xml';
@@ -2782,6 +2803,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         mimeType = 'text/html';
         fileName = 'converted';
         fileDescription = 'HTML File';
+      } else if (looksLikeJs) {
+        ext = 'js';
+        mimeType = 'application/javascript';
+        fileName = 'converted';
+        fileDescription = 'JavaScript File';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !/[<]/.test(trimmedOutput)) {
         // CSV detection: contains commas, doesn't look like JSON or HTML
         ext = 'csv';
@@ -3831,6 +3857,39 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* To JavaScript button - converts JSON to JavaScript or navigates to JSON To JavaScript page */}
+              {activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-javascript') {
+                      try {
+                        const parsed = JSON.parse(inputCode); // Validate JSON first
+                        const jsOutput = convertJsonToJavaScript(parsed, { varName: 'data', exportStyle: 'none' });
+                        setOutputCode(jsOutput);
+                        setIsConversionOutput(true);
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), jsOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to JavaScript.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-javascript', { state: { inputJson: inputCode } });
+                    }
+                  }}
+                  className="btn btn-yellow"
+                  title="Convert JSON to JavaScript"
+                >
+                  <i className="fa-brands fa-js" aria-hidden="true"></i>
+                  <span>To JavaScript</span>
+                </button>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -4170,6 +4229,69 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (JavaScript-friendly) – JSON To JavaScript page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-javascript' && (
+                    <Tooltip content="Insert sample JSON (JavaScript-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            project: {
+                              name: 'ConverterSuite',
+                              version: '2.0.1',
+                              authors: ['Alice', 'Bob'],
+                              settings: {
+                                darkMode: true,
+                                maxItems: 100,
+                                regions: ['US', 'EU']
+                              },
+                              items: [
+                                { id: 1, title: 'Intro', published: true },
+                                { id: 2, title: 'Guide', published: false }
+                              ]
+                            }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              project: {
+                                name: 'ConverterSuite',
+                                version: '2.0.1',
+                                authors: ['Alice', 'Bob'],
+                                settings: {
+                                  darkMode: true,
+                                  maxItems: 100,
+                                  regions: ['US', 'EU']
+                                },
+                                items: [
+                                  { id: 1, title: 'Intro', published: true },
+                                  { id: 2, title: 'Guide', published: false }
+                                ]
+                              }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-brands fa-js text-white text-sm" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}

@@ -18,6 +18,7 @@ const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').th
 const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlView')); 
 const JsonToHtmlConverter = lazy(() => import('./components/JsonToHtmlView'));
+const JsonToJavaScriptConverter = lazy(() => import('./components/JsonToJavaScriptView'));
 const JsonToCsvConverter = lazy(() => import('./components/JsonToCsvView'));
 const JsonToYamlConverter = lazy(() => import('./components/JsonToYamlView'));
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
@@ -124,6 +125,7 @@ const App: React.FC = () => {
                   label="JSON Converter"
                   items={[
                     { label: 'JSON To XML', to: '/json-to-xml', icon: '🗎' },
+                    { label: 'JSON To JavaScript', to: '/json-to-javascript', icon: '🟨' },
                     { label: 'JSON To HTML', to: '/json-to-html', icon: '🌐' },
                     { label: 'JSON To CSV', to: '/json-to-csv', icon: '🧾' },
                     { label: 'JSON To YAML', to: '/json-to-yaml', icon: '📜' }
@@ -154,6 +156,7 @@ const App: React.FC = () => {
             <Route path="/json-to-java" element={<JsonToJavaConverter />} />
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
             <Route path="/json-to-html" element={<JsonToHtmlConverter />} />
+            <Route path="/json-to-javascript" element={<JsonToJavaScriptConverter />} />
             <Route path="/json-to-csv" element={<JsonToCsvConverter />} />
             <Route path="/json-to-yaml" element={<JsonToYamlConverter />} />
             <Route path="/json-to-toon" element={<JsonToToonConverter />} />
