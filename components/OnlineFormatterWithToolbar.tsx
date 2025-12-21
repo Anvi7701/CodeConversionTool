@@ -89,6 +89,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [showBeautifyDropdown, setShowBeautifyDropdown] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const isParserPage = typeof location?.pathname === 'string' && location.pathname === '/json-parser';
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
@@ -3623,7 +3624,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Tree View button - opens separate page to show JSON tree */}
-              {activeLanguage === 'json' && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3658,7 +3659,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-              {activeLanguage === 'json' && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
                   className="btn btn-cyan"
@@ -3703,7 +3704,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
-              {activeLanguage === 'json' && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3738,7 +3739,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3782,7 +3783,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To YAML button - converts JSON to YAML or navigates to JSON To YAML page */}
-              {activeLanguage === 'json' && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
