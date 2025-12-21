@@ -91,6 +91,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const location = useLocation();
   const isParserPage = typeof location?.pathname === 'string' && location.pathname === '/json-parser';
   const isBeautifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-beautifier';
+  const isEditorPage = typeof location?.pathname === 'string' && location.pathname === '/json-editor';
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
@@ -3625,7 +3626,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Tree View button - opens separate page to show JSON tree */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3660,7 +3661,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
                   className="btn btn-cyan"
@@ -3705,7 +3706,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3818,7 +3819,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To HTML button - converts JSON to HTML or navigates to JSON To HTML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3860,7 +3861,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To JavaScript button - converts JSON to JavaScript or navigates to JSON To JavaScript page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
