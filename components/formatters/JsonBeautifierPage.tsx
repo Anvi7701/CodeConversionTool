@@ -39,7 +39,9 @@ export const JsonBeautifierPage: React.FC = () => {
         <h2 className="beautifier-subheading">
           <span>Pretty print</span>, <span>minify</span>, sort keys, and <span>validate</span> JSON online.
         </h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Use the ribbon below to Beautify, Minify, view as Tree, visualize as Graph, or convert your JSON to other formats like XML and CSV.</p>
+        <p className="beautifier-helper mt-2">
+          Use the ribbon below to <span className="keyword">Beautify</span>, <span className="keyword">Minify</span>, view as <span className="keyword">Tree View</span>, visualize as <span className="keyword">Graph View</span>, or convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
+        </p>
         <div className="mt-2 text-xs flex flex-wrap gap-3">
           <a href="/json-to-xml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to XML</a>
           <a href="/json-to-csv" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to CSV</a>
