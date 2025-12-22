@@ -3717,7 +3717,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                  <span>Graph</span>
+                  <span>Graph View</span>
                 </button>
               )}
 
