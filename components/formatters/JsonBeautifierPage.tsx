@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import './JsonBeautifierPage.css';
 
 export const JsonBeautifierPage: React.FC = () => {
   return (
@@ -34,8 +35,10 @@ export const JsonBeautifierPage: React.FC = () => {
         </script>
       </Helmet>
       <div className="mb-4">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">JSON Beautifier</h1>
-        <h2 className="text-sm text-slate-700 dark:text-slate-300">Pretty print, minify, sort keys, and validate JSON online.</h2>
+        <h1 className="beautifier-heading">JSON Beautifier</h1>
+        <h2 className="beautifier-subheading">
+          <span>Pretty print</span>, <span>minify</span>, sort keys, and <span>validate</span> JSON online.
+        </h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Use the ribbon below to Beautify, Minify, view as Tree, visualize as Graph, or convert your JSON to other formats like XML and CSV.</p>
         <div className="mt-2 text-xs flex flex-wrap gap-3">
           <a href="/json-to-xml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to XML</a>
