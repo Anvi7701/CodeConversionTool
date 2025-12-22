@@ -5683,7 +5683,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
-                        {(['code', 'form', 'text', 'tree', 'table', 'view', 'toon'] as ViewFormat[]).map((format) => {
+                        {(() => {
+                          const allFormats: ViewFormat[] = ['code', 'form', 'text', 'tree', 'table', 'view', 'toon'];
+                          const formatsToRender: ViewFormat[] = isEditorPage
+                            ? (allFormats.filter(f => !(['text','table','toon','view'] as ViewFormat[]).includes(f)) as ViewFormat[])
+                            : allFormats;
+                          return formatsToRender.map((format) => {
                           const isDisabled = isStructureAnalysisMode && format !== 'view';
                           
                           // Define emoji and colors for each format
@@ -5745,7 +5750,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <span className={`${viewFormat === format ? config.color : 'text-slate-800 dark:text-slate-200'} tracking-tight`}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
                             </button>
                           );
-                        })}
+                          });
+                        })()}
                       </div>
                     )}
                   </div>
