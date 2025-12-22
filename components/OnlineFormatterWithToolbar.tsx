@@ -3896,7 +3896,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To YAML button - converts JSON to YAML or navigates to JSON To YAML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
