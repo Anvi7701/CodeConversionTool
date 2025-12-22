@@ -1,7 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
-import { CodeBracketIcon } from '../icons';
 import './JsonBeautifierPage.css';
 
 export const JsonBeautifierPage: React.FC = () => {
@@ -37,7 +36,15 @@ export const JsonBeautifierPage: React.FC = () => {
       </Helmet>
       <div className="mb-4">
         <div className="beautifier-title">
-          <CodeBracketIcon className="beautifier-title-icon" aria-hidden="true" />
+          <svg className="beautifier-title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="beautifierH1Gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stopColor="#4facfe"/>
+                <stop offset="100%" stopColor="#00f2fe"/>
+              </linearGradient>
+            </defs>
+            <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
           <h1 className="beautifier-heading">JSON Beautifier</h1>
         </div>
         <h2 className="beautifier-subheading">

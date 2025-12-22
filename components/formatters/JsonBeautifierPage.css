@@ -26,13 +26,11 @@
 }
 
 .beautifier-title-icon {
-  width: 15px;
-  height: 15px;
-  color: #06b6d4; /* cyan-500 */
+  width: 20px;
+  height: 20px;
 }
 
 .dark .beautifier-title-icon {
-  color: #22d3ee; /* cyan-400 in dark */
 }
 
 .beautifier-subheading {
