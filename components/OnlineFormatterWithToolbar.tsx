@@ -3708,7 +3708,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Tree View button - opens separate page to show JSON tree */}
-              {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3743,7 +3743,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-              {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
                   className="btn btn-cyan"
