@@ -3852,7 +3852,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
