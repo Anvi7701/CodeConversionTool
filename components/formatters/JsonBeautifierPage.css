@@ -1,7 +1,7 @@
 /* Scoped styles for JSON Beautifier page headings */
 
 .beautifier-heading {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   font-family: 'Poppins', 'Roboto', 'Montserrat', system-ui, -apple-system, Segoe UI, Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
   background: linear-gradient(90deg, #4facfe, #00f2fe);
