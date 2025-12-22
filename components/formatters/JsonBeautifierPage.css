@@ -19,11 +19,16 @@
 }
 
 .beautifier-subheading {
-  font-size: 1.2rem;
+  font-size: 1rem;
   color: #555;
   font-weight: 400;
   line-height: 1.6;
   margin: 0.25rem 0 0.5rem 0;
+}
+
+/* Ensure consistent size for highlighted parts too */
+.beautifier-subheading span {
+  font-size: 1rem;
 }
 
 /* Dark mode adjustment (Tailwind's .dark class on html) */
