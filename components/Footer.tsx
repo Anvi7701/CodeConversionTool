@@ -42,6 +42,60 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               </li>
               <li>
                 <Link 
+                  to="/json-to-xml" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-xml')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to XML
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/json-to-csv" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-csv')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to CSV
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/json-to-yaml" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-yaml')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to YAML
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/json-to-html" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-html')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to HTML
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/json-to-javascript" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-javascript')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to JavaScript
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/json-to-python" 
+                  onClick={(e) => handleLinkClick(e, '/json-to-python')}
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  Convert JSON to Python
+                </Link>
+              </li>
+              <li>
+                <Link 
                   to="/code-to-json" 
                   onClick={(e) => handleLinkClick(e, '/code-to-json')}
                   className="text-blue-600 dark:text-blue-400 hover:underline"
