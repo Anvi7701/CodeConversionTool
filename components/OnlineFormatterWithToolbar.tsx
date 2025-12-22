@@ -3594,6 +3594,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <button
                         onClick={() => {
                           if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(1);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        1 Space
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
                           handleFormat(2);
                           setShowBeautifyDropdown(false);
                         }}
@@ -3620,6 +3630,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
                       >
                         4 Spaces
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormat(5);
+                          setShowBeautifyDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                      >
+                        5 Spaces
                       </button>
                       <button
                         onClick={() => {
