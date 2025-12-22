@@ -191,8 +191,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Global UI setting: hide Output toolbar icons except Fullscreen
   // Show Output toolbar icons on Beautifier; keep hidden elsewhere
-  // Show Output toolbar icons on Beautifier and Editor pages; keep hidden elsewhere
-  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage);
+  // Show Output toolbar icons on Beautifier, Editor, and Formatter pages; keep hidden elsewhere
+  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage);
 
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
