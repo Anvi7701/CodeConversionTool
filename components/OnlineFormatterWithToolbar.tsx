@@ -189,7 +189,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [outputHighlightTrigger, setOutputHighlightTrigger] = useState<number>(0);
 
   // Global UI setting: hide Output toolbar icons except Fullscreen
-  const hideOutputToolbarIconsExceptFullscreen = true;
+  // Show Output toolbar icons on Beautifier; keep hidden elsewhere
+  const hideOutputToolbarIconsExceptFullscreen = !isBeautifierPage;
 
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
@@ -3673,7 +3674,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Tree View button - opens separate page to show JSON tree */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3708,7 +3709,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
                   className="btn btn-cyan"
@@ -3753,7 +3754,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3788,7 +3789,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
