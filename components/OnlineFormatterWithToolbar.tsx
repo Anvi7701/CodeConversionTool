@@ -5220,7 +5220,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     value={inputCode}
                     onChange={handleInputChange}
                     language={activeLanguage}
-                    placeholder={`Enter your ${activeLanguage.toUpperCase()} code here...`}
+                    placeholder={activeLanguage === 'json' 
+                      ? 'Paste or Upload JSON Code or try Sample JSON...'
+                      : `Enter your ${activeLanguage.toUpperCase()} code here...`}
                     errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
                     lineStyleMap={inputLineStyleMap}
                     highlightLine={highlightedLine ?? null}
