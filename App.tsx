@@ -17,6 +17,7 @@ const DataToClassConverter = lazy(() => import('./components/DataToClassConverte
 const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').then(m => ({ default: m.OnlineFormatter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlView')); 
 const JsonToPythonConverter = lazy(() => import('./components/JsonToPythonView')); 
+const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaView'));
 const JsonToHtmlConverter = lazy(() => import('./components/JsonToHtmlView'));
 const JsonToJavaScriptConverter = lazy(() => import('./components/JsonToJavaScriptView'));
 const JsonToCsvConverter = lazy(() => import('./components/JsonToCsvView'));
@@ -126,6 +127,7 @@ const App: React.FC = () => {
                   items={[
                     { label: 'JSON to XML', to: '/json-to-xml', icon: '🗎' },
                         { label: 'JSON to Python', to: '/json-to-python', icon: '🐍' },
+                    { label: 'JSON to Java', to: '/json-to-java', icon: '☕' },
                     { label: 'JSON to JavaScript', to: '/json-to-javascript', icon: '🟨' },
                     { label: 'JSON to HTML', to: '/json-to-html', icon: '🌐' },
                     { label: 'JSON to CSV', to: '/json-to-csv', icon: '🧾' },
@@ -154,9 +156,10 @@ const App: React.FC = () => {
             <Route path="/xml-inspector" element={<XmlInspector />} />
             <Route path="/data-to-class" element={<DataToClassConverter />} />
             <Route path="/online-formatter" element={<OnlineFormatter />} />
-            {/** Route removed: /json-to-java (page deprecated) */}
+            {/** New JSON to Java converter route */}
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
             <Route path="/json-to-python" element={<JsonToPythonConverter />} />
+            <Route path="/json-to-java" element={<JsonToJavaConverter />} />
             <Route path="/json-to-html" element={<JsonToHtmlConverter />} />
             <Route path="/json-to-javascript" element={<JsonToJavaScriptConverter />} />
             <Route path="/json-to-csv" element={<JsonToCsvConverter />} />

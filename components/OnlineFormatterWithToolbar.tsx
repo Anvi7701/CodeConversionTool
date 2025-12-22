@@ -30,6 +30,7 @@ import { JMESPathTransform } from './JMESPathTransform';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
+import { convertJsonToJavaCode } from '../utils/jsonToJavaConverter';
 import { convertJsonToCsv, convertJsonToHtml, convertJsonToJavaScript, convertJsonToPython } from '../utils/codeGenerator';
 import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
 
@@ -269,6 +270,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON To Java page, auto-convert to Java once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-to-java') {
+        try {
+          JSON.parse(stateInput);
+          const javaOutput = convertJsonToJavaCode(stateInput);
+          setOutputCode(javaOutput);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
@@ -308,6 +320,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       } else if (path === '/json-to-python') {
         const pyOutput = convertJsonToPython(parsed, { varName: 'data', includePrettyPrint: false });
         setOutputCode(pyOutput);
+        setIsConversionOutput(true);
+      } else if (path === '/json-to-java') {
+        const javaOutput = convertJsonToJavaCode(inputCode);
+        setOutputCode(javaOutput);
         setIsConversionOutput(true);
       }
     } catch {
@@ -1946,7 +1962,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let mimeType = 'text/plain';
     let fileName = 'formatted';
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python, Java)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -1969,6 +1985,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         // Python detection: variable assignment to dict/list or Python-specific literals
         ext = 'py';
         mimeType = 'text/x-python';
+        fileName = 'converted';
+      } else if (/^\s*package\s+[A-Za-z0-9_.]+\s*;/.test(trimmedOutput) || /^\s*import\s+java\./.test(trimmedOutput) || /\bpublic\s+class\b/.test(trimmedOutput) || /\bclass\b/.test(trimmedOutput)) {
+        // Java detection: package/import/class markers
+        ext = 'java';
+        mimeType = 'text/x-java-source';
         fileName = 'converted';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !trimmedOutput.includes('<')) {
         // CSV detection: contains commas and doesn't look like JSON
@@ -2806,7 +2827,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     let fileName = 'formatted';
     let fileDescription = `${activeLanguage.toUpperCase()} File`;
     
-    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python)
+    // Check if output is from conversion (XML, CSV, YAML, HTML, JavaScript, Python, Java)
     if (isConversionOutput && outputCode) {
       // Detect format from content
       const trimmedOutput = outputCode.trim();
@@ -2817,6 +2838,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       );
       const looksLikeJs = /^(export\s+(default|const|let|var)\s+|const\s+|let\s+|var\s+)/.test(trimmedOutput);
       const looksLikePy = /^\s*[A-Za-z_][A-Za-z0-9_]*\s*=\s*[{\[]/.test(trimmedOutput) || /\b(True|False|None)\b/.test(trimmedOutput) || /^\s*import\s+json/.test(trimmedOutput);
+      const looksLikeJava = /^\s*package\s+[A-Za-z0-9_.]+\s*;/.test(trimmedOutput) || /^\s*import\s+java\./.test(trimmedOutput) || /\bpublic\s+class\b/.test(trimmedOutput) || /\bclass\b/.test(trimmedOutput);
       
       if (trimmedOutput.startsWith('<?xml')) {
         ext = 'xml';
@@ -2839,6 +2861,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         mimeType = 'text/x-python';
         fileName = 'converted';
         fileDescription = 'Python File';
+      } else if (looksLikeJava) {
+        ext = 'java';
+        mimeType = 'text/x-java-source';
+        fileName = 'converted';
+        fileDescription = 'Java File';
       } else if (trimmedOutput.includes(',') && !trimmedOutput.startsWith('{') && !trimmedOutput.startsWith('[') && !/[<]/.test(trimmedOutput)) {
         // CSV detection: contains commas, doesn't look like JSON or HTML
         ext = 'csv';
@@ -3974,7 +4001,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* To Python button - only on JSON Converter pages; converts JSON to Python or navigates to JSON To Python page */}
               {activeLanguage === 'json'
                 && typeof location?.pathname === 'string'
-                && ['/json-to-xml','/json-to-csv','/json-to-yaml','/json-to-html','/json-to-javascript','/json-to-python'].includes(location.pathname) && (
+                && ['/json-to-xml','/json-to-csv','/json-to-yaml','/json-to-html','/json-to-javascript','/json-to-python','/json-to-java'].includes(location.pathname) && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4003,6 +4030,39 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 >
                   <i className="fa-brands fa-python" aria-hidden="true"></i>
                   <span>To Python</span>
+                </button>
+              )}
+
+              {/* To Java button - converts JSON to Java or navigates to JSON To Java page */}
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    if (typeof location?.pathname === 'string' && location.pathname === '/json-to-java') {
+                      try {
+                        JSON.parse(inputCode); // Validate JSON first
+                        const javaOutput = convertJsonToJavaCode(inputCode);
+                        setOutputCode(javaOutput);
+                        setIsConversionOutput(true);
+                        setOutputHistory(prev => [...prev.slice(0, outputHistoryIndex + 1), javaOutput]);
+                        setOutputHistoryIndex(prev => prev + 1);
+                      } catch (error: any) {
+                        setValidationError({ 
+                          isValid: false, 
+                          reason: error.message || 'Invalid JSON. Please fix syntax errors before converting to Java.', 
+                          isFixableSyntaxError: true, 
+                          suggestedLanguage: undefined 
+                        });
+                      }
+                    } else {
+                      navigate('/json-to-java', { state: { inputJson: inputCode } });
+                    }
+                  }}
+                  className="btn btn-blue"
+                  title="Convert JSON to Java"
+                >
+                  <i className="fa-brands fa-java" aria-hidden="true"></i>
+                  <span>To Java</span>
                 </button>
               )}
 
