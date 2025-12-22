@@ -5091,8 +5091,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                       {/* Validate moved to right side toolbar */}
 
-                  {/* GROUP 5: Compact (JSON only) */}
-                  {isJsonLanguage && !showMinifyNextToBeautify && (
+                  {/* GROUP 5: Compact (JSON only) - hidden on json-editor */}
+                  {isJsonLanguage && !showMinifyNextToBeautify && !isEditorPage && (
                     <>
                       <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
