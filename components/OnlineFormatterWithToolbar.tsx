@@ -3590,14 +3590,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                   {/* Dropdown menu */}
                   {showBeautifyDropdown && (
-                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-10 min-w-[140px]">
+                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 min-w-[150px]">
                       <button
                         onClick={() => {
                           if (isActionDisabled || !inputCode.trim()) return;
                           handleFormat(1);
                           setShowBeautifyDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                       >
                         1 Space
                       </button>
@@ -3607,7 +3607,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           handleFormat(2);
                           setShowBeautifyDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                       >
                         2 Spaces
                       </button>
@@ -3617,7 +3617,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           handleFormat(3);
                           setShowBeautifyDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                       >
                         3 Spaces
                       </button>
@@ -3627,7 +3627,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           handleFormat(4);
                           setShowBeautifyDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                       >
                         4 Spaces
                       </button>
@@ -3647,7 +3647,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           handleFormat(0);
                           setShowBeautifyDropdown(false);
                         }}
-                        className="w-full px-3 py-2 text-sm text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-900 dark:text-gray-100"
+                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                       >
                         Tab
                       </button>
