@@ -4361,6 +4361,57 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Beautifier-friendly) – JSON Beautifier page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-beautifier' && (
+                    <Tooltip content="Insert sample JSON (Beautifier-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            user: { id: 42, name: 'Jane Doe', active: true },
+                            settings: { theme: 'dark', notifications: { email: true, sms: false } },
+                            items: [
+                              { id: 1, title: 'Intro', tags: ['guide', 'docs'] },
+                              { id: 2, title: 'API', tags: ['reference'] }
+                            ],
+                            metrics: { visits: 12345, conversionRate: 0.031 }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('view');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              user: { id: 42, name: 'Jane Doe', active: true },
+                              settings: { theme: 'dark', notifications: { email: true, sms: false } },
+                              items: [
+                                { id: 1, title: 'Intro', tags: ['guide', 'docs'] },
+                                { id: 2, title: 'API', tags: ['reference'] }
+                              ],
+                              metrics: { visits: 12345, conversionRate: 0.031 }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('view');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Sample Data (Python-friendly) – JSON To Python page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-python' && (
                     <Tooltip content="Insert sample JSON (Python-friendly)">
