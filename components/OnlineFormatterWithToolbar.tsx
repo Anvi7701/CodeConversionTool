@@ -3557,7 +3557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
           <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20">
-            <div className={`flex items-center ${isBeautifierPage ? 'gap-1' : 'gap-2'} overflow-visible`}>
+            <div className="flex items-center gap-2 overflow-visible">
               {/* Format (Input JSON) - placed before Beautify */}
               {!hideFormatButtons && (
                 <div className="relative dropdown-container overflow-visible">
@@ -3566,7 +3566,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       handleFormatInputJson();
                     }}
-                    className={`btn btn-blue ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                    className="btn btn-blue"
                     title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
@@ -3583,7 +3583,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       setShowBeautifyDropdown(!showBeautifyDropdown);
                     }}
-                    className={`btn btn-purple ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                    className="btn btn-purple"
                     title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                   >
                     <i className="fa-solid fa-magic" aria-hidden="true"></i>
@@ -3666,7 +3666,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     // Preserve existing Compact behavior but label as Minify
                     handleCompact();
                   }}
-                  className={`btn btn-orange ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-orange"
                   title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
@@ -3701,7 +3701,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-tree-view', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className={`btn btn-green ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-green"
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
                   <i className="fa-solid fa-tree" aria-hidden="true"></i>
@@ -3713,7 +3713,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className={`btn btn-cyan ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-cyan"
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
@@ -3728,7 +3728,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className={`btn btn-purple ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-purple"
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
@@ -3746,7 +3746,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
                     }
                   }}
-                  className={`btn btn-pink ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-pink"
                   title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-shuffle" aria-hidden="true"></i>
@@ -3781,7 +3781,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className={`btn btn-orange ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-orange"
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3825,7 +3825,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className={`btn btn-green ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  className="btn btn-green"
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
