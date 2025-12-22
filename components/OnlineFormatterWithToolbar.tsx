@@ -3768,7 +3768,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3812,7 +3812,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To YAML button - converts JSON to YAML or navigates to JSON To YAML page */}
-              {activeLanguage === 'json' && !isParserPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
