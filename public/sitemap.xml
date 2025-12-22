@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://yoursite.com/</loc></url>
+  <url><loc>https://yoursite.com/json-beautifier</loc></url>
+  <url><loc>https://yoursite.com/json-formatter</loc></url>
+  <url><loc>https://yoursite.com/json-editor</loc></url>
+  <url><loc>https://yoursite.com/json-parser</loc></url>
+  <url><loc>https://yoursite.com/json-tree-view</loc></url>
+  <url><loc>https://yoursite.com/json-graph-view</loc></url>
+  <url><loc>https://yoursite.com/json-to-xml</loc></url>
+  <url><loc>https://yoursite.com/json-to-csv</loc></url>
+  <url><loc>https://yoursite.com/json-to-yaml</loc></url>
+  <url><loc>https://yoursite.com/json-to-html</loc></url>
+  <url><loc>https://yoursite.com/json-to-javascript</loc></url>
+  <url><loc>https://yoursite.com/json-to-python</loc></url>
+</urlset>

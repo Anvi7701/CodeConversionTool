@@ -33,6 +33,16 @@ export const JsonParserPage: React.FC = () => {
           })}
         </script>
       </Helmet>
+      <div className="mb-4">
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">JSON Parser</h1>
+        <h2 className="text-sm text-slate-700 dark:text-slate-300">Parse and validate JSON; inspect structure and keys.</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Use the parser to quickly identify issues. For conversions, try the links below.</p>
+        <div className="mt-2 text-xs flex flex-wrap gap-3">
+          <a href="/json-to-xml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to XML</a>
+          <a href="/json-to-csv" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to CSV</a>
+          <a href="/json-to-yaml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to YAML</a>
+        </div>
+      </div>
       {/* Reuse formatter functionality for now */}
       <JsonFormatterPage />
     </>
