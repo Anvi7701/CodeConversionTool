@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import { CodeBracketIcon } from '../icons';
 import './JsonBeautifierPage.css';
 
 export const JsonBeautifierPage: React.FC = () => {
@@ -35,7 +36,10 @@ export const JsonBeautifierPage: React.FC = () => {
         </script>
       </Helmet>
       <div className="mb-4">
-        <h1 className="beautifier-heading">JSON Beautifier</h1>
+        <div className="beautifier-title">
+          <CodeBracketIcon className="beautifier-title-icon" aria-hidden="true" />
+          <h1 className="beautifier-heading">JSON Beautifier</h1>
+        </div>
         <h2 className="beautifier-subheading">
           <span>Pretty print</span>, <span>minify</span>, sort keys, and <span>validate</span> JSON online.
         </h2>

@@ -18,6 +18,23 @@
   .beautifier-heading { font-size: 1.5rem; }
 }
 
+/* Title row with JSON icon */
+.beautifier-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.beautifier-title-icon {
+  width: 1.125rem; /* ~18px */
+  height: 1.125rem;
+  color: #06b6d4; /* cyan-500 */
+}
+
+.dark .beautifier-title-icon {
+  color: #22d3ee; /* cyan-400 in dark */
+}
+
 .beautifier-subheading {
   font-size: 1rem;
   color: #555;
