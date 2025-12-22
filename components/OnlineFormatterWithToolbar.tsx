@@ -3557,7 +3557,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
           <div className="flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20">
-            <div className="flex items-center gap-2 overflow-visible">
+            <div className={`flex items-center ${isBeautifierPage ? 'gap-1' : 'gap-2'} overflow-visible`}>
               {/* Format (Input JSON) - placed before Beautify */}
               {!hideFormatButtons && (
                 <div className="relative dropdown-container overflow-visible">
@@ -3570,7 +3570,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                    <span>{isBeautifierPage ? 'JSON Formatter' : 'Format'}</span>
+                    <span>Format</span>
                   </button>
                 </div>
               )}
@@ -3587,7 +3587,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                   >
                     <i className="fa-solid fa-magic" aria-hidden="true"></i>
-                    <span>{isBeautifierPage ? 'JSON Beautifier' : 'Beautify'}</span>
+                    <span>Beautify</span>
                     <span className="text-xs">▼</span>
                   </button>
                   {/* Dropdown menu */}
@@ -3670,7 +3670,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'JSON Minifier' : 'Minify'}</span>
+                  <span>Minify</span>
                 </button>
               )}
 
@@ -3705,7 +3705,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
                   <i className="fa-solid fa-tree" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'JSON Tree Viewer' : 'Tree View'}</span>
+                  <span>Tree View</span>
                 </button>
               )}
 
@@ -3717,7 +3717,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'JSON Graph Visualizer' : 'Graph'}</span>
+                  <span>Graph</span>
                 </button>
               )}
 
@@ -3732,7 +3732,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'JSON Structure Analyzer' : 'Structure Analysis'}</span>
+                  <span>Structure Analysis</span>
                 </button>
               )}
 
@@ -3750,7 +3750,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-shuffle" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'JSON Transformer' : 'Transform'}</span>
+                  <span>Transform</span>
                 </button>
               )}
 
@@ -3785,7 +3785,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'Convert JSON to XML' : 'To XML'}</span>
+                  <span>To XML</span>
                 </button>
               )}
 
@@ -3829,7 +3829,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
-                  <span>{isBeautifierPage ? 'Convert JSON to CSV' : 'To CSV'}</span>
+                  <span>To CSV</span>
                 </button>
               )}
 
