@@ -4412,6 +4412,57 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Editor-friendly) – JSON Editor page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-editor' && (
+                    <Tooltip content="Insert sample JSON (Editor-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            profile: { id: 7, name: 'John Smith', roles: ['editor', 'reviewer'], active: true },
+                            preferences: { language: 'en', theme: 'purple', shortcuts: true },
+                            documents: [
+                              { id: 'doc-101', title: 'Specs', status: 'draft', tags: ['api', 'v2'] },
+                              { id: 'doc-102', title: 'Guide', status: 'published', tags: ['howto'] }
+                            ],
+                            audit: { createdAt: '2025-12-22', updatedAt: '2025-12-22T10:00:00Z' }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('code');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              profile: { id: 7, name: 'John Smith', roles: ['editor', 'reviewer'], active: true },
+                              preferences: { language: 'en', theme: 'purple', shortcuts: true },
+                              documents: [
+                                { id: 'doc-101', title: 'Specs', status: 'draft', tags: ['api', 'v2'] },
+                                { id: 'doc-102', title: 'Guide', status: 'published', tags: ['howto'] }
+                              ],
+                              audit: { createdAt: '2025-12-22', updatedAt: '2025-12-22T10:00:00Z' }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('code');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Sample Data (Python-friendly) – JSON To Python page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-python' && (
                     <Tooltip content="Insert sample JSON (Python-friendly)">
