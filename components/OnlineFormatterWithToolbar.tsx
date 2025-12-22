@@ -3566,11 +3566,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       handleFormatInputJson();
                     }}
-                    className="btn btn-blue"
-                    title="Format Input JSON (Ctrl+L)"
+                    className={`btn btn-blue ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                    title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                    <span>Format</span>
+                    <span>{isBeautifierPage ? 'JSON Formatter' : 'Format'}</span>
                   </button>
                 </div>
               )}
@@ -3583,10 +3583,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       setShowBeautifyDropdown(!showBeautifyDropdown);
                     }}
-                    className="btn btn-purple"
+                    className={`btn btn-purple ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                    title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                   >
                     <i className="fa-solid fa-magic" aria-hidden="true"></i>
-                    <span>Beautify</span>
+                    <span>{isBeautifierPage ? 'JSON Beautifier' : 'Beautify'}</span>
                     <span className="text-xs">▼</span>
                   </button>
                   {/* Dropdown menu */}
@@ -3665,11 +3666,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     // Preserve existing Compact behavior but label as Minify
                     handleCompact();
                   }}
-                  className="btn btn-orange"
-                  title="Minify JSON (remove all whitespace)"
+                  className={`btn btn-orange ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
-                  <span>Minify</span>
+                  <span>{isBeautifierPage ? 'JSON Minifier' : 'Minify'}</span>
                 </button>
               )}
 
@@ -3700,11 +3701,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-tree-view', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-green"
-                  title="Open JSON Tree View in a separate page"
+                  className={`btn btn-green ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
                   <i className="fa-solid fa-tree" aria-hidden="true"></i>
-                  <span>Tree View</span>
+                  <span>{isBeautifierPage ? 'JSON Tree Viewer' : 'Tree View'}</span>
                 </button>
               )}
 
@@ -3712,11 +3713,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className="btn btn-cyan"
-                  title="Visualize as Graph"
+                  className={`btn btn-cyan ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
-                  <span>Graph</span>
+                  <span>{isBeautifierPage ? 'JSON Graph Visualizer' : 'Graph'}</span>
                 </button>
               )}
 
@@ -3727,11 +3728,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-purple"
-                  title="Open JSON Structure Analyzer"
+                  className={`btn btn-purple ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>
-                  <span>Structure Analysis</span>
+                  <span>{isBeautifierPage ? 'JSON Structure Analyzer' : 'Structure Analysis'}</span>
                 </button>
               )}
 
@@ -3745,11 +3746,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
                     }
                   }}
-                  className="btn btn-pink"
-                  title="Transform with JMESPath"
+                  className={`btn btn-pink ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
+                  title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-shuffle" aria-hidden="true"></i>
-                  <span>Transform</span>
+                  <span>{isBeautifierPage ? 'JSON Transformer' : 'Transform'}</span>
                 </button>
               )}
 
@@ -3780,11 +3781,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-orange"
+                  className={`btn btn-orange ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
-                  <span>To XML</span>
+                  <span>{isBeautifierPage ? 'Convert JSON to XML' : 'To XML'}</span>
                 </button>
               )}
 
@@ -3824,11 +3825,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-green"
+                  className={`btn btn-green ${isBeautifierPage ? 'text-xs px-2 py-1 gap-1 whitespace-nowrap' : ''}`}
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
-                  <span>To CSV</span>
+                  <span>{isBeautifierPage ? 'Convert JSON to CSV' : 'To CSV'}</span>
                 </button>
               )}
 
