@@ -4412,6 +4412,69 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Formatter-friendly) – JSON Formatter page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-formatter' && (
+                    <Tooltip content="Insert sample JSON (Formatter-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            config: {
+                              version: '2.1.0',
+                              features: { beautify: true, validate: true, minify: false },
+                              themes: ['light', 'dark', 'purple']
+                            },
+                            users: [
+                              { id: 11, name: 'Alice', active: true, roles: ['admin','editor'] },
+                              { id: 12, name: 'Bob', active: false, roles: ['viewer'] }
+                            ],
+                            logs: [
+                              { ts: '2025-12-22T09:30:00Z', level: 'info', msg: 'Startup complete' },
+                              { ts: '2025-12-22T09:32:10Z', level: 'warn', msg: 'Slow network' }
+                            ]
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('view');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              config: {
+                                version: '2.1.0',
+                                features: { beautify: true, validate: true, minify: false },
+                                themes: ['light', 'dark', 'purple']
+                              },
+                              users: [
+                                { id: 11, name: 'Alice', active: true, roles: ['admin','editor'] },
+                                { id: 12, name: 'Bob', active: false, roles: ['viewer'] }
+                              ],
+                              logs: [
+                                { ts: '2025-12-22T09:30:00Z', level: 'info', msg: 'Startup complete' },
+                                { ts: '2025-12-22T09:32:10Z', level: 'warn', msg: 'Slow network' }
+                              ]
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('view');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Sample Data (Editor-friendly) – JSON Editor page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-editor' && (
                     <Tooltip content="Insert sample JSON (Editor-friendly)">
