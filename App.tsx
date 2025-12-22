@@ -15,7 +15,6 @@ const JsonToPythonPrettyPrintConverter = lazy(() => import('./components/JsonToP
 const XmlInspector = lazy(() => import('./components/XmlInspector.tsx').then(m => ({ default: m.XmlInspector })));
 const DataToClassConverter = lazy(() => import('./components/DataToClassConverter.tsx').then(m => ({ default: m.DataToClassConverter })));
 const OnlineFormatter = lazy(() => import('./components/OnlineFormatter.tsx').then(m => ({ default: m.OnlineFormatter })));
-const JsonToJavaConverter = lazy(() => import('./components/JsonToJavaConverter.tsx').then(m => ({ default: m.JsonToJavaConverter })));
 const JsonToXmlConverter = lazy(() => import('./components/JsonToXmlView')); 
 const JsonToPythonConverter = lazy(() => import('./components/JsonToPythonView')); 
 const JsonToHtmlConverter = lazy(() => import('./components/JsonToHtmlView'));
@@ -155,7 +154,7 @@ const App: React.FC = () => {
             <Route path="/xml-inspector" element={<XmlInspector />} />
             <Route path="/data-to-class" element={<DataToClassConverter />} />
             <Route path="/online-formatter" element={<OnlineFormatter />} />
-            <Route path="/json-to-java" element={<JsonToJavaConverter />} />
+            {/** Route removed: /json-to-java (page deprecated) */}
             <Route path="/json-to-xml" element={<JsonToXmlConverter />} />
             <Route path="/json-to-python" element={<JsonToPythonConverter />} />
             <Route path="/json-to-html" element={<JsonToHtmlConverter />} />

@@ -31,15 +31,7 @@ export const Footer: React.FC<FooterProps> = ({ className = '' }) => {
               Convert JSON
             </h3>
             <ul className="space-y-2">
-              <li>
-                <Link 
-                  to="/json-to-java" 
-                  onClick={(e) => handleLinkClick(e, '/json-to-java')}
-                  className="text-blue-600 dark:text-blue-400 hover:underline"
-                >
-                  JSON to JAVA
-                </Link>
-              </li>
+              {/** Link removed: JSON to JAVA (page deprecated) */}
               <li>
                 <Link 
                   to="/json-to-xml" 
