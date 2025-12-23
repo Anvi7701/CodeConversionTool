@@ -5785,8 +5785,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </span>
                 </Tooltip>
                 
-                {/* View Format Dropdown - hidden on error page (invalid Input/Output JSON), when output is from conversion, or when view is locked */}
-                {!lockViewTo && !isConversionOutput && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (
+                {/* View Format Dropdown - hidden on error page or when view is locked; allow on minifier even if output is from conversion */}
+                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
