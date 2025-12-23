@@ -536,7 +536,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         if (!suppressOutputSyncRef.current) {
           try {
             const path = typeof location?.pathname === 'string' ? location.pathname : '';
-            const isDedicatedConversionPage = path === '/json-to-xml' || path === '/json-to-csv' || path === '/json-to-yaml' || path === '/json-to-html' || path === '/json-to-javascript' || path === '/json-to-python';
+            const isDedicatedConversionPage = path === '/json-to-xml'
+              || path === '/json-to-csv'
+              || path === '/json-to-yaml'
+              || path === '/json-to-html'
+              || path === '/json-to-javascript'
+              || path === '/json-to-python'
+              || path === '/json-to-java'
+              || path === '/json-minifier';
             // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
             if (!isDedicatedConversionPage) {
               const formatted = JSON.stringify(res.value, null, 2);
@@ -546,7 +553,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               // Exception: on JSON Editor page, keep 'code' as the default view
               setIsStructureAnalysisMode(false);
               if (viewFormat !== 'toon' && viewFormat !== 'table' && viewFormat !== 'tree' && viewFormat !== 'form') {
-                if (isEditorPage) {
+                if (isEditorPage || isMinifierPage) {
                   setViewFormat('code');
                 } else {
                   setViewFormat('view');
