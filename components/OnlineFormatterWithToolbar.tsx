@@ -3749,7 +3749,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-blue"
                   title="Generate Python pretty print script"
                 >
-                  <i className="fa-brands fa-python" aria-hidden="true"></i>
+                  <i className="fa-solid fa-indent" aria-hidden="true"></i>
                   <span>Pretty print</span>
                 </button>
               )}
@@ -3764,7 +3764,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-blue"
                   title="Generate Python pretty print script"
                 >
-                  <i className="fa-brands fa-python" aria-hidden="true"></i>
+                  <i className="fa-solid fa-indent" aria-hidden="true"></i>
                   <span>Pretty print</span>
                 </button>
               )}
@@ -3811,7 +3811,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-cyan"
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
-                  <GraphIcon className="toolbar-icon" />
+                  <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
                   <span>Graph View</span>
                 </button>
               )}
