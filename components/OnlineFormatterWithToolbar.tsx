@@ -3739,6 +3739,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* Pretty print button - json-beautifier page only; navigates to Python Pretty Print view */}
+              {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
+                  }}
+                  className="btn btn-blue"
+                  title="Generate Python pretty print script"
+                >
+                  <i className="fa-brands fa-python" aria-hidden="true"></i>
+                  <span>Pretty print</span>
+                </button>
+              )}
+
               {/* Pretty print button - json-formatter page only; navigates to Python Pretty Print view */}
               {isFormatterPage && activeLanguage === 'json' && (
                 <button
