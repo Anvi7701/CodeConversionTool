@@ -2,6 +2,10 @@
 body.is-fullscreen .fullscreen-hide {
   display: none !important;
 }
+/* Global page background for contrast */
+html, body {
+  background-color: #F8F9FA;
+}
 /* Shared button styles for toolbar */
 .btn {
   display: inline-flex;
@@ -213,6 +217,24 @@ body.is-fullscreen .fullscreen-hide {
 }
 .icon-btn i {
   font-size: 0.9rem;
+}
+
+/* Card panels: white background with subtle borders for contrast */
+.bg-light-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E7EB; /* slate-200 */
+}
+.dark .bg-dark-card {
+  background-color: #1F2937; /* slate-800 */
+  border: 1px solid #374151; /* slate-700 */
+}
+
+/* Reusable shadows for panel depth */
+.shadow-md {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.10);
+}
+.shadow-lg {
+  box-shadow: 0 10px 24px rgba(0,0,0,0.14);
 }
 
 /* Plain (transparent) icon variant: no gradient, no glow */
