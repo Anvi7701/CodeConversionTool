@@ -3769,6 +3769,33 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* On Formatter: Place To XML and To CSV right after Graph View */}
+              {isFormatterPage && activeLanguage === 'json' && !isParserPage && (
+                <>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-xml', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-orange"
+                    title="Convert JSON to XML"
+                  >
+                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <span>To XML</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-csv', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-green"
+                    title="Convert JSON to CSV"
+                  >
+                    <i className="fa-solid fa-table" aria-hidden="true"></i>
+                    <span>To CSV</span>
+                  </button>
+                </>
+              )}
               {/* On Beautifier: Place To XML and To CSV right after Graph View */}
               {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
                 <button
@@ -3832,7 +3859,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
-              {activeLanguage === 'json' && !isParserPage && !isEditorPage && !isBeautifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isEditorPage && !isBeautifierPage && !isFormatterPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -3867,7 +3894,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
