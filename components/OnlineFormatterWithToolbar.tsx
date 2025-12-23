@@ -2,7 +2,7 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { jsonToToon } from '../utils/jsonToToon';
 import SEO from './SEO';
-import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon } from './icons';
+import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon, TreeIcon, GraphIcon, CsvIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava, generatePythonPrettyPrintScript } from '../utils/codeGenerator';
 import { CodeEditor } from './CodeEditor';
@@ -3799,7 +3799,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-green"
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
-                  <i className="fa-solid fa-tree" aria-hidden="true"></i>
+                  <TreeIcon className="toolbar-icon" />
                   <span>Tree View</span>
                 </button>
               )}
@@ -3811,7 +3811,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-cyan"
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
-                  <i className="fa-solid fa-chart-simple" aria-hidden="true"></i>
+                  <GraphIcon className="toolbar-icon" />
                   <span>Graph View</span>
                 </button>
               )}
@@ -3827,7 +3827,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="btn btn-orange"
                     title="Convert JSON to XML"
                   >
-                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <XmlIcon className="toolbar-icon" />
                     <span>To XML</span>
                   </button>
                   <button
@@ -3838,7 +3838,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="btn btn-green"
                     title="Convert JSON to CSV"
                   >
-                    <i className="fa-solid fa-table" aria-hidden="true"></i>
+                    <CsvIcon className="toolbar-icon" />
                     <span>To CSV</span>
                   </button>
                 </>
@@ -3854,7 +3854,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="btn btn-orange"
                     title="Convert JSON to XML"
                   >
-                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <XmlIcon className="toolbar-icon" />
                     <span>To XML</span>
                   </button>
                   <button
@@ -3865,7 +3865,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="btn btn-green"
                     title="Convert JSON to CSV"
                   >
-                    <i className="fa-solid fa-table" aria-hidden="true"></i>
+                    <CsvIcon className="toolbar-icon" />
                     <span>To CSV</span>
                   </button>
                 </>
@@ -3880,7 +3880,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-orange"
                   title="Convert JSON to XML"
                 >
-                  <i className="fa-solid fa-code" aria-hidden="true"></i>
+                  <XmlIcon className="toolbar-icon" />
                   <span>To XML</span>
                 </button>
               )}
@@ -3894,7 +3894,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-green"
                   title="Convert JSON to CSV"
                 >
-                  <i className="fa-solid fa-table" aria-hidden="true"></i>
+                  <CsvIcon className="toolbar-icon" />
                   <span>To CSV</span>
                 </button>
               )}

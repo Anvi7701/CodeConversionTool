@@ -99,6 +99,10 @@ body.is-fullscreen .fullscreen-hide {
 .formatter-toolbar .btn i {
   font-size: 0.9rem;
 }
+.formatter-toolbar .btn svg {
+  width: 14px;
+  height: 14px;
+}
 .formatter-toolbar .btn span {
   white-space: nowrap;
 }
@@ -112,6 +116,10 @@ body.is-fullscreen .fullscreen-hide {
 }
 .beautifier-toolbar .btn i {
   font-size: 0.85rem;
+}
+.beautifier-toolbar .btn svg {
+  width: 14px;
+  height: 14px;
 }
 .beautifier-toolbar .btn span {
   white-space: nowrap;
