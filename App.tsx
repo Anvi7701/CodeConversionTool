@@ -25,6 +25,7 @@ const JsonToYamlConverter = lazy(() => import('./components/JsonToYamlView'));
 const JsonToToonConverter = lazy(() => import('./components/JsonToToonConverter').then(m => ({ default: m.JsonToToonConverter })));
 const JsonToTableConverter = lazy(() => import('./components/JsonToTableConverter.tsx').then(m => ({ default: m.JsonToTableConverter })));
 const JsonTransformPage = lazy(() => import('./components/JsonTransformPage').then(m => ({ default: m.JsonTransformPage })));
+const JsonMinifierPage = lazy(() => import('./components/formatters/JsonMinifierPage').then(m => ({ default: m.JsonMinifierPage })));
 
 // SEO-optimized formatter pages
 const JsonFormatterPage = lazy(() => import('./components/formatters/JsonFormatterPage.tsx').then(m => ({ default: m.JsonFormatterPage })));
@@ -100,6 +101,7 @@ const App: React.FC = () => {
                     { label: 'JSON Beautifier', to: '/json-beautifier', icon: '🎨' },
                     { label: 'JSON Editor', to: '/json-editor', icon: '✏️' },
                     { label: 'JSON Formatter', to: '/json-formatter', icon: '🧹' },
+                    { label: 'JSON Minifier', to: '/json-minifier', icon: '🗜️' },
                     { label: 'JSON Structure Analyzer', to: '/json-structure-analyzer', icon: (<i className="fa-solid fa-diagram-project" aria-hidden="true"></i>) },
                     { label: 'JSON Transform', to: '/json-transform', icon: '🛠️' },
                     { label: 'JSON Parser', to: '/json-parser', icon: '🧪' }
@@ -169,6 +171,7 @@ const App: React.FC = () => {
             
             {/* SEO-optimized formatter routes */}
             <Route path="/json-formatter" element={<JsonFormatterPage />} />
+            <Route path="/json-minifier" element={<JsonMinifierPage />} />
             <Route path="/json-beautifier" element={<JsonBeautifierPage />} />
             <Route path="/json-editor" element={<JsonEditorPage />} />
             <Route path="/json-parser" element={<JsonParserPage />} />

@@ -94,6 +94,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const isBeautifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-beautifier';
   const isEditorPage = typeof location?.pathname === 'string' && location.pathname === '/json-editor';
   const isFormatterPage = typeof location?.pathname === 'string' && location.pathname === '/json-formatter';
+  const isMinifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-minifier';
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   // Separate state for inline Sort emoji dropdown to avoid conflicts with header Sort button
   const [showInlineSortDropdown, setShowInlineSortDropdown] = useState(false);
@@ -191,8 +192,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Global UI setting: hide Output toolbar icons except Fullscreen
   // Show Output toolbar icons on Beautifier; keep hidden elsewhere
-  // Show Output toolbar icons on Beautifier, Editor, and Formatter pages; keep hidden elsewhere
-  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage);
+  // Show Output toolbar icons on Beautifier, Editor, Formatter, and Minifier pages; keep hidden elsewhere
+  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage);
 
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
@@ -282,6 +283,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           // If invalid JSON, let normal validation flows handle it later
         }
       }
+      // If coming to the dedicated JSON Minifier page, auto-minify once
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-minifier') {
+        try {
+          const parsed = JSON.parse(stateInput);
+          const compact = JSON.stringify(parsed);
+          setOutputCode(compact);
+          setIsConversionOutput(true);
+        } catch (err) {
+          // If invalid JSON, let normal validation flows handle it later
+        }
+      }
       hasInitializedFromRouteRef.current = true;
     }
   }, [location, inputCode]);
@@ -325,6 +337,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       } else if (path === '/json-to-java') {
         const javaOutput = convertJsonToJavaCode(inputCode);
         setOutputCode(javaOutput);
+        setIsConversionOutput(true);
+      } else if (path === '/json-minifier') {
+        const compact = JSON.stringify(parsed);
+        setOutputCode(compact);
         setIsConversionOutput(true);
       }
     } catch {
