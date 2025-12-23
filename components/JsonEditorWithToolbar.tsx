@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import JsonToolbar from './JsonToolbar';
 import './JsonToolbar.css';
 
@@ -8,6 +9,7 @@ import './JsonToolbar.css';
  */
 
 export const JsonEditorWithToolbar: React.FC = () => {
+  const navigate = useNavigate();
   const [jsonInput, setJsonInput] = useState('');
   const [jsonOutput, setJsonOutput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
@@ -62,13 +64,14 @@ export const JsonEditorWithToolbar: React.FC = () => {
     try {
       const parsed = JSON.parse(jsonInput);
       const minified = JSON.stringify(parsed);
-      setJsonOutput(minified);
-      addToHistory(minified);
+      // Navigate to dedicated JSON Minifier page with input JSON; page will auto-minify
+      navigate('/json-minifier', { state: { inputJson: jsonInput } });
+      // Clear local errors since input is valid
       setErrors([]);
     } catch (error) {
       setErrors(['Invalid JSON: ' + (error as Error).message]);
     }
-  }, [jsonInput]);
+  }, [jsonInput, navigate]);
 
   // Sort JSON
   const handleSort = useCallback((direction: 'asc' | 'desc', sortBy: 'keys' | 'values') => {
