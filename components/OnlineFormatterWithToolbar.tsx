@@ -2,7 +2,7 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { jsonToToon } from '../utils/jsonToToon';
 import SEO from './SEO';
-import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon, TreeIcon, GraphIcon, CsvIcon } from './icons';
+import { XmlIcon, CodeBracketIcon, UploadIcon, HtmlIcon, CssIcon, FormatIcon, JavascriptIcon, YamlIcon, TypeScriptIcon, AngularIcon, JavaIcon, GraphQLIcon, CheckIcon, LightningIcon, GraphIcon, CsvIcon } from './icons';
 import { beautifyAngular, beautifyCss, beautifyGraphql, beautifyJs, beautifyTs, beautifyYaml, formatXml } from '../utils/formatters';
 import { beautifyJava, generatePythonPrettyPrintScript } from '../utils/codeGenerator';
 import { CodeEditor } from './CodeEditor';
@@ -3799,7 +3799,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="btn btn-green"
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
-                  <TreeIcon className="toolbar-icon" />
+                  <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
                   <span>Tree View</span>
                 </button>
               )}
