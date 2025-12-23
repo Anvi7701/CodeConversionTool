@@ -36,7 +36,7 @@ export const JsonMinifierPage: React.FC = () => {
           <h1 className="beautifier-heading">JSON Minifier – Minify and Compress JSON Online</h1>
         </div>
         <h2 className="beautifier-subheading">
-          Quickly reduce JSON size, remove whitespace, and optimize your data for APIs and web apps.
+          Quickly <span>reduce</span> <span>JSON size</span>, <span>remove whitespace</span>, and <span>optimize</span> your data for <span>APIs</span> and <span>web apps</span>.
         </h2>
         <p className="beautifier-helper mt-2">
           Paste your JSON and use the ribbon to <span className="keyword">Minify</span> instantly. You can also view your data as <span className="keyword">Tree View</span> or <span className="keyword">Graph View</span> for inspection.
