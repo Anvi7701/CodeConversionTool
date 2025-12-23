@@ -290,6 +290,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           const compact = JSON.stringify(parsed);
           setOutputCode(compact);
           setIsConversionOutput(true);
+          // Ensure code view by default on minifier
+          setViewFormat('code');
         } catch (err) {
           // If invalid JSON, let normal validation flows handle it later
         }
@@ -342,6 +344,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         const compact = JSON.stringify(parsed);
         setOutputCode(compact);
         setIsConversionOutput(true);
+        // Ensure code view when auto-minifying on input change
+        setViewFormat('code');
       }
     } catch {
       // Ignore while user is typing invalid JSON; normal validation will handle
@@ -5484,7 +5488,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Output</h2>
+                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : 'Output'}</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
                 {!isConversionOutput && (
