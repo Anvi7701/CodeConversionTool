@@ -153,6 +153,15 @@ body.is-fullscreen .fullscreen-hide {
 /* Page-scoped backgrounds and typography for beautifier experiment */
 .beautifier-theme {
   background-color: #F8F9FA;
+  font-family: 'Roboto', 'Open Sans', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+.beautifier-theme pre,
+.beautifier-theme code,
+.beautifier-theme textarea,
+.beautifier-theme .cm-editor,
+.beautifier-theme .cm-content,
+.beautifier-theme .cm-line {
+  font-family: 'Fira Code', 'Source Code Pro', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 }
 .beautifier-theme .beautifier-title .beautifier-heading {
   background: linear-gradient(90deg, #4FACFE, #00F2FE);
