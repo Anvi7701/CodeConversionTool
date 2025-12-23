@@ -3712,7 +3712,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <button
                   onClick={() => {
                     if (isActionDisabled || !inputCode.trim()) return;
-                    // Preserve existing Compact behavior but label as Minify
+                    // Route to dedicated JSON Minifier page, carrying current input JSON
+                    if (!isMinifierPage) {
+                      navigate('/json-minifier', { state: { inputJson: inputCode } });
+                      return;
+                    }
+                    // If already on the minifier page, preserve local minify behavior
                     handleCompact();
                   }}
                   className="btn btn-orange"
