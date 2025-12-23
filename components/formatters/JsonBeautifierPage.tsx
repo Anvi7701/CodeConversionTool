@@ -45,10 +45,10 @@ export const JsonBeautifierPage: React.FC = () => {
             </defs>
             <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <h1 className="beautifier-heading">JSON Beautifier</h1>
+          <h1 className="beautifier-heading">JSON Beautifier – Free Online JSON Formatter and Minifier</h1>
         </div>
         <h2 className="beautifier-subheading">
-          <span>Pretty print</span>, <span>minify</span>, sort keys, and <span>validate</span> JSON online.
+          <span>Beautify</span>, <span>format</span>, and <span>minify</span> JSON online. <span>Validate</span> JSON, view as <span>Tree</span> or <span>Graph</span>, and convert to <span>XML</span> or <span>CSV</span>.
         </h2>
         <p className="beautifier-helper mt-2">
           Use the ribbon below to <span className="keyword">Beautify</span>, <span className="keyword">Minify</span>, view as <span className="keyword">Tree View</span>, visualize as <span className="keyword">Graph View</span>, or convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
