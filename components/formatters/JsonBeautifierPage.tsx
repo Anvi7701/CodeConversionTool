@@ -7,11 +7,11 @@ export const JsonBeautifierPage: React.FC = () => {
   return (
     <div className="beautifier-theme">
       <Helmet>
-        <title>Online JSON Beautifier — Pretty Print, Minify, Sort, Validate</title>
-        <meta name="description" content="Beautify JSON online: pretty print, minify, sort keys, validate syntax, and fix common JSON errors. Fast, accessible, and developer-friendly." />
+        <title>JSON Beautifier – Free Online JSON Formatter and Minifier</title>
+        <meta name="description" content="Beautify, format, and minify JSON online. Validate JSON, view as Tree or Graph, and convert to XML or CSV." />
         <link rel="canonical" href="/json-beautifier" />
-        <meta property="og:title" content="Online JSON Beautifier" />
-        <meta property="og:description" content="Pretty print and validate JSON with sorting and minify options." />
+        <meta property="og:title" content="JSON Beautifier – Free Online JSON Formatter and Minifier" />
+        <meta property="og:description" content="Beautify, format, and minify JSON online. Validate JSON, view as Tree or Graph, and convert to XML or CSV." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
