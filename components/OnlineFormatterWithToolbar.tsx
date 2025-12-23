@@ -3926,7 +3926,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4114,7 +4114,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To Java button - converts JSON to Java or navigates to JSON To Java page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
