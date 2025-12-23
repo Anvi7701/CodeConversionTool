@@ -5,7 +5,7 @@ import './JsonBeautifierPage.css';
 
 export const JsonBeautifierPage: React.FC = () => {
   return (
-    <>
+    <div className="beautifier-theme">
       <Helmet>
         <title>Online JSON Beautifier — Pretty Print, Minify, Sort, Validate</title>
         <meta name="description" content="Beautify JSON online: pretty print, minify, sort keys, validate syntax, and fix common JSON errors. Fast, accessible, and developer-friendly." />
@@ -64,6 +64,6 @@ export const JsonBeautifierPage: React.FC = () => {
         showMinifyNextToBeautify={true}
         colorTheme="purple"
       />
-    </>
+    </div>
   );
 };

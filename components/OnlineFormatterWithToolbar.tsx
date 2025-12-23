@@ -3643,7 +3643,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       setShowBeautifyDropdown(!showBeautifyDropdown);
                     }}
-                    className="btn btn-purple"
+                    className="btn btn-purple beautify-btn"
                     title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                   >
                     <i className="fa-solid fa-magic" aria-hidden="true"></i>
@@ -3906,7 +3906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-purple"
+                  className="btn btn-purple structure-btn"
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-diagram-project" aria-hidden="true"></i>

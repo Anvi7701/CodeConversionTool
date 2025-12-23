@@ -116,6 +116,65 @@ body.is-fullscreen .fullscreen-hide {
 .beautifier-toolbar .btn span {
   white-space: nowrap;
 }
+.beautifier-toolbar .btn {
+  border-radius: 8px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.beautifier-toolbar .btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+/* Beautifier ribbon: palette mapping for experiment */
+.beautifier-toolbar .btn.btn-blue {
+  background: linear-gradient(135deg, #4FACFE, #00F2FE);
+}
+.beautifier-toolbar .btn.beautify-btn {
+  background: linear-gradient(135deg, #4FACFE, #00F2FE); /* Primary Blue for Beautify */
+}
+.beautifier-toolbar .btn.structure-btn {
+  background: linear-gradient(135deg, #8E44AD, #a25abb); /* Accent Purple */
+}
+.beautifier-toolbar .btn.btn-orange {
+  background: linear-gradient(135deg, #F39C12, #f2b455);
+}
+.beautifier-toolbar .btn.btn-green {
+  background: linear-gradient(135deg, #27AE60, #2ecc71);
+}
+.beautifier-toolbar .btn.btn-pink {
+  background: linear-gradient(135deg, #E91E63, #f06292);
+}
+.beautifier-toolbar .btn.btn-cyan {
+  background: linear-gradient(135deg, #00F2FE, #4FACFE);
+}
+
+/* Page-scoped backgrounds and typography for beautifier experiment */
+.beautifier-theme {
+  background-color: #F8F9FA;
+}
+.beautifier-theme .beautifier-title .beautifier-heading {
+  background: linear-gradient(90deg, #4FACFE, #00F2FE);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  font-family: 'Poppins', 'Montserrat', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+.beautifier-theme .beautifier-subheading {
+  color: #333333;
+}
+.beautifier-theme .beautifier-subheading span {
+  color: #555555;
+}
+.beautifier-theme .bg-light-card {
+  background-color: #FFFFFF;
+  border-color: #E0E0E0;
+}
+.beautifier-theme .border {
+  border-color: #E0E0E0 !important;
+}
 
 /* Icon-only pill buttons (for toolbar icons after headings) */
 .icon-btn {
