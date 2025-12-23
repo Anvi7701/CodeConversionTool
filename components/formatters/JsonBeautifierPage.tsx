@@ -48,7 +48,7 @@ export const JsonBeautifierPage: React.FC = () => {
           <h1 className="beautifier-heading">JSON Beautifier – Free Online JSON Formatter and Minifier</h1>
         </div>
         <h2 className="beautifier-subheading">
-          <span>Beautify</span>, <span>format</span>, and <span>minify</span> JSON online. <span>Validate</span> JSON, view as <span>Tree</span> or <span>Graph</span>, and convert to <span>XML</span> or <span>CSV</span>.
+          <span className="accent-beautify">Beautify</span>, <span>format</span>, and <span className="accent-minify">minify</span> JSON online. <span>Validate</span> JSON, view as <span className="accent-tree">Tree View</span> or <span className="accent-graph">Graph View</span>, and convert to <span>XML</span> or <span>CSV</span>.
         </h2>
         <p className="beautifier-helper mt-2">
           Use the ribbon below to <span className="keyword">Beautify</span>, <span className="keyword">Minify</span>, view as <span className="keyword">Tree View</span>, visualize as <span className="keyword">Graph View</span>, or convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
