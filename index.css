@@ -103,6 +103,20 @@ body.is-fullscreen .fullscreen-hide {
   white-space: nowrap;
 }
 
+/* Slightly tighter sizing for beautifier ribbon buttons to align in one row */
+.beautifier-toolbar .btn {
+  padding: 4px 9px;
+  font-size: 0.80rem;
+  height: 32px;
+  border-radius: 0.5rem;
+}
+.beautifier-toolbar .btn i {
+  font-size: 0.85rem;
+}
+.beautifier-toolbar .btn span {
+  white-space: nowrap;
+}
+
 /* Icon-only pill buttons (for toolbar icons after headings) */
 .icon-btn {
   display: inline-flex;
