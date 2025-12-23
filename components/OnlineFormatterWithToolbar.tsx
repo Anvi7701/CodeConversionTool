@@ -4650,6 +4650,61 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
+                  {/* Sample Data (Minifier-friendly) – JSON Minifier page */}
+                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-minifier' && (
+                    <Tooltip content="Insert sample JSON (Minifier-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            product: {
+                              id: 'SKU-1001',
+                              name: 'Wireless Mouse',
+                              price: 24.99,
+                              tags: ['electronics','accessories'],
+                              inStock: true
+                            },
+                            shipping: { country: 'US', method: 'standard', etaDays: 5 },
+                            meta: { version: '1.0.0', updatedAt: '2025-12-22T12:00:00Z' }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('code');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              product: {
+                                id: 'SKU-1001',
+                                name: 'Wireless Mouse',
+                                price: 24.99,
+                                tags: ['electronics','accessories'],
+                                inStock: true
+                              },
+                              shipping: { country: 'US', method: 'standard', etaDays: 5 },
+                              meta: { version: '1.0.0', updatedAt: '2025-12-22T12:00:00Z' }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('code');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
                   {/* Sample Data (Parser-friendly) – JSON Parser page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-parser' && (
                     <Tooltip content="Insert sample JSON (Parser-friendly)">
