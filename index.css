@@ -88,6 +88,21 @@ body.is-fullscreen .fullscreen-hide {
 /* Icon sizing consistency */
 .btn i { font-size: 0.95rem; }
 
+/* Compact, consistent sizing for formatter ribbon buttons */
+.formatter-toolbar .btn {
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  height: 34px;
+  border-radius: 0.5rem;
+  /* Keep widths flexible but ensure visual consistency */
+}
+.formatter-toolbar .btn i {
+  font-size: 0.9rem;
+}
+.formatter-toolbar .btn span {
+  white-space: nowrap;
+}
+
 /* Icon-only pill buttons (for toolbar icons after headings) */
 .icon-btn {
   display: inline-flex;
