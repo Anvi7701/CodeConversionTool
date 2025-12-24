@@ -7,11 +7,12 @@ export const JsonEditorPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Online JSON Editor — Edit, Validate, Format, Highlight Errors</title>
-        <meta name="description" content="Edit JSON online: validate syntax, auto-format, highlight errors, and fix common issues. Keyboard-friendly and fast." />
+        <title>JSON Editor | Free Online Tool to Edit and Modify JSON</title>
+        <meta name="description" content="Edit JSON online with our free JSON Editor. Modify keys, values, and structure easily with syntax highlighting, validation, and error detection." />
+        <meta name="keywords" content="json editor online, edit json data, modify json structure, json editor tool, json editor with validation, json editor with syntax highlighting" />
         <link rel="canonical" href="/json-editor" />
-        <meta property="og:title" content="Online JSON Editor" />
-        <meta property="og:description" content="Edit and validate JSON with auto-format and error highlighting." />
+        <meta property="og:title" content="JSON Editor | Free Online Tool to Edit and Modify JSON" />
+        <meta property="og:description" content="Edit JSON online with our free JSON Editor. Modify keys, values, and structure easily with syntax highlighting, validation, and error detection." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
@@ -19,7 +20,8 @@ export const JsonEditorPage: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'Online JSON Editor',
-            description: 'Edit JSON online with validation, auto-format and error highlighting.',
+            description: 'Edit JSON online with our free JSON Editor. Modify keys, values, and structure easily with syntax highlighting, validation, and error detection.',
+            keywords: 'json editor online, edit json data, modify json structure, json editor tool, json editor with validation, json editor with syntax highlighting',
             url: 'https://example.com/json-editor',
           })}
         </script>
@@ -28,6 +30,8 @@ export const JsonEditorPage: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'JSON Editor',
+            description: 'Edit JSON online with our free JSON Editor. Modify keys, values, and structure easily with syntax highlighting, validation, and error detection.',
+            keywords: 'json editor online, edit json data, modify json structure, json editor tool, json editor with validation, json editor with syntax highlighting',
             applicationCategory: 'DeveloperTool',
             operatingSystem: 'Web',
             offers: { '@type': 'Offer', price: '0' },
@@ -45,10 +49,10 @@ export const JsonEditorPage: React.FC = () => {
             </defs>
             <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <h1 className="beautifier-heading">JSON Editor</h1>
+          <h1 className="beautifier-heading">JSON Editor – Edit and Modify JSON Online</h1>
         </div>
         <h2 className="beautifier-subheading">
-          <span>Edit</span>, <span>validate</span>, and <span>format</span> JSON online with error highlighting.
+          Edit JSON data directly in your browser. Add, remove, or update keys and values with syntax highlighting and error detection.
         </h2>
         <p className="beautifier-helper mt-2">
           Use the ribbon below to <span className="keyword">Beautify</span>, view as <span className="keyword">Tree View</span>, or visualize as <span className="keyword">Graph View</span>.
