@@ -132,7 +132,10 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;       /* wrap buttons inside the group if needed */
+  row-gap: 6px;          /* vertical spacing for wrapped rows */
   margin-right: 8px;
+  max-width: 100%;       /* avoid horizontal overflow */
 }
 
 /* New: lighter purple variant for Beautify with dark text */
@@ -211,6 +214,15 @@ html, body {
 .beautifier-toolbar .btn:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+/* Allow Beautifier ribbon to wrap groups to next line and avoid overflow */
+.beautifier-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start; /* override justify-between */
+  column-gap: 8px; /* space between groups horizontally */
+  row-gap: 8px;    /* space between wrapped rows */
 }
 
 /* Beautifier ribbon: palette mapping for experiment */
