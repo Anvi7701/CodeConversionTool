@@ -1,6 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
+import './JsonBeautifierPage.css';
 
 export const JsonParserPage: React.FC = () => {
   return (
@@ -38,14 +39,22 @@ export const JsonParserPage: React.FC = () => {
         </script>
       </Helmet>
       <div className="mb-4">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">JSON Parser – Parse and Extract JSON Data Online</h1>
-        <h2 className="text-sm text-slate-700 dark:text-slate-300">Parse JSON and extract values easily. Perfect for developers working with APIs and large JSON files.</h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Use the parser to quickly identify issues. For conversions, try the links below.</p>
-        <div className="mt-2 text-xs flex flex-wrap gap-3">
-          <a href="/json-to-xml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to XML</a>
-          <a href="/json-to-csv" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to CSV</a>
-          <a href="/json-to-yaml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to YAML</a>
+        <div className="beautifier-title">
+          <svg className="beautifier-title-icon" xmlns="http://www.w3.org/200/svg" viewBox="0 0 24 24" aria-hidden="true">
+            <defs>
+              <linearGradient id="beautifierH1Gradient" x1="0%" y1="50%" x2="100%" y2="50%">
+                <stop offset="0%" stopColor="#4facfe"/>
+                <stop offset="100%" stopColor="#00f2fe"/>
+              </linearGradient>
+            </defs>
+            <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <h1 className="beautifier-heading">JSON Parser – Parse and Extract JSON Data Online</h1>
         </div>
+        <h2 className="beautifier-subheading">Parse JSON and extract values easily. Perfect for developers working with APIs and large JSON files.</h2>
+        <p className="beautifier-helper mt-2">
+          Use the ribbon below to <span className="keyword">Validate</span>, <span className="keyword">Beautify</span>, view as <span className="keyword">Tree View</span> or <span className="keyword">Graph View</span>, and convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
+        </p>
       </div>
       {/* Use shared formatter/editor without extra page wrapper to avoid duplicate headings */}
       <OnlineFormatterWithToolbar
