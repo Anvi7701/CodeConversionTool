@@ -61,6 +61,8 @@ html, body {
   background-image: linear-gradient(90deg, #38bdf8, #0ea5e9, #3b82f6);
 }
 .btn-blue-sky:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(14,165,233,0.35); }
+/* For lighter sky background, ensure text is dark gray for readability */
+.btn-blue-sky, .btn-blue-sky span, .btn-blue-sky i { color: #333; }
 
 .btn-blue-indigo {
   background-image: linear-gradient(90deg, #4338ca, #4f46e5, #6366f1);
