@@ -124,6 +124,17 @@ html, body {
   color: #007bff;
 }
 
+/* Ribbon grouping panels (Beautifier-only usage) */
+.ribbon-group {
+  background-color: #f3f4f6; /* light gray */
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 8px;
+}
+
 /* New: lighter purple variant for Beautify with dark text */
 .btn-purple-light {
   background-image: linear-gradient(90deg, #efe6ff, #dbc4ff, #c6a6ff);

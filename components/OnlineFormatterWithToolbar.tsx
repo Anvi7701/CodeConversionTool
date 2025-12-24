@@ -3618,140 +3618,202 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {isJsonLanguage && (
           <div className={`flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
             <div className="flex items-center gap-2 overflow-visible">
-              {/* Format (Input JSON) - placed before Beautify */}
-              {!hideFormatButtons && (
-                <div className="relative dropdown-container overflow-visible">
-                  <button
-                    onClick={() => {
-                      if (isActionDisabled || !inputCode.trim()) return;
-                      handleFormatInputJson();
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
-                  >
-                    <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                    <span>Format</span>
-                  </button>
-                </div>
-              )}
-
-              {/* Beautify button with dropdown */}
-              {!hideFormatButtons && (
-                <div className="relative dropdown-container overflow-visible">
-                  <button
-                    onClick={() => {
-                      if (isActionDisabled || !inputCode.trim()) return;
-                      setShowBeautifyDropdown(!showBeautifyDropdown);
-                    }}
-                    className="btn btn-purple-light beautify-btn"
-                    title={isBeautifierPage ? 'JSON Beautifier' : undefined}
-                  >
-                    <i className="fa-solid fa-magic" aria-hidden="true"></i>
-                    <span>Beautify</span>
-                    <span className="text-xs">▼</span>
-                  </button>
-                  {/* Dropdown menu */}
-                  {showBeautifyDropdown && (
-                    <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 w-[120px] min-w-[120px]">
+              {isBeautifierPage ? (
+                <div className="ribbon-group">
+                  {/* Format (Input JSON) - placed before Beautify */}
+                  {!hideFormatButtons && (
+                    <div className="relative dropdown-container overflow-visible">
                       <button
                         onClick={() => {
                           if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(1);
-                          setShowBeautifyDropdown(false);
+                          handleFormatInputJson();
                         }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                        className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                        title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                       >
-                        1 Space
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(2);
-                          setShowBeautifyDropdown(false);
-                        }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                      >
-                        2 Spaces
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(3);
-                          setShowBeautifyDropdown(false);
-                        }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                      >
-                        3 Spaces
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(4);
-                          setShowBeautifyDropdown(false);
-                        }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                      >
-                        4 Spaces
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(5);
-                          setShowBeautifyDropdown(false);
-                        }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                      >
-                        5 Spaces
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormat(0);
-                          setShowBeautifyDropdown(false);
-                        }}
-                        className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
-                      >
-                        Tab
+                        <i className="fa-solid fa-align-left" aria-hidden="true"></i>
+                        <span>Format</span>
                       </button>
                     </div>
                   )}
+
+                  {/* Beautify button with dropdown */}
+                  {!hideFormatButtons && (
+                    <div className="relative dropdown-container overflow-visible">
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          setShowBeautifyDropdown(!showBeautifyDropdown);
+                        }}
+                        className="btn btn-purple-light beautify-btn"
+                        title={isBeautifierPage ? 'JSON Beautifier' : undefined}
+                      >
+                        <i className="fa-solid fa-magic" aria-hidden="true"></i>
+                        <span>Beautify</span>
+                        <span className="text-xs">▼</span>
+                      </button>
+                      {/* Dropdown menu */}
+                      {showBeautifyDropdown && (
+                        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 w-[120px] min-w-[120px]">
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(1);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            1 Space
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(2);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            2 Spaces
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(3);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            3 Spaces
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(4);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            4 Spaces
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(5);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            5 Spaces
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (isActionDisabled || !inputCode.trim()) return;
+                              handleFormat(0);
+                              setShowBeautifyDropdown(false);
+                            }}
+                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                          >
+                            Tab
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Minify button (Beautifier page only) */}
+                  {showMinifyNextToBeautify && !hideFormatButtons && (
+                    <button
+                      onClick={() => {
+                        if (isActionDisabled || !inputCode.trim()) return;
+                        if (!isMinifierPage) {
+                          navigate('/json-minifier', { state: { inputJson: inputCode } });
+                          return;
+                        }
+                        handleCompact();
+                      }}
+                      className="btn btn-blue-ice"
+                      title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
+                    >
+                      <i className="fa-solid fa-compress" aria-hidden="true"></i>
+                      <span>Minify</span>
+                    </button>
+                  )}
+
+                  {/* Pretty print button - json-beautifier page only */}
+                  {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
+                      }}
+                      className="btn btn-blue-ice"
+                      title="Generate Python pretty print script"
+                    >
+                      <i className="fa-solid fa-indent" aria-hidden="true"></i>
+                      <span>Pretty print</span>
+                    </button>
+                  )}
                 </div>
-              )}
-
-              {/* Minify button (Beautifier page only) */}
-              {showMinifyNextToBeautify && !hideFormatButtons && (
-                <button
-                  onClick={() => {
-                    if (isActionDisabled || !inputCode.trim()) return;
-                    // Route to dedicated JSON Minifier page, carrying current input JSON
-                    if (!isMinifierPage) {
-                      navigate('/json-minifier', { state: { inputJson: inputCode } });
-                      return;
-                    }
-                    // If already on the minifier page, preserve local minify behavior
-                    handleCompact();
-                  }}
-                  className="btn btn-blue-ice"
-                  title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
-                >
-                  <i className="fa-solid fa-compress" aria-hidden="true"></i>
-                  <span>Minify</span>
-                </button>
-              )}
-
-              {/* Pretty print button - json-beautifier page only; navigates to Python Pretty Print view */}
-              {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
-                  }}
-                  className="btn btn-blue-ice"
-                  title="Generate Python pretty print script"
-                >
-                  <i className="fa-solid fa-indent" aria-hidden="true"></i>
-                  <span>Pretty print</span>
-                </button>
+              ) : (
+                <>
+                  {/* Format (Input JSON) - placed before Beautify */}
+                  {!hideFormatButtons && (
+                    <div className="relative dropdown-container overflow-visible">
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          handleFormatInputJson();
+                        }}
+                        className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                        title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
+                      >
+                        <i className="fa-solid fa-align-left" aria-hidden="true"></i>
+                        <span>Format</span>
+                      </button>
+                    </div>
+                  )}
+                  {/* Beautify button with dropdown */}
+                  {!hideFormatButtons && (
+                    <div className="relative dropdown-container overflow-visible">
+                      <button
+                        onClick={() => {
+                          if (isActionDisabled || !inputCode.trim()) return;
+                          setShowBeautifyDropdown(!showBeautifyDropdown);
+                        }}
+                        className="btn btn-purple-light beautify-btn"
+                        title={isBeautifierPage ? 'JSON Beautifier' : undefined}
+                      >
+                        <i className="fa-solid fa-magic" aria-hidden="true"></i>
+                        <span>Beautify</span>
+                        <span className="text-xs">▼</span>
+                      </button>
+                      {showBeautifyDropdown && (
+                        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 w-[120px] min-w-[120px]">
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(1); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">1 Space</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(2); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">2 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(3); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">3 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(4); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">4 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(5); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">5 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(0); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">Tab</button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Minify button (Beautifier page only) */}
+                  {showMinifyNextToBeautify && !hideFormatButtons && (
+                    <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-ice" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
+                      <i className="fa-solid fa-compress" aria-hidden="true"></i>
+                      <span>Minify</span>
+                    </button>
+                  )}
+                  {/* Pretty print button - json-beautifier page only */}
+                  {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python-pretty', { state: { inputJson: inputCode } }); }} className="btn btn-blue-ice" title="Generate Python pretty print script">
+                      <i className="fa-solid fa-indent" aria-hidden="true"></i>
+                      <span>Pretty print</span>
+                    </button>
+                  )}
+                </>
               )}
 
               {/* Pretty print button - json-formatter page only; navigates to Python Pretty Print view */}
@@ -3769,51 +3831,98 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-              {/* Tree View button - opens separate page to show JSON tree */}
-              {activeLanguage === 'json' && !isParserPage && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    if (lockViewTo === 'tree') {
-                      try {
-                        const obj = JSON.parse(inputCode.trim());
-                        const formatted = JSON.stringify(obj, null, 2);
-                        setOutputCode(formatted);
-                        setIsConversionOutput(false);
-                        setIsStructureAnalysisMode(false);
-                        setViewFormat('tree');
-                        setExpandAllTrigger(true);
-                        setTimeout(() => setExpandAllTrigger(false), 120);
-                      } catch (err: any) {
-                        setValidationError({
-                          isValid: false,
-                          reason: `Invalid JSON. Please fix syntax errors before switching to Tree View. Details: ${err?.message || ''}`,
-                          isFixableSyntaxError: true,
-                          suggestedLanguage: undefined
-                        });
-                      }
-                    } else {
-                      navigate('/json-tree-view', { state: { inputJson: inputCode } });
-                    }
-                  }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                  title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
-                >
-                  <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
-                  <span>Tree View</span>
-                </button>
-              )}
-
-              {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-              {activeLanguage === 'json' && !isParserPage && (
-                <button
-                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                  title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
-                >
-                  <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
-                  <span>Graph View</span>
-                </button>
+              {isBeautifierPage ? (
+                <div className="ribbon-group">
+                  {/* Tree View button - opens separate page to show JSON tree */}
+                  {activeLanguage === 'json' && !isParserPage && (
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        if (lockViewTo === 'tree') {
+                          try {
+                            const obj = JSON.parse(inputCode.trim());
+                            const formatted = JSON.stringify(obj, null, 2);
+                            setOutputCode(formatted);
+                            setIsConversionOutput(false);
+                            setIsStructureAnalysisMode(false);
+                            setViewFormat('tree');
+                            setExpandAllTrigger(true);
+                            setTimeout(() => setExpandAllTrigger(false), 120);
+                          } catch (err: any) {
+                            setValidationError({
+                              isValid: false,
+                              reason: `Invalid JSON. Please fix syntax errors before switching to Tree View. Details: ${err?.message || ''}`,
+                              isFixableSyntaxError: true,
+                              suggestedLanguage: undefined
+                            });
+                          }
+                        } else {
+                          navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                        }
+                      }}
+                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
+                    >
+                      <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
+                      <span>Tree View</span>
+                    </button>
+                  )}
+                  {/* Graph button - opens in-page Graph Viewer (same workflow) */}
+                  {activeLanguage === 'json' && !isParserPage && (
+                    <button
+                      onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
+                    >
+                      <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                      <span>Graph View</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {/* Tree View button - opens separate page to show JSON tree */}
+                  {activeLanguage === 'json' && !isParserPage && (
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        if (lockViewTo === 'tree') {
+                          try {
+                            const obj = JSON.parse(inputCode.trim());
+                            const formatted = JSON.stringify(obj, null, 2);
+                            setOutputCode(formatted);
+                            setIsConversionOutput(false);
+                            setIsStructureAnalysisMode(false);
+                            setViewFormat('tree');
+                            setExpandAllTrigger(true);
+                            setTimeout(() => setExpandAllTrigger(false), 120);
+                          } catch (err: any) {
+                            setValidationError({
+                              isValid: false,
+                              reason: `Invalid JSON. Please fix syntax errors before switching to Tree View. Details: ${err?.message || ''}`,
+                              isFixableSyntaxError: true,
+                              suggestedLanguage: undefined
+                            });
+                          }
+                        } else {
+                          navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                        }
+                      }}
+                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
+                    >
+                      <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
+                      <span>Tree View</span>
+                    </button>
+                  )}
+                  {/* Graph button - opens in-page Graph Viewer (same workflow) */}
+                  {activeLanguage === 'json' && !isParserPage && (
+                    <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}>
+                      <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                      <span>Graph View</span>
+                    </button>
+                  )}
+                </>
               )}
 
               {/* On Formatter: Place To XML and To CSV right after Graph View */}
@@ -3871,65 +3980,70 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </>
               )}
               {/* On Beautifier: Place To XML and To CSV right after Graph View */}
-              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    navigate('/json-to-xml', { state: { inputJson: inputCode } });
-                  }}
-                  className={"btn btn-blue-ice"}
-                  title="Convert JSON to XML"
-                >
-                  <i className="fa-solid fa-code" aria-hidden="true"></i>
-                  <span>To XML</span>
-                </button>
+              {isBeautifierPage ? (
+                <div className="ribbon-group">
+                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-ice"} title="Convert JSON to XML">
+                      <i className="fa-solid fa-code" aria-hidden="true"></i>
+                      <span>To XML</span>
+                    </button>
+                  )}
+                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-ice"} title="Convert JSON to CSV">
+                      <i className="fa-solid fa-table" aria-hidden="true"></i>
+                      <span>To CSV</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-ice"} title="Convert JSON to XML">
+                      <i className="fa-solid fa-code" aria-hidden="true"></i>
+                      <span>To XML</span>
+                    </button>
+                  )}
+                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-ice"} title="Convert JSON to CSV">
+                      <i className="fa-solid fa-table" aria-hidden="true"></i>
+                      <span>To CSV</span>
+                    </button>
+                  )}
+                </>
               )}
 
-              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    navigate('/json-to-csv', { state: { inputJson: inputCode } });
-                  }}
-                  className={"btn btn-blue-ice"}
-                  title="Convert JSON to CSV"
-                >
-                  <i className="fa-solid fa-table" aria-hidden="true"></i>
-                  <span>To CSV</span>
-                </button>
-              )}
-
-              {/* Structure Analysis button - opens dedicated analyzer page */}
-              {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
-                  }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-sky'} structure-btn`}
-                  title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
-                >
-                  <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
-                  <span>Structure Analysis</span>
-                </button>
-              )}
-
-              {/* Transform button - opens JMESPath Transform modal (same workflow) */}
-              {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    try { JSON.parse(inputCode); setShowJMESPathModal(true); }
-                    catch {
-                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                  title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
-                >
-                  <i className="fa-solid fa-right-left" aria-hidden="true"></i>
-                  <span>Transform</span>
-                </button>
+              {isBeautifierPage ? (
+                <div className="ribbon-group">
+                  {/* Structure Analysis button - opens dedicated analyzer page */}
+                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}>
+                      <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
+                      <span>Structure Analysis</span>
+                    </button>
+                  )}
+                  {/* Transform button - opens JMESPath Transform modal (same workflow) */}
+                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                    <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
+                      <i className="fa-solid fa-right-left" aria-hidden="true"></i>
+                      <span>Transform</span>
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <>
+                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}>
+                      <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
+                      <span>Structure Analysis</span>
+                    </button>
+                  )}
+                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                    <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
+                      <i className="fa-solid fa-right-left" aria-hidden="true"></i>
+                      <span>Transform</span>
+                    </button>
+                  )}
+                </>
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
