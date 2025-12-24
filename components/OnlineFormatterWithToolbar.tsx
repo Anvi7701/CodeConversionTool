@@ -3731,7 +3731,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     // If already on the minifier page, preserve local minify behavior
                     handleCompact();
                   }}
-                  className="btn btn-orange"
+                  className="btn btn-purple"
                   title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
