@@ -8,7 +8,7 @@ export const JsonFormatterPage: React.FC = () => {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": "Free Online JSON Formatter & Validator",
-    "description": "Format, validate, beautify and minify JSON data online. Free JSON formatter tool with syntax highlighting, error detection, and one-click beautification.",
+    "description": "Format JSON online for better readability and structure. Validate JSON and copy formatted output instantly.",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Any",
     "offers": {
@@ -33,9 +33,9 @@ export const JsonFormatterPage: React.FC = () => {
   return (
     <>
       <SEO
-        title="Free Online JSON Formatter & Validator - Beautify, Validate & Minify JSON"
-        description="Format and validate JSON online instantly. Free JSON beautifier, validator, and minifier with syntax highlighting, error detection, graph view, and auto-correction. Perfect for developers to beautify, minify, sort, and validate JSON data quickly."
-        keywords="json formatter, json beautifier, json validator, json minifier, format json online, beautify json, validate json, json syntax checker, json pretty print, json parser, json editor, online json formatter, free json tool, json viewer, json graph, json syntax highlighting, json error checker, json repair, json sorting, minify json"
+        title="JSON Formatter | Free Online JSON Formatting Tool"
+        description="Format JSON online for better readability and structure. Validate JSON and copy formatted output instantly."
+        keywords="format JSON online, JSON formatter tool, JSON formatting free"
         canonical="https://yoursite.com/json-formatter"
         ogUrl="https://yoursite.com/json-formatter"
         ogType="website"
@@ -52,10 +52,10 @@ export const JsonFormatterPage: React.FC = () => {
             </defs>
             <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <h1 className="beautifier-heading">JSON Formatter</h1>
+          <h1 className="beautifier-heading">JSON Formatter – Format JSON Online for Readability</h1>
         </div>
         <h2 className="beautifier-subheading">
-          <span>Pretty print</span>, <span>minify</span>, sort keys, and <span>validate</span> JSON online.
+          Format JSON data with proper structure and indentation. Validate and copy formatted JSON easily.
         </h2>
         <p className="beautifier-helper mt-2">
           Use the ribbon below to <span className="keyword">Beautify</span>, <span className="keyword">Minify</span>, view as <span className="keyword">Tree View</span>, visualize as <span className="keyword">Graph View</span>, or convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.

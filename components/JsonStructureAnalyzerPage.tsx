@@ -336,15 +336,26 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
     }, 100);
   };
 
+  // Structured Data (JSON-LD) aligned to requested SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON Structure Analyzer",
+    "description": "Analyze JSON structure online. View keys, nested objects, and hierarchy for better understanding.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  };
+
   return (
     <>
       <SEO
-        title="JSON Structure Analyzer - Analyze JSON Schema & Statistics | Deep JSON Insights"
-        description="Analyze JSON structure, depth, complexity, and statistics instantly. Free online JSON structure analyzer to get detailed insights about JSON schema, data types distribution, array analysis, object hierarchy, and complexity metrics. Perfect for developers to understand JSON architecture and optimize data structures."
-        keywords="json structure analyzer, json statistics, json depth analysis, json complexity report, json schema analysis, json data types, json hierarchy analyzer, analyze json structure, json architecture tool, json metrics, json profiler, json inspection tool, json structure report, json schema validator, json complexity checker, json object analyzer, json array analysis, json nested structure"
+        title="JSON Structure Analyzer | Free Online JSON Analysis Tool"
+        description="Analyze JSON structure online. View keys, nested objects, and hierarchy for better understanding."
+        keywords="analyze JSON structure, JSON hierarchy viewer, JSON analysis tool"
         canonical="https://yourdomain.com/json-structure-analyzer"
-        ogImage="https://yourdomain.com/images/json-structure-analyzer.jpg"
         ogUrl="https://yourdomain.com/json-structure-analyzer"
+        structuredData={structuredData}
       />
 
       <div className="max-w-7xl mx-auto">
@@ -352,11 +363,11 @@ export const JsonStructureAnalyzerPage: React.FC = () => {
         <div className="mb-6">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
             <i className="fa-solid fa-diagram-project text-lg" aria-hidden="true"></i>
-            JSON Structure Analyzer
+            JSON Structure Analyzer – Analyze JSON Hierarchy and Keys
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Analyze your JSON structure to get detailed statistics, depth analysis, type distribution, and complexity metrics.
-          </p>
+          <h2 className="text-sm text-slate-600 dark:text-slate-300">
+            Explore JSON structure, keys, and nested objects visually. Perfect for debugging and data analysis.
+          </h2>
         </div>
 
         {/* Input Section */}

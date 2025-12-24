@@ -6,11 +6,12 @@ export const JsonParserPage: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Online JSON Parser — Parse, Validate, Inspect Structure</title>
-        <meta name="description" content="Parse JSON online: validate syntax, inspect structure, and visualize keys with fast error reporting." />
+        <title>JSON Parser | Free Online JSON Parsing Tool</title>
+        <meta name="description" content="Parse JSON online and extract data quickly. Validate and format JSON for easy integration." />
+        <meta name="keywords" content="parse JSON online, JSON parser tool, extract JSON data" />
         <link rel="canonical" href="/json-parser" />
-        <meta property="og:title" content="Online JSON Parser" />
-        <meta property="og:description" content="Parse and validate JSON with structure inspection and fast feedback." />
+        <meta property="og:title" content="JSON Parser | Free Online JSON Parsing Tool" />
+        <meta property="og:description" content="Parse JSON online and extract data quickly. Validate and format JSON for easy integration." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
@@ -18,7 +19,8 @@ export const JsonParserPage: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'Online JSON Parser',
-            description: 'Parse and validate JSON with structure inspection and fast feedback.',
+            description: 'Parse JSON online and extract data quickly. Validate and format JSON for easy integration.',
+            keywords: 'parse JSON online, JSON parser tool, extract JSON data',
             url: 'https://example.com/json-parser',
           })}
         </script>
@@ -27,6 +29,8 @@ export const JsonParserPage: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'SoftwareApplication',
             name: 'JSON Parser',
+            description: 'Parse JSON online and extract data quickly. Validate and format JSON for easy integration.',
+            keywords: 'parse JSON online, JSON parser tool, extract JSON data',
             applicationCategory: 'DeveloperTool',
             operatingSystem: 'Web',
             offers: { '@type': 'Offer', price: '0' },
@@ -34,8 +38,8 @@ export const JsonParserPage: React.FC = () => {
         </script>
       </Helmet>
       <div className="mb-4">
-        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">JSON Parser</h1>
-        <h2 className="text-sm text-slate-700 dark:text-slate-300">Parse and validate JSON; inspect structure and keys.</h2>
+        <h1 className="text-xl font-semibold text-slate-900 dark:text-slate-100">JSON Parser – Parse and Extract JSON Data Online</h1>
+        <h2 className="text-sm text-slate-700 dark:text-slate-300">Parse JSON and extract values easily. Perfect for developers working with APIs and large JSON files.</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">Use the parser to quickly identify issues. For conversions, try the links below.</p>
         <div className="mt-2 text-xs flex flex-wrap gap-3">
           <a href="/json-to-xml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to XML</a>

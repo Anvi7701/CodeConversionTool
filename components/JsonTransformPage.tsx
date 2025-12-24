@@ -137,26 +137,37 @@ export const JsonTransformPage: React.FC = () => {
     }
   };
 
+  // Structured Data (JSON-LD) for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "JSON Transform",
+    "description": "Transform JSON online into XML, CSV, or YAML. Apply custom transformations and export data easily.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+  };
+
   return (
     <>
       <SEO
-        title="JSON Transform with JMESPath | AI JSON Tools"
-        description="Transform JSON using JMESPath queries. Filter, project, sort, and reshape JSON interactively with previews. SEO-friendly JSON transform tool."
-        keywords="json transform, jmespath, json filter, json project, json reshape, json query, json tool"
+        title="JSON Transform | Free Online JSON Conversion Tool"
+        description="Transform JSON online into XML, CSV, or YAML. Apply custom transformations and export data easily."
+        keywords="transform JSON online, convert JSON to XML, JSON to CSV tool"
         canonical="https://yourdomain.com/json-transform"
-        ogImage="https://yourdomain.com/images/json-transform.jpg"
         ogUrl="https://yourdomain.com/json-transform"
+        structuredData={structuredData}
       />
 
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <h1 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
             <span className="text-lg">🛠️</span>
-            JSON Transform (JMESPath)
+            JSON Transform – Convert and Transform JSON Data Online
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-300">
-            Write JMESPath queries to filter, project, and reshape your JSON. Paste JSON below and open the interactive transformer.
-          </p>
+          <h2 className="text-sm text-slate-600 dark:text-slate-300">
+            Transform JSON into different formats or apply custom rules. Convert JSON to XML, CSV, or YAML easily.
+          </h2>
         </div>
 
         {/* Input Section */}

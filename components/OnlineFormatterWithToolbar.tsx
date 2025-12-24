@@ -6055,66 +6055,133 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
               {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
                 <div className={`right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
-                  <Tooltip content="Download file">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={outputCode?.trim() ? handleDownload : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleDownload(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Download"
-                    >
-                      <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Clear output">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={handleClearOutput}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Clear Output"
-                    >
-                      <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Save to file">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={outputCode?.trim() ? handleSave : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleSave(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Save"
-                    >
-                      <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={handleCopyOutput}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Copy"
-                    >
-                      <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Print">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={outputCode?.trim() ? handlePrint : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handlePrint(); } }}
-                      className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                      aria-label="Print"
-                    >
-                      <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
+                  {isBeautifierPage ? (
+                    <>
+                      <Tooltip content="Download file">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handleDownload : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleDownload(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Download"
+                        >
+                          <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Save to file">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handleSave : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleSave(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Save"
+                        >
+                          <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={handleCopyOutput}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Copy"
+                        >
+                          <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Clear output">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={handleClearOutput}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Clear Output"
+                        >
+                          <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Print">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handlePrint : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handlePrint(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Print"
+                        >
+                          <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                    </>
+                  ) : (
+                    <>
+                      <Tooltip content="Download file">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handleDownload : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleDownload(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Download"
+                        >
+                          <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Clear output">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={handleClearOutput}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClearOutput(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Clear Output"
+                        >
+                          <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Save to file">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handleSave : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleSave(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Save"
+                        >
+                          <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={handleCopyOutput}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Copy"
+                        >
+                          <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Print">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={outputCode?.trim() ? handlePrint : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handlePrint(); } }}
+                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                          aria-label="Print"
+                        >
+                          <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                    </>
+                  )}
                 </div>
               )}
               <div className="flex-grow relative bg-white dark:bg-slate-900/50 min-h-0">

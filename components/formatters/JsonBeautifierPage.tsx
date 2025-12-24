@@ -7,11 +7,12 @@ export const JsonBeautifierPage: React.FC = () => {
   return (
     <div className="beautifier-theme">
       <Helmet>
-        <title>JSON Beautifier – Free Online JSON Formatter and Minifier</title>
-        <meta name="description" content="Beautify, format, and minify JSON online. Validate JSON, view as Tree or Graph, and convert to XML or CSV." />
+        <title>JSON Beautifier | Free Online Tool to Beautify and Format JSON</title>
+        <meta name="description" content="Beautify JSON online with proper indentation and syntax highlighting. Upload or paste JSON and get a clean, readable format instantly." />
+        <meta name="keywords" content="beautify JSON online, JSON beautifier tool, pretty print JSON, format JSON online" />
         <link rel="canonical" href="/json-beautifier" />
-        <meta property="og:title" content="JSON Beautifier – Free Online JSON Formatter and Minifier" />
-        <meta property="og:description" content="Beautify, format, and minify JSON online. Validate JSON, view as Tree or Graph, and convert to XML or CSV." />
+        <meta property="og:title" content="JSON Beautifier | Free Online Tool to Beautify and Format JSON" />
+        <meta property="og:description" content="Beautify JSON online with proper indentation and syntax highlighting. Upload or paste JSON and get a clean, readable format instantly." />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <script type="application/ld+json">
@@ -19,7 +20,7 @@ export const JsonBeautifierPage: React.FC = () => {
             '@context': 'https://schema.org',
             '@type': 'WebPage',
             name: 'Online JSON Beautifier',
-            description: 'Beautify JSON online: pretty print, minify, sort keys, validate syntax.',
+            description: 'Beautify JSON online with proper indentation and syntax highlighting. Upload or paste JSON and get a clean, readable format instantly.',
             url: 'https://example.com/json-beautifier',
           })}
         </script>
@@ -30,6 +31,7 @@ export const JsonBeautifierPage: React.FC = () => {
             name: 'JSON Beautifier',
             applicationCategory: 'DeveloperTool',
             operatingSystem: 'Web',
+            description: 'Beautify JSON online with proper indentation and syntax highlighting. Upload or paste JSON and get a clean, readable format instantly.',
             offers: { '@type': 'Offer', price: '0' },
           })}
         </script>
@@ -45,10 +47,10 @@ export const JsonBeautifierPage: React.FC = () => {
             </defs>
             <path d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" fill="none" stroke="url(#beautifierH1Gradient)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-          <h1 className="beautifier-heading">JSON Beautifier – Free Online JSON Formatter and Minifier</h1>
+          <h1 className="beautifier-heading">JSON Beautifier – Beautify and Format JSON Online</h1>
         </div>
         <h2 className="beautifier-subheading">
-          <span className="accent-beautify">Beautify</span>, <span>format</span>, and <span className="accent-minify">minify</span> JSON online. <span>Validate</span> JSON, view as <span className="accent-tree">Tree View</span> or <span className="accent-graph">Graph View</span>, and convert to <span>XML</span> or <span>CSV</span>.
+          <span className="accent-beautify">Pretty print</span> JSON with proper indentation and colors. Upload, paste, or edit JSON easily.
         </h2>
         <p className="beautifier-helper mt-2">
           Use the ribbon below to <span className="keyword">Beautify</span>, <span className="keyword">Minify</span>, view as <span className="keyword">Tree View</span>, visualize as <span className="keyword">Graph View</span>, or convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
