@@ -128,14 +128,12 @@ html, body {
 .ribbon-group {
   background-color: #f3f4f6; /* light gray */
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 4px 6px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;       /* wrap buttons inside the group if needed */
-  row-gap: 6px;          /* vertical spacing for wrapped rows */
-  margin-right: 8px;
-  max-width: 100%;       /* avoid horizontal overflow */
+  gap: 4px;
+  margin-right: 6px;
+  margin-bottom: 6px;
 }
 
 /* New: lighter purple variant for Beautify with dark text */
@@ -190,9 +188,9 @@ html, body {
 
 /* Slightly tighter sizing for beautifier ribbon buttons to align in one row */
 .beautifier-toolbar .btn {
-  padding: 5px 11px;
-  font-size: 0.86rem;
-  height: 36px;
+  padding: 4px 10px;
+  font-size: 0.82rem;
+  height: 34px;
   border-radius: 0.5rem;
 }
 .beautifier-toolbar .btn i {
@@ -216,13 +214,9 @@ html, body {
   box-shadow: 0 6px 10px rgba(0,0,0,0.15);
 }
 
-/* Allow Beautifier ribbon to wrap groups to next line and avoid overflow */
+/* Allow the Beautifier ribbon container to wrap groups on smaller widths */
 .beautifier-toolbar {
-  display: flex;
   flex-wrap: wrap;
-  justify-content: flex-start; /* override justify-between */
-  column-gap: 8px; /* space between groups horizontally */
-  row-gap: 8px;    /* space between wrapped rows */
 }
 
 /* Beautifier ribbon: palette mapping for experiment */
