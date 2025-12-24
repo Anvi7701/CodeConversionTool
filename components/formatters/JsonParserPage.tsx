@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import { JsonFormatterPage } from './JsonFormatterPage';
+import { OnlineFormatterWithToolbar } from '../OnlineFormatterWithToolbar';
 
 export const JsonParserPage: React.FC = () => {
   return (
@@ -47,8 +47,15 @@ export const JsonParserPage: React.FC = () => {
           <a href="/json-to-yaml" className="text-blue-600 dark:text-blue-400 hover:underline">Convert JSON to YAML</a>
         </div>
       </div>
-      {/* Reuse formatter functionality for now */}
-      <JsonFormatterPage />
+      {/* Use shared formatter/editor without extra page wrapper to avoid duplicate headings */}
+      <OnlineFormatterWithToolbar
+        initialLanguage="json"
+        showLeftInputActions={true}
+        inlineStructureAnalysisIcon={false}
+        inlineSortValidateIcons={false}
+        showMinifyNextToBeautify={true}
+        colorTheme="purple"
+      />
     </>
   );
 };
