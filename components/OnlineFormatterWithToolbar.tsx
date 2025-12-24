@@ -3796,7 +3796,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-tree-view', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-green"
+                  className="btn btn-blue-azure"
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
                   <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
@@ -3808,7 +3808,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className="btn btn-cyan"
+                  className="btn btn-blue-sky"
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
@@ -3824,7 +3824,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-orange"
+                    className="btn btn-blue-indigo"
                     title="Convert JSON to XML"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3835,7 +3835,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-green"
+                    className="btn btn-blue-royal"
                     title="Convert JSON to CSV"
                   >
                     <i className="fa-solid fa-table" aria-hidden="true"></i>
@@ -3851,7 +3851,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-orange"
+                    className="btn btn-blue-indigo"
                     title="Convert JSON to XML"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3862,7 +3862,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-green"
+                    className="btn btn-blue-royal"
                     title="Convert JSON to CSV"
                   >
                     <i className="fa-solid fa-table" aria-hidden="true"></i>
@@ -3877,7 +3877,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-xml', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-orange"
+                  className="btn btn-blue-indigo"
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3891,7 +3891,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-csv', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-green"
+                  className="btn btn-blue-royal"
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
@@ -3959,7 +3959,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-orange"
+                  className="btn btn-blue-indigo"
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -4003,7 +4003,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-green"
+                  className="btn btn-blue-royal"
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
