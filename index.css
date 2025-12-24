@@ -178,8 +178,8 @@ html, body {
 .beautifier-toolbar .btn.beautify-btn {
   background: linear-gradient(135deg, #4FACFE, #00F2FE); /* Primary Blue for Beautify */
 }
-.beautifier-toolbar .btn.structure-btn {
-  background: linear-gradient(135deg, #8E44AD, #a25abb); /* Accent Purple */
+.beautifier-toolbar .btn.structure-btn:not(.btn-blue):not(.btn-blue-azure):not(.btn-blue-sky):not(.btn-blue-indigo):not(.btn-blue-royal):not(.btn-blue-sapphire):not(.btn-blue-ocean) {
+  background-image: linear-gradient(135deg, #8E44AD, #a25abb); /* Default purple only when no explicit blue class */
 }
 .beautifier-toolbar .btn.btn-orange {
   background: linear-gradient(135deg, #F39C12, #f2b455);
