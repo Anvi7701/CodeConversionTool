@@ -57,14 +57,14 @@ export const JsonBeautifierPage: React.FC = () => {
         </p>
         {/* Converter links moved to Footer under "Convert JSON" */}
       </div>
-      {/* Restore full toolbar layout with outside-gutter rails and purple theme */}
+      {/* Restore full toolbar layout with outside-gutter rails and use blue theme */}
       <OnlineFormatterWithToolbar
         initialLanguage="json"
         showLeftInputActions={true}
         inlineStructureAnalysisIcon={false}
         inlineSortValidateIcons={false}
         showMinifyNextToBeautify={true}
-        colorTheme="purple"
+        colorTheme="default"
       />
     </div>
   );

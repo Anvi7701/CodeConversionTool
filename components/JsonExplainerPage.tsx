@@ -4,12 +4,14 @@ import { Explanation, Selection, GraphData } from '../types';
 import { convertJsonToGraphData } from '../utils/graphUtils';
 import { generateSingleExplanation, generateSummary } from '../services/geminiService';
 import SEO from './SEO';
-import { ThemeToggle, Theme } from './ThemeToggle';
+import { ThemeToggle } from './ThemeToggle';
+import { useTheme } from './ThemeContext';
 
 type ViewMode = 'tree' | 'graph';
 type ExplanationTab = 'details' | 'summary';
 
 export const JsonExplainerPage: React.FC = () => {
+  const { theme, setTheme } = useTheme();
   const [jsonData, setJsonData] = useState<object | null>(null);
   const [graphData, setGraphData] = useState<GraphData | null>(null);
   const [explanations, setExplanations] = useState<Map<string, Explanation>>(new Map());
@@ -21,7 +23,6 @@ export const JsonExplainerPage: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewMode>('tree');
   const [activeExplanationTab, setActiveExplanationTab] = useState<ExplanationTab>('details');
   const [collapsedNodes, setCollapsedNodes] = useState<Set<string>>(new Set());
-  const [theme, setTheme] = useState<Theme>('light');
 
   const handleJsonUpload = useCallback((data: object, name: string) => {
     setJsonData(data);

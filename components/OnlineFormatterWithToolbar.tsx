@@ -3524,8 +3524,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Theme-based styling
   const isPurpleTheme = colorTheme === 'purple';
-  const iconButtonClass = 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-purple-600 dark:border-purple-500 flex items-center justify-center';
-  const iconTextClass = 'text-purple-800 dark:text-purple-500 text-sm';
+  // On JSON Beautifier page, switch rail icons to blue; elsewhere retain purple styling
+  const iconButtonClass = isBeautifierPage
+    ? 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-blue-600 dark:border-blue-500 flex items-center justify-center'
+    : 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-purple-600 dark:border-purple-500 flex items-center justify-center';
+  const iconTextClass = isBeautifierPage
+    ? 'text-blue-700 dark:text-blue-400 text-sm'
+    : 'text-purple-800 dark:text-purple-500 text-sm';
   
   return (
     <>
@@ -3645,7 +3650,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           if (isActionDisabled || !inputCode.trim()) return;
                           setShowBeautifyDropdown(!showBeautifyDropdown);
                         }}
-                        className="btn btn-purple-light beautify-btn"
+                        className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-purple-light'} beautify-btn`}
                         title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                       >
                         <i className="fa-solid fa-magic" aria-hidden="true"></i>
@@ -3654,14 +3659,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                       {/* Dropdown menu */}
                       {showBeautifyDropdown && (
-                        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 w-[120px] min-w-[120px]">
+                        <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
                           <button
                             onClick={() => {
                               if (isActionDisabled || !inputCode.trim()) return;
                               handleFormat(1);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             1 Space
                           </button>
@@ -3671,7 +3676,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               handleFormat(2);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             2 Spaces
                           </button>
@@ -3681,7 +3686,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               handleFormat(3);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             3 Spaces
                           </button>
@@ -3691,7 +3696,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               handleFormat(4);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             4 Spaces
                           </button>
@@ -3701,7 +3706,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               handleFormat(5);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             5 Spaces
                           </button>
@@ -3711,7 +3716,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               handleFormat(0);
                               setShowBeautifyDropdown(false);
                             }}
-                            className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"
+                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
                           >
                             Tab
                           </button>
@@ -3780,7 +3785,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           if (isActionDisabled || !inputCode.trim()) return;
                           setShowBeautifyDropdown(!showBeautifyDropdown);
                         }}
-                        className="btn btn-purple-light beautify-btn"
+                        className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-purple-light'} beautify-btn`}
                         title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                       >
                         <i className="fa-solid fa-magic" aria-hidden="true"></i>
@@ -3788,13 +3793,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <span className="text-xs">▼</span>
                       </button>
                       {showBeautifyDropdown && (
-                        <div className="absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg shadow-lg z-10 w-[120px] min-w-[120px]">
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(1); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">1 Space</button>
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(2); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">2 Spaces</button>
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(3); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">3 Spaces</button>
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(4); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">4 Spaces</button>
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(5); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">5 Spaces</button>
-                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(0); setShowBeautifyDropdown(false); }} className="w-full px-2.5 py-1.5 text-xs text-left rounded-md text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30">Tab</button>
+                        <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(1); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>1 Space</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(2); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>2 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(3); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>3 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(4); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>4 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(5); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>5 Spaces</button>
+                          <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(0); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>Tab</button>
                         </div>
                       )}
                     </div>
@@ -4427,7 +4432,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             setViewFormat('toon');
                           }
                         }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ice cursor-pointer`}
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
@@ -5365,7 +5370,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={inputCode.trim() ? handleToggleSearch : undefined}
                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : (showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'))}`}
                         aria-label="Search"
                       >
                         <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
@@ -5460,20 +5465,20 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             {/* Search Panel - shown when search is active */}
             {showSearchPanel && isJsonLanguage && (
-              <div className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-md mb-2">
-                <i className="fa-solid fa-search text-purple-600 dark:text-purple-400 text-sm ml-1" aria-hidden="true"></i>
+              <div className={`flex items-center gap-2 p-2 rounded-md mb-2 border ${isBeautifierPage ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700' : 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700'}`}>
+                <i className={`fa-solid fa-search text-sm ml-1 ${isBeautifierPage ? 'text-blue-600 dark:text-blue-400' : 'text-purple-600 dark:text-purple-400'}`} aria-hidden="true"></i>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => handleSearch(e.target.value)}
                   placeholder="Search in Input JSON..."
-                  className="flex-grow px-3 py-1.5 text-sm border border-purple-300 dark:border-purple-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
+                  className={`flex-grow px-3 py-1.5 text-sm rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 ${isBeautifierPage ? 'border border-blue-300 dark:border-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400' : 'border border-purple-300 dark:border-purple-600 focus:ring-purple-500 dark:focus:ring-purple-400'}`}
                   autoFocus
                 />
                 {searchQuery && (
                   <button
                     onClick={() => handleSearch('')}
-                    className="px-2 py-1 text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40 rounded transition-colors"
+                    className={`px-2 py-1 text-sm rounded transition-colors ${isBeautifierPage ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-800/40' : 'text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-800/40'}`}
                     aria-label="Clear search"
                     title="Clear search"
                   >
@@ -5527,7 +5532,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => fileInputRef.current?.click()}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                            className="w-8 h-8 rounded-md transition-all flex items-center justify-center hover:bg-green-700 dark:hover:bg-green-600 cursor-pointer bg-green-600 dark:bg-green-600"
+                            className="w-8 h-8 rounded-md transition-all flex items-center justify-center icon-blue-ice cursor-pointer"
                             aria-label="Upload File"
                           >
                             <i className="fa-solid fa-upload text-white text-sm" aria-hidden="true"></i>
@@ -6557,7 +6562,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               <button
                                                 type="button"
                                                 onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                                className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                                className={`shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 text-xs ${isBeautifierPage ? 'border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'}`}
                                                 aria-label={`Go to line ${line}`}
                                               >
                                                 <span>🎯</span>
@@ -6593,7 +6598,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               <button
                                                 type="button"
                                                 onClick={() => { setHighlightedLine(line); setHighlightedType('comment'); setHighlightPulse(true); setTimeout(()=> setHighlightPulse(false), 600); }}
-                                                className="shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 text-xs hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                                                className={`shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 text-xs ${isBeautifierPage ? 'border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'}`}
                                                 aria-label={`Go to line ${line}`}
                                               >
                                                 <span>🎯</span>
@@ -6603,15 +6608,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                           </div>
                                         );
                                       })}
-                                      <p className="mt-2 text-[11px] text-purple-700 dark:text-purple-300">Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.</p>
+                                      <p className={`mt-2 text-[11px] ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300' : 'text-purple-700 dark:text-purple-300'}`}>Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.</p>
                                     </div>
                                   </details>
                                 )}
 
                                 {/* Contextual tip */}
                                 {formatterMode === 'fast' && complexCount > 0 && (
-                                  <div className="p-3 bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 rounded-lg">
-                                    <p className="text-xs text-purple-800 dark:text-purple-200">
+                                  <div className={`p-3 bg-white dark:bg-slate-900 rounded-lg border ${isBeautifierPage ? 'border-blue-300 dark:border-blue-700' : 'border-purple-300 dark:border-purple-700'}`}>
+                                    <p className={`text-xs ${isBeautifierPage ? 'text-blue-800 dark:text-blue-200' : 'text-purple-800 dark:text-purple-200'}`}>
                                       Complex issues detected. Auto Fix will remove comments and simple issues; for remaining structural problems, switch to Smart (AI).
                                     </p>
                                   </div>
@@ -6796,7 +6801,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       // Force re-render by toggling collapsed state
                       setGraphCollapsedNodes(new Set(graphCollapsedNodes));
                     }}
-                    className="px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-700 flex items-center gap-2"
+                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 border ${isBeautifierPage ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-700' : 'text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 border-purple-200 dark:border-purple-700'}`}
                     title="Reset view and center graph"
                   >
                     <span>🎯</span>

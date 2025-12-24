@@ -71,6 +71,13 @@ html, body {
 .btn-blue-ice:hover { filter: brightness(0.97); box-shadow: 0 8px 24px rgba(110,169,250,0.35); }
 .btn-blue-ice, .btn-blue-ice span, .btn-blue-ice i { color: #333; }
 
+/* Icon variant of blue-ice for small rail/tool icons */
+.icon-blue-ice {
+  background-image: linear-gradient(90deg, #dbeafe, #a7c7fd, #6ea9fa);
+  color: #ffffff;
+}
+.icon-blue-ice:hover { filter: brightness(0.97); box-shadow: 0 6px 18px rgba(110,169,250,0.28); }
+
 .btn-blue-indigo {
   background-image: linear-gradient(90deg, #4338ca, #4f46e5, #6366f1);
 }
