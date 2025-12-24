@@ -3626,7 +3626,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       handleFormatInputJson();
                     }}
-                    className="btn btn-blue-azure"
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
@@ -3731,7 +3731,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     // If already on the minifier page, preserve local minify behavior
                     handleCompact();
                   }}
-                  className="btn btn-blue-sky"
+                  className="btn btn-blue-ice"
                   title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
@@ -3808,7 +3808,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {activeLanguage === 'json' && !isParserPage && (
                 <button
                   onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className="btn btn-blue-azure"
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                   title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                 >
                   <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
@@ -3877,7 +3877,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-xml', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-blue-azure"
+                  className={"btn btn-blue-ice"}
                   title="Convert JSON to XML"
                 >
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3891,7 +3891,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-csv', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-blue-azure"
+                  className={"btn btn-blue-ice"}
                   title="Convert JSON to CSV"
                 >
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
@@ -3906,7 +3906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className={`btn btn-blue-sky structure-btn`}
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-sky'} structure-btn`}
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
@@ -3924,7 +3924,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
                     }
                   }}
-                  className={`btn btn-blue-azure`}
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                   title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>
