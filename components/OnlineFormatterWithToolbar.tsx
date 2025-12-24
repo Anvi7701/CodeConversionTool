@@ -3796,7 +3796,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       navigate('/json-tree-view', { state: { inputJson: inputCode } });
                     }
                   }}
-                  className="btn btn-blue-azure"
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                   title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                 >
                   <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
