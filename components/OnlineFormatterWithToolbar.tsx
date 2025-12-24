@@ -3626,7 +3626,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       handleFormatInputJson();
                     }}
-                    className="btn btn-blue"
+                    className="btn btn-blue-azure"
                     title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
@@ -3643,7 +3643,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (isActionDisabled || !inputCode.trim()) return;
                       setShowBeautifyDropdown(!showBeautifyDropdown);
                     }}
-                    className="btn btn-purple beautify-btn"
+                    className="btn btn-purple-light beautify-btn"
                     title={isBeautifierPage ? 'JSON Beautifier' : undefined}
                   >
                     <i className="fa-solid fa-magic" aria-hidden="true"></i>
@@ -3731,7 +3731,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     // If already on the minifier page, preserve local minify behavior
                     handleCompact();
                   }}
-                  className="btn btn-blue"
+                  className="btn btn-blue-sky"
                   title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
                 >
                   <i className="fa-solid fa-compress" aria-hidden="true"></i>
@@ -3746,7 +3746,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-blue"
+                  className="btn btn-blue-ice"
                   title="Generate Python pretty print script"
                 >
                   <i className="fa-solid fa-indent" aria-hidden="true"></i>
@@ -3761,7 +3761,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-blue"
+                  className="btn btn-blue-ice"
                   title="Generate Python pretty print script"
                 >
                   <i className="fa-solid fa-indent" aria-hidden="true"></i>
@@ -3906,7 +3906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ocean' : 'btn-pink'} structure-btn`}
+                  className={`btn btn-blue-sky structure-btn`}
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
@@ -3924,7 +3924,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
                     }
                   }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ocean' : 'btn-pink'}`}
+                  className={`btn btn-blue-azure`}
                   title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>

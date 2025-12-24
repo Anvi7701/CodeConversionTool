@@ -64,6 +64,13 @@ html, body {
 /* For lighter sky background, ensure text is dark gray for readability */
 .btn-blue-sky, .btn-blue-sky span, .btn-blue-sky i { color: #333; }
 
+/* New: extra-light blue for variation (for Pretty Print) */
+.btn-blue-ice {
+  background-image: linear-gradient(90deg, #dbeafe, #a7c7fd, #6ea9fa);
+}
+.btn-blue-ice:hover { filter: brightness(0.97); box-shadow: 0 8px 24px rgba(110,169,250,0.35); }
+.btn-blue-ice, .btn-blue-ice span, .btn-blue-ice i { color: #333; }
+
 .btn-blue-indigo {
   background-image: linear-gradient(90deg, #4338ca, #4f46e5, #6366f1);
 }
@@ -116,6 +123,13 @@ html, body {
   background: #e6f4ff;
   color: #007bff;
 }
+
+/* New: lighter purple variant for Beautify with dark text */
+.btn-purple-light {
+  background-image: linear-gradient(90deg, #efe6ff, #dbc4ff, #c6a6ff);
+}
+.btn-purple-light:hover { filter: brightness(0.97); box-shadow: 0 8px 24px rgba(198,166,255,0.35); }
+.btn-purple-light, .btn-purple-light span, .btn-purple-light i { color: #333; }
 
 .btn-red {
   background-image: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
@@ -195,7 +209,7 @@ html, body {
 .beautifier-toolbar .btn.beautify-btn {
   background: linear-gradient(135deg, #4FACFE, #00F2FE); /* Primary Blue for Beautify */
 }
-.beautifier-toolbar .btn.structure-btn:not(.btn-blue):not(.btn-blue-azure):not(.btn-blue-sky):not(.btn-blue-indigo):not(.btn-blue-royal):not(.btn-blue-sapphire):not(.btn-blue-ocean) {
+.beautifier-toolbar .btn.structure-btn:not(.btn-blue):not(.btn-blue-azure):not(.btn-blue-sky):not(.btn-blue-ice):not(.btn-blue-indigo):not(.btn-blue-royal):not(.btn-blue-sapphire):not(.btn-blue-ocean) {
   background-image: linear-gradient(135deg, #8E44AD, #a25abb); /* Default purple only when no explicit blue class */
 }
 .beautifier-toolbar .btn.btn-orange {
