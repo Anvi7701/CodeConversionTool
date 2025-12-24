@@ -3906,7 +3906,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     if (!inputCode.trim()) return;
                     navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                   }}
-                  className="btn btn-purple structure-btn"
+                  className={`btn ${isBeautifierPage ? 'btn-blue-sapphire' : 'btn-purple'} structure-btn`}
                   title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}
                 >
                   <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
@@ -3924,7 +3924,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
                     }
                   }}
-                  className="btn btn-pink"
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ocean' : 'btn-pink'}`}
                   title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}
                 >
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>

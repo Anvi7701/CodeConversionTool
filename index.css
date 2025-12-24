@@ -64,6 +64,17 @@ html, body {
 }
 .btn-blue-royal:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(29,78,216,0.35); }
 
+/* Additional unique blues for Structure/Transform on Beautifier */
+.btn-blue-sapphire {
+  background-image: linear-gradient(90deg, #1e40af, #274ec8, #3a66e5);
+}
+.btn-blue-sapphire:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(39,78,200,0.35); }
+
+.btn-blue-ocean {
+  background-image: linear-gradient(90deg, #0ea5e9, #0284c7, #0369a1);
+}
+.btn-blue-ocean:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(2,132,199,0.35); }
+
 .btn-purple {
   background-image: linear-gradient(90deg, #7c3aed, #9333ea, #a855f7);
 }
