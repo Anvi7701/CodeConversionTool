@@ -10,13 +10,15 @@ html, body {
 .btn {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   padding: 6px 12px;
   border-radius: 0.375rem;
   color: #fff;
   cursor: pointer;
   text-decoration: none;
-  font-size: 0.875rem; /* text-sm */
+  font-family: 'Roboto', system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 600; /* Semi-bold for visibility */
+  font-size: 14px; /* 14–15px range as requested */
   user-select: none;
 }
 .btn:disabled {
@@ -25,12 +27,16 @@ html, body {
 
 /* Removed square variant per user request; keep rounded `.icon-btn` */
 }
-.btn:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.btn:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.12); filter: brightness(0.98) saturate(1.05); }
 .btn:active { transform: scale(0.98); }
 .btn:focus {
   outline: none;
   box-shadow: 0 0 0 2px rgba(59,130,246,0.5); /* blue focus ring */
 }
+
+/* Icon + text alignment and sizing */
+.btn i { margin-right: 6px; font-size: 16px; }
+.btn svg { margin-right: 6px; width: 16px; height: 16px; }
 
 /* Size variants */
 .btn-xs { padding: 4px 10px; font-size: 0.8rem; }
@@ -41,64 +47,73 @@ html, body {
 .btn-blue {
   background-image: linear-gradient(90deg, #2563eb, #1d4ed8, #3b82f6);
 }
-.btn-blue:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
+.btn-blue:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(37,99,235,0.35); }
 
 /* Additional blue shades for action buttons */
 .btn-blue-azure {
   background-image: linear-gradient(90deg, #93c5fd, #60a5fa, #3b82f6);
 }
-.btn-blue-azure:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
+.btn-blue-azure:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
+/* For lighter backgrounds, ensure text is dark gray for readability */
+.btn-blue-azure, .btn-blue-azure span, .btn-blue-azure i { color: #333; }
 
 .btn-blue-sky {
   background-image: linear-gradient(90deg, #38bdf8, #0ea5e9, #3b82f6);
 }
-.btn-blue-sky:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(14,165,233,0.35); }
+.btn-blue-sky:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(14,165,233,0.35); }
 
 .btn-blue-indigo {
   background-image: linear-gradient(90deg, #4338ca, #4f46e5, #6366f1);
 }
-.btn-blue-indigo:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(79,70,229,0.35); }
+.btn-blue-indigo:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(79,70,229,0.35); }
 
 .btn-blue-royal {
   background-image: linear-gradient(90deg, #1e3a8a, #1d4ed8, #2563eb);
 }
-.btn-blue-royal:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(29,78,216,0.35); }
+.btn-blue-royal:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(29,78,216,0.35); }
 
 /* Additional unique blues for Structure/Transform on Beautifier */
 .btn-blue-sapphire {
   background-image: linear-gradient(90deg, #1e40af, #274ec8, #3a66e5);
 }
-.btn-blue-sapphire:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(39,78,200,0.35); }
+.btn-blue-sapphire:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(39,78,200,0.35); }
 
 .btn-blue-ocean {
   background-image: linear-gradient(90deg, #0ea5e9, #0284c7, #0369a1);
 }
-.btn-blue-ocean:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(2,132,199,0.35); }
+.btn-blue-ocean:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(2,132,199,0.35); }
 
 .btn-purple {
   background-image: linear-gradient(90deg, #7c3aed, #9333ea, #a855f7);
 }
-.btn-purple:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+.btn-purple:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
 
 .btn-orange {
   background-image: linear-gradient(90deg, #f97316, #fb923c, #f59e0b);
 }
-.btn-orange:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(249,115,22,0.35); }
+.btn-orange:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(249,115,22,0.35); }
 
 .btn-green {
   background-image: linear-gradient(90deg, #10b981, #22c55e, #16a34a);
 }
-.btn-green:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(34,197,94,0.35); }
+.btn-green:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(34,197,94,0.35); }
 
 .btn-cyan {
   background-image: linear-gradient(90deg, #06b6d4, #22d3ee, #3b82f6);
 }
-.btn-cyan:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(6,182,212,0.35); }
+.btn-cyan:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(6,182,212,0.35); }
 
 .btn-pink {
   background-image: linear-gradient(90deg, #ec4899, #f472b6, #ef4444);
 }
-.btn-pink:hover { filter: brightness(1.05); box-shadow: 0 8px 24px rgba(236,72,153,0.35); }
+.btn-pink:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(236,72,153,0.35); }
+
+/* Active state styling for accessibility and feedback */
+.btn.active {
+  border: 2px solid #4facfe;
+  background: #e6f4ff;
+  color: #007bff;
+}
 
 .btn-red {
   background-image: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
@@ -151,7 +166,7 @@ html, body {
   border-radius: 0.5rem;
 }
 .beautifier-toolbar .btn i {
-  font-size: 0.85rem;
+  font-size: 16px;
 }
 .beautifier-toolbar .btn svg {
   width: 16px;
