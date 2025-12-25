@@ -5370,7 +5370,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={inputCode.trim() ? handleToggleSearch : undefined}
                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : (showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'))}`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ocean' : 'icon-blue-ocean cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : (showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'))}`}
                         aria-label="Search"
                       >
                         <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
