@@ -3600,8 +3600,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
             </div>
 
-            <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
-
             {/* Format selector */}
             <div className="flex items-center gap-3">
               <label htmlFor="language-select-top" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
@@ -4560,10 +4558,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             addToHistory(sample);
                           }
                         }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        className={`${iconButtonClass} ml-1 cursor-pointer`}
                         aria-label="Insert Sample Data"
                       >
-                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                        <i className={`fa-solid fa-file-code ${iconTextClass}`} aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -4756,7 +4754,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             setViewFormat('view');
                           }
                         }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ocean cursor-pointer`}
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
