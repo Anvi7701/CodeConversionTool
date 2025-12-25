@@ -4432,7 +4432,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             setViewFormat('toon');
                           }
                         }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ice cursor-pointer`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ocean cursor-pointer`}
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-table text-white text-sm" aria-hidden="true"></i>
@@ -5532,7 +5532,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             tabIndex={0}
                             onClick={() => fileInputRef.current?.click()}
                             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInputRef.current?.click(); } }}
-                            className="w-8 h-8 rounded-md transition-all flex items-center justify-center icon-blue-ice cursor-pointer"
+                            className="w-8 h-8 rounded-md transition-all flex items-center justify-center icon-blue-ocean cursor-pointer"
                             aria-label="Upload File"
                           >
                             <i className="fa-solid fa-upload text-white text-sm" aria-hidden="true"></i>

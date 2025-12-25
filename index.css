@@ -78,6 +78,13 @@ html, body {
 }
 .icon-blue-ice:hover { filter: brightness(0.97); box-shadow: 0 6px 18px rgba(110,169,250,0.28); }
 
+/* Icon variant: ocean blue (richer, more saturated) */
+.icon-blue-ocean {
+  background-image: linear-gradient(90deg, #0ea5e9, #0284c7, #0369a1);
+  color: #ffffff;
+}
+.icon-blue-ocean:hover { filter: brightness(0.98); box-shadow: 0 6px 18px rgba(2,132,199,0.30); }
+
 .btn-blue-indigo {
   background-image: linear-gradient(90deg, #4338ca, #4f46e5, #6366f1);
 }

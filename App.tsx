@@ -4,6 +4,8 @@ import { Helmet } from 'react-helmet-async';
 import { Footer } from './components/Footer';
 import { ScrollToTop } from './components/ScrollToTop';
 import { GlobalNavDropdown } from './components/GlobalNavDropdown';
+import { ThemeToggle } from './components/ThemeToggle';
+import { useTheme } from './components/ThemeContext';
 
 // Lazy load components
 const JsonExplainerPage = lazy(() => import('./components/JsonExplainerPage.tsx').then(m => ({ default: m.JsonExplainerPage })));
@@ -51,6 +53,7 @@ const JsonToTreeViewConverter = lazy(() => import('./components/JsonToTreeViewCo
 
 const App: React.FC = () => {
   const location = useLocation();
+  const { theme, setTheme } = useTheme();
 
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     // If we're already on this path, prevent default and scroll to top
@@ -136,6 +139,11 @@ const App: React.FC = () => {
                     { label: 'JSON to YAML', to: '/json-to-yaml', icon: '📜' }
                   ]}
                 />
+              </span>
+
+              {/* Global Theme Toggle */}
+              <span className="inline-flex ml-auto">
+                <ThemeToggle theme={theme} setTheme={setTheme} />
               </span>
             </div>
           </div>
