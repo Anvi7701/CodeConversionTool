@@ -5412,7 +5412,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={inputCode.trim() ? handleValidate : undefined}
                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleValidate(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-400 dark:bg-green-400' : 'hover:bg-green-700 dark:hover:bg-green-600 cursor-pointer bg-green-600 dark:bg-green-500'}`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-300 dark:bg-green-400' : 'hover:bg-green-600 dark:hover:bg-green-500 cursor-pointer bg-green-500 dark:bg-green-400'}`}
                         aria-label="Validate Input JSON"
                       >
                         <i className="fa-solid fa-check text-white text-sm" aria-hidden="true"></i>
