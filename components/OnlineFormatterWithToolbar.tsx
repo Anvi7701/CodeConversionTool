@@ -3620,7 +3620,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
           <div className={`flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
-            <div className="flex items-center gap-2 overflow-visible">
+            <div className="flex items-start gap-2 overflow-visible">
               {isBeautifierPage ? (
                 <>
                   {/* Stack To HTML directly below Format without grouping */}
