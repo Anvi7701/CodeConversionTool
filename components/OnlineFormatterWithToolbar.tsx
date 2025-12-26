@@ -3945,13 +3945,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
               {/* On Beautifier: Structure Analysis + Transform without grouping */}
               {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer`}>
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}>
                   <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
                   <span>Structure Analysis</span>
                 </button>
               )}
               {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath`}>
+                <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>
                   <span>Transform</span>
                 </button>
