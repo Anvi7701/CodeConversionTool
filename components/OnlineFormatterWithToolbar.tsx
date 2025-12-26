@@ -3619,13 +3619,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Compact toolbar with smaller buttons and dropdowns */}
         {isJsonLanguage && (
-          <div className={`flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
-            <div className="flex items-start gap-2 overflow-visible">
+          <div className={`flex ${isBeautifierPage ? 'flex-wrap items-start' : 'items-center justify-between'} gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
+            <div className={`flex ${isBeautifierPage ? 'flex-wrap gap-y-2' : ''} items-start gap-2 overflow-visible`}>
               {isBeautifierPage ? (
-                <>
-                  {/* Stack To HTML directly below Format without grouping */}
-                  <div className="flex flex-col items-start gap-2">
-                    {/* Format (Input JSON) */}
+                <div className="beautifier-toolbar flex flex-col items-start gap-2">
+                  {/* Row 1: Format + Beautify + Minify + Pretty print */}
+                  <div className="flex items-center gap-2">
                     {!hideFormatButtons && (
                       <div className="relative dropdown-container overflow-visible">
                         <button
@@ -3641,37 +3640,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </button>
                       </div>
                     )}
-                    {/* Second row: place To HTML and To Toon side-by-side (Beautifier + JSON only) */}
-                    {activeLanguage === 'json' && !isParserPage && (
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => {
-                            if (!inputCode.trim()) return;
-                            navigate('/json-to-html', { state: { inputJson: inputCode } });
-                          }}
-                          className="btn btn-blue-azure"
-                          title="Convert JSON to HTML"
-                        >
-                          <i className="fa-solid fa-code" aria-hidden="true"></i>
-                          <span>To HTML</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (!inputCode.trim()) return;
-                            navigate('/json-to-toon', { state: { inputJson: inputCode } });
-                          }}
-                          className="btn btn-blue-azure"
-                          title="Convert JSON to Toon"
-                        >
-                          <i className="fa-solid fa-code" aria-hidden="true"></i>
-                          <span>To Toon</span>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                  {/* Group B: Beautify, Minify, Pretty print inline without grouping */}
-                  <div className="flex items-center gap-2">
-                    {/* Beautify button with dropdown */}
+
                     {!hideFormatButtons && (
                       <div className="relative dropdown-container overflow-visible">
                         <button
@@ -3686,7 +3655,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <span>Beautify</span>
                           <span className="text-xs">▼</span>
                         </button>
-                        {/* Dropdown menu */}
                         {showBeautifyDropdown && (
                           <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
                             <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(1); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>1 Space</button>
@@ -3700,7 +3668,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </div>
                     )}
 
-                    {/* Minify button (Beautifier page only) */}
                     {showMinifyNextToBeautify && !hideFormatButtons && (
                       <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-azure" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
                         <i className="fa-solid fa-compress" aria-hidden="true"></i>
@@ -3708,7 +3675,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                     )}
 
-                    {/* Pretty print button - json-beautifier page only */}
                     {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
                       <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python-pretty', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Generate Python pretty print script">
                         <i className="fa-brands fa-python" aria-hidden="true"></i>
@@ -3716,7 +3682,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                     )}
                   </div>
-                </>
+
+                  {/* Row 2 moved outside main toolbar to avoid width push */}
+                </div>
               ) : (
                 <>
                   {/* Format (Input JSON) - placed before Beautify */}
@@ -3968,6 +3936,42 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>
                   <span>Transform</span>
                 </button>
+              )}
+
+              {/* Beautifier second row inside ribbon: full-width wrap below main row */}
+              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
+                <>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-html', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to HTML">
+                      <i className="fa-solid fa-code" aria-hidden="true"></i>
+                      <span>To HTML</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-toon', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to Toon">
+                      <i className="fa-solid fa-code" aria-hidden="true"></i>
+                      <span>To Toon</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-yaml', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to YAML">
+                      <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+                      <span>To YAML</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to Python">
+                      <i className="fa-brands fa-python" aria-hidden="true"></i>
+                      <span>To Python</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-java', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to Java">
+                      <i className="fa-brands fa-java" aria-hidden="true"></i>
+                      <span>To Java</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-javascript', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to JavaScript">
+                      <i className="fa-brands fa-js" aria-hidden="true"></i>
+                      <span>To JavaScript</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-table', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to Table">
+                      <i className="fa-solid fa-table" aria-hidden="true"></i>
+                      <span>To Table</span>
+                    </button>
+                  </div>
+                </>
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
@@ -4226,6 +4230,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* YAML page quick actions: To Toon + To YAML side-by-side */}
+              {activeLanguage === 'json' && typeof location?.pathname === 'string' && location.pathname === '/json-to-yaml' && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-toon', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Convert JSON to Toon"
+                  >
+                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <span>To Toon</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-yaml', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Convert JSON to YAML"
+                  >
+                    <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+                    <span>To YAML</span>
+                  </button>
+                </div>
+              )}
+
               {/* Sort group removed; replaced by icon-only pill next to Input label */}
 
               <div className="w-px h-6 bg-slate-300 dark:bg-slate-600"></div>
@@ -4238,6 +4270,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Right side controls removed to keep only Format/Beautify/Minify in current ribbon */}
           </div>
         )}
+
+        
 
         {/* For non-JSON languages, show simpler toolbar with just Format selector */}
         {!isJsonLanguage && (
