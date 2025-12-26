@@ -3623,156 +3623,83 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div className="flex items-center gap-2 overflow-visible">
               {isBeautifierPage ? (
                 <>
-                  <div className="ribbon-group">
-                  {/* Format (Input JSON) - placed before Beautify */}
-                  {!hideFormatButtons && (
-                    <div className="relative dropdown-container overflow-visible">
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          handleFormatInputJson();
-                        }}
-                        className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`}
-                        title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
-                      >
-                        <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                        <span>Format</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* Beautify button with dropdown */}
-                  {!hideFormatButtons && (
-                    <div className="relative dropdown-container overflow-visible">
-                      <button
-                        onClick={() => {
-                          if (isActionDisabled || !inputCode.trim()) return;
-                          setShowBeautifyDropdown(!showBeautifyDropdown);
-                        }}
-                        className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-purple-light'} beautify-btn`}
-                        title={isBeautifierPage ? 'JSON Beautifier' : undefined}
-                      >
-                        <i className="fa-solid fa-magic" aria-hidden="true"></i>
-                        <span>Beautify</span>
-                        <span className="text-xs">▼</span>
-                      </button>
-                      {/* Dropdown menu */}
-                      {showBeautifyDropdown && (
-                        <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(1);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            1 Space
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(2);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            2 Spaces
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(3);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            3 Spaces
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(4);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            4 Spaces
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(5);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            5 Spaces
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (isActionDisabled || !inputCode.trim()) return;
-                              handleFormat(0);
-                              setShowBeautifyDropdown(false);
-                            }}
-                            className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}
-                          >
-                            Tab
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Minify button (Beautifier page only) */}
-                  {showMinifyNextToBeautify && !hideFormatButtons && (
-                    <button
-                      onClick={() => {
-                        if (isActionDisabled || !inputCode.trim()) return;
-                        if (!isMinifierPage) {
-                          navigate('/json-minifier', { state: { inputJson: inputCode } });
-                          return;
-                        }
-                        handleCompact();
-                      }}
-                      className="btn btn-blue-azure"
-                      title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}
-                    >
-                      <i className="fa-solid fa-compress" aria-hidden="true"></i>
-                      <span>Minify</span>
-                    </button>
-                  )}
-
-                  {/* Pretty print button - json-beautifier page only */}
-                  {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
-                    <button
-                      onClick={() => {
-                        if (!inputCode.trim()) return;
-                        navigate('/json-to-python-pretty', { state: { inputJson: inputCode } });
-                      }}
-                      className="btn btn-blue-azure"
-                      title="Generate Python pretty print script"
-                    >
-                      <i className="fa-brands fa-python" aria-hidden="true"></i>
-                      <span>Pretty print</span>
-                    </button>
-                  )}
-                  </div>
-                  {/* Force next items to start on a new row for Beautifier */}
-                  {isBeautifierPage && (<div className="w-full"></div>)}
-                  {/* New row: Additional converter placed below Format on Beautifier */}
-                  <div className="ribbon-group">
+                  {/* Group A: Stack To HTML directly below Format */}
+                  <div className="ribbon-group flex-col items-start">
+                    {/* Format (Input JSON) */}
+                    {!hideFormatButtons && (
+                      <div className="relative dropdown-container overflow-visible">
+                        <button
+                          onClick={() => {
+                            if (isActionDisabled || !inputCode.trim()) return;
+                            handleFormatInputJson();
+                          }}
+                          className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`}
+                          title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
+                        >
+                          <i className="fa-solid fa-align-left" aria-hidden="true"></i>
+                          <span>Format</span>
+                        </button>
+                      </div>
+                    )}
+                    {/* To HTML directly below Format (Beautifier + JSON only) */}
                     {activeLanguage === 'json' && !isParserPage && (
                       <button
                         onClick={() => {
                           if (!inputCode.trim()) return;
                           navigate('/json-to-html', { state: { inputJson: inputCode } });
                         }}
-                        className={"btn btn-blue-azure"}
+                        className="btn btn-blue-azure"
                         title="Convert JSON to HTML"
                       >
                         <i className="fa-solid fa-code" aria-hidden="true"></i>
                         <span>To HTML</span>
+                      </button>
+                    )}
+                  </div>
+                  {/* Group B: Beautify, Minify, Pretty print remain in a row */}
+                  <div className="ribbon-group">
+                    {/* Beautify button with dropdown */}
+                    {!hideFormatButtons && (
+                      <div className="relative dropdown-container overflow-visible">
+                        <button
+                          onClick={() => {
+                            if (isActionDisabled || !inputCode.trim()) return;
+                            setShowBeautifyDropdown(!showBeautifyDropdown);
+                          }}
+                          className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-purple-light'} beautify-btn`}
+                          title={isBeautifierPage ? 'JSON Beautifier' : undefined}
+                        >
+                          <i className="fa-solid fa-magic" aria-hidden="true"></i>
+                          <span>Beautify</span>
+                          <span className="text-xs">▼</span>
+                        </button>
+                        {/* Dropdown menu */}
+                        {showBeautifyDropdown && (
+                          <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(1); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>1 Space</button>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(2); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>2 Spaces</button>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(3); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>3 Spaces</button>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(4); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>4 Spaces</button>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(5); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>5 Spaces</button>
+                            <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleFormat(0); setShowBeautifyDropdown(false); }} className={`w-full px-2.5 py-1.5 text-xs text-left rounded-md ${isBeautifierPage ? 'text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30' : 'text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30'}`}>Tab</button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Minify button (Beautifier page only) */}
+                    {showMinifyNextToBeautify && !hideFormatButtons && (
+                      <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-azure" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
+                        <i className="fa-solid fa-compress" aria-hidden="true"></i>
+                        <span>Minify</span>
+                      </button>
+                    )}
+
+                    {/* Pretty print button - json-beautifier page only */}
+                    {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
+                      <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python-pretty', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Generate Python pretty print script">
+                        <i className="fa-brands fa-python" aria-hidden="true"></i>
+                        <span>Pretty print</span>
                       </button>
                     )}
                   </div>
