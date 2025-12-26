@@ -3656,8 +3656,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </button>
                     )}
                   </div>
-                  {/* Group B: Beautify, Minify, Pretty print remain in a row */}
-                  <div className="ribbon-group">
+                  {/* Group B: Beautify, Minify, Pretty print inline without grouping */}
+                  <div className="flex items-center gap-2">
                     {/* Beautify button with dropdown */}
                     {!hideFormatButtons && (
                       <div className="relative dropdown-container overflow-visible">
@@ -3929,71 +3929,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                 </>
               )}
-              {/* On Beautifier: Place To XML and To CSV right after Graph View */}
-              {isBeautifierPage ? (
-                <div className="ribbon-group">
-                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to XML">
-                      <i className="fa-solid fa-code" aria-hidden="true"></i>
-                      <span>To XML</span>
-                    </button>
-                  )}
-                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to CSV">
-                      <i className="fa-solid fa-table" aria-hidden="true"></i>
-                      <span>To CSV</span>
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to XML">
-                      <i className="fa-solid fa-code" aria-hidden="true"></i>
-                      <span>To XML</span>
-                    </button>
-                  )}
-                  {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to CSV">
-                      <i className="fa-solid fa-table" aria-hidden="true"></i>
-                      <span>To CSV</span>
-                    </button>
-                  )}
-                </>
+              {/* On Beautifier: Place To XML and To CSV right after Graph View, no grouping */}
+              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to XML">
+                  <i className="fa-solid fa-code" aria-hidden="true"></i>
+                  <span>To XML</span>
+                </button>
+              )}
+              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to CSV">
+                  <i className="fa-solid fa-table" aria-hidden="true"></i>
+                  <span>To CSV</span>
+                </button>
               )}
 
-              {isBeautifierPage ? (
-                <div className="ribbon-group">
-                  {/* Structure Analysis button - opens dedicated analyzer page */}
-                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}>
-                      <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
-                      <span>Structure Analysis</span>
-                    </button>
-                  )}
-                  {/* Transform button - opens JMESPath Transform modal (same workflow) */}
-                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                    <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
-                      <i className="fa-solid fa-right-left" aria-hidden="true"></i>
-                      <span>Transform</span>
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer'}>
-                      <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
-                      <span>Structure Analysis</span>
-                    </button>
-                  )}
-                  {!hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                    <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
-                      <i className="fa-solid fa-right-left" aria-hidden="true"></i>
-                      <span>Transform</span>
-                    </button>
-                  )}
-                </>
+              {/* On Beautifier: Structure Analysis + Transform without grouping */}
+              {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-sky'} structure-btn`} title={isBeautifierPage ? 'JSON Structure Analyzer' : 'Open JSON Structure Analyzer`}>
+                  <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
+                  <span>Structure Analysis</span>
+                </button>
+              )}
+              {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath`}>
+                  <i className="fa-solid fa-right-left" aria-hidden="true"></i>
+                  <span>Transform</span>
+                </button>
               )}
 
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
