@@ -3622,7 +3622,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           <div className={`flex items-center justify-between gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
             <div className="flex items-center gap-2 overflow-visible">
               {isBeautifierPage ? (
-                <div className="ribbon-group">
+                <>
+                  <div className="ribbon-group">
                   {/* Format (Input JSON) - placed before Beautify */}
                   {!hideFormatButtons && (
                     <div className="relative dropdown-container overflow-visible">
@@ -3756,7 +3757,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <span>Pretty print</span>
                     </button>
                   )}
-                </div>
+                  </div>
+                  {/* Force next items to start on a new row for Beautifier */}
+                  {isBeautifierPage && (<div className="w-full"></div>)}
+                  {/* New row: Additional converter placed below Format on Beautifier */}
+                  <div className="ribbon-group">
+                    {activeLanguage === 'json' && !isParserPage && (
+                      <button
+                        onClick={() => {
+                          if (!inputCode.trim()) return;
+                          navigate('/json-to-html', { state: { inputJson: inputCode } });
+                        }}
+                        className={"btn btn-blue-azure"}
+                        title="Convert JSON to HTML"
+                      >
+                        <i className="fa-solid fa-code" aria-hidden="true"></i>
+                        <span>To HTML</span>
+                      </button>
+                    )}
+                  </div>
+                </>
               ) : (
                 <>
                   {/* Format (Input JSON) - placed before Beautify */}
