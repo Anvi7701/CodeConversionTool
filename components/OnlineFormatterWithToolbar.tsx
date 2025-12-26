@@ -3641,19 +3641,32 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </button>
                       </div>
                     )}
-                    {/* To HTML directly below Format (Beautifier + JSON only) */}
+                    {/* Second row: place To HTML and To Toon side-by-side (Beautifier + JSON only) */}
                     {activeLanguage === 'json' && !isParserPage && (
-                      <button
-                        onClick={() => {
-                          if (!inputCode.trim()) return;
-                          navigate('/json-to-html', { state: { inputJson: inputCode } });
-                        }}
-                        className="btn btn-blue-azure"
-                        title="Convert JSON to HTML"
-                      >
-                        <i className="fa-solid fa-code" aria-hidden="true"></i>
-                        <span>To HTML</span>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => {
+                            if (!inputCode.trim()) return;
+                            navigate('/json-to-html', { state: { inputJson: inputCode } });
+                          }}
+                          className="btn btn-blue-azure"
+                          title="Convert JSON to HTML"
+                        >
+                          <i className="fa-solid fa-code" aria-hidden="true"></i>
+                          <span>To HTML</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (!inputCode.trim()) return;
+                            navigate('/json-to-toon', { state: { inputJson: inputCode } });
+                          }}
+                          className="btn btn-blue-azure"
+                          title="Convert JSON to Toon"
+                        >
+                          <i className="fa-solid fa-code" aria-hidden="true"></i>
+                          <span>To Toon</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                   {/* Group B: Beautify, Minify, Pretty print inline without grouping */}
