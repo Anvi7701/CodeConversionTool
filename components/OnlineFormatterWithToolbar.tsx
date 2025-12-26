@@ -5412,7 +5412,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={inputCode.trim() ? handleValidate : undefined}
                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleValidate(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-200 dark:bg-green-300' : 'hover:bg-green-500 dark:hover:bg-green-400 cursor-pointer bg-green-400 dark:bg-green-300'}`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-200 dark:bg-green-300' : 'hover:bg-green-500 dark:hover:bg-green-400 cursor-pointer bg-green-400 dark:bg-green-300')}`}
                         aria-label="Validate Input JSON"
                       >
                         <i className="fa-solid fa-check text-white text-sm" aria-hidden="true"></i>
@@ -5426,7 +5426,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         tabIndex={0}
                         onClick={inputCode.trim() ? handleToggleFullscreen : undefined}
                         onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
                         aria-label="Enter Fullscreen"
                       >
                         <i className="fa-solid fa-expand text-white text-sm" aria-hidden="true"></i>
