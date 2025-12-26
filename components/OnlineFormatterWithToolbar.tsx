@@ -3623,8 +3623,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div className="flex items-center gap-2 overflow-visible">
               {isBeautifierPage ? (
                 <>
-                  {/* Group A: Stack To HTML directly below Format */}
-                  <div className="ribbon-group flex-col items-start">
+                  {/* Stack To HTML directly below Format without grouping */}
+                  <div className="flex flex-col items-start gap-2">
                     {/* Format (Input JSON) */}
                     {!hideFormatButtons && (
                       <div className="relative dropdown-container overflow-visible">
@@ -3782,7 +3782,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {isBeautifierPage ? (
-                <div className="ribbon-group">
+                <div className="flex items-center gap-2">
                   {/* Tree View button - opens separate page to show JSON tree */}
                   {activeLanguage === 'json' && !isParserPage && (
                     <button
