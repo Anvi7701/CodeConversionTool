@@ -5892,7 +5892,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       tabIndex={0}
                       onClick={handleValidateOutput}
                       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidateOutput(); } }}
-                      className={`w-8 h-8 rounded-md hover:bg-green-700 dark:hover:bg-green-600 transition-all cursor-pointer bg-green-600 dark:bg-green-500 flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                      className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${isBeautifierPage ? (!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-600 dark:bg-green-500' : 'hover:bg-green-700 dark:hover:bg-green-600 bg-green-600 dark:bg-green-500')}`}
                       aria-label="Validate Output"
                       title="Validate Output JSON"
                     >
@@ -6034,7 +6034,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     tabIndex={0}
                     onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
                     onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900'}`}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${isBeautifierPage ? (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
