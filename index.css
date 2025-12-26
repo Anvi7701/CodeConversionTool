@@ -206,6 +206,7 @@ html, body {
   font-size: 0.82rem;
   height: 34px;
   border-radius: 0.5rem;
+  min-width: 110px; /* ensure uniform ribbon button width */
 }
 .beautifier-toolbar .btn i {
   font-size: 16px;
