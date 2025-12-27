@@ -56,7 +56,7 @@ export const JsonParserPage: React.FC = () => {
           Use the ribbon below to <span className="keyword">Validate</span>, <span className="keyword">Beautify</span>, view as <span className="keyword">Tree View</span> or <span className="keyword">Graph View</span>, and convert your JSON to <span className="keyword">XML</span> and <span className="keyword">CSV</span>.
         </p>
       </div>
-      {/* Use shared formatter/editor without extra page wrapper to avoid duplicate headings */}
+      {/* Use shared formatter/editor only; schema appears in main Output */}
       <OnlineFormatterWithToolbar
         initialLanguage="json"
         showLeftInputActions={true}

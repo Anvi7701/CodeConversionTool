@@ -33,6 +33,7 @@ import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
 import { convertJsonToJavaCode } from '../utils/jsonToJavaConverter';
 import { convertJsonToCsv, convertJsonToHtml, convertJsonToJavaScript, convertJsonToPython } from '../utils/codeGenerator';
 import { convertJsonToYaml } from '../utils/jsonToYamlConverter';
+import { generateSchemaFromSample } from '../utils/jsonSchemaValidator';
 
 type Language = 'json' | 'xml' | 'html' | 'css' | 'javascript' | 'typescript' | 'yaml' | 'wsdl' | 'soap' | 'angular' | 'java' | 'graphql';
 type ValidationResult = { isValid: boolean; reason: string; isFixableSyntaxError: boolean; suggestedLanguage?: string };
@@ -193,7 +194,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Global UI setting: hide Output toolbar icons except Fullscreen
   // Show Output toolbar icons on Beautifier; keep hidden elsewhere
   // Show Output toolbar icons on Beautifier, Editor, Formatter, and Minifier pages; keep hidden elsewhere
-  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage);
+  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage || isParserPage);
 
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
@@ -201,6 +202,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     if (hasInitializedFromRouteRef.current) return;
     // @ts-ignore - location.state may be undefined
     const stateInput: string | undefined = location && (location as any).state && (location as any).state.inputJson;
+    // @ts-ignore - location.state may be undefined
+    const autoGenerateSchema: boolean = !!(location && (location as any).state && (location as any).state.autoGenerateSchema);
     if (stateInput && !inputCode) {
       setInputCode(stateInput);
       // If coming to the dedicated JSON To XML page, auto-convert to XML once
@@ -281,6 +284,18 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           setIsConversionOutput(true);
         } catch (err) {
           // If invalid JSON, let normal validation flows handle it later
+        }
+      }
+      // If coming to Parser page with auto-generate flag, produce Draft-07 schema in main Output
+      if (typeof location?.pathname === 'string' && location.pathname === '/json-parser' && autoGenerateSchema) {
+        try {
+          JSON.parse(stateInput);
+          const { schemaText } = generateSchemaFromSample(stateInput);
+          setOutputCode(schemaText);
+          setIsConversionOutput(true);
+          setViewFormat('code');
+        } catch (err) {
+          // Invalid JSON; let normal validation flows handle
         }
       }
       // If coming to the dedicated JSON Minifier page, auto-minify once
@@ -544,8 +559,17 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               || path === '/json-to-python'
               || path === '/json-to-java'
               || path === '/json-minifier';
-            // On dedicated conversion pages, do not overwrite conversion output with beautified JSON
-            if (!isDedicatedConversionPage) {
+            // On parser page, always generate schema when input is valid
+            if (isParserPage) {
+              try {
+                const { schemaText } = generateSchemaFromSample(trimmed);
+                setOutputCode(schemaText);
+                setIsConversionOutput(true);
+                setViewFormat('code');
+              } catch {
+                // ignore errors; JSON invalid case handled elsewhere
+              }
+            } else if (!isDedicatedConversionPage && !isConversionOutput) {
               const formatted = JSON.stringify(res.value, null, 2);
               setOutputCode(formatted);
               // Preserve the current view format (e.g., TOON on TOON page)
@@ -3762,6 +3786,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
+              {/* Parser page control: Generate Schema */}
+              {isParserPage && activeLanguage === 'json' && (
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      JSON.parse(inputCode.trim());
+                      const { schemaText } = generateSchemaFromSample(inputCode.trim());
+                      setOutputCode(schemaText);
+                      setIsConversionOutput(true);
+                      setViewFormat('code');
+                    } catch (err: any) {
+                      setValidationError({
+                        isValid: false,
+                        reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
+                        isFixableSyntaxError: true,
+                        suggestedLanguage: undefined
+                      });
+                    }
+                  }}
+                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                  title="Generate JSON Schema (Draft-07)"
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  <span>Generate Schema</span>
+                </button>
+              )}
+
               {isBeautifierPage ? (
                 <div className="flex items-center gap-2">
                   {/* Tree View button - opens separate page to show JSON tree */}
@@ -3949,6 +4001,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-toon', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to Toon">
                       <i className="fa-solid fa-code" aria-hidden="true"></i>
                       <span>To Toon</span>
+                    </button>
+                    <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-parser', { state: { inputJson: inputCode, autoGenerateSchema: true } }); }} className="btn btn-blue-azure" title="Generate JSON Schema (Draft-07) from current JSON">
+                      <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                      <span>Generate Schema</span>
                     </button>
                     <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-yaml', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Convert JSON to YAML">
                       <i className="fa-solid fa-file-code" aria-hidden="true"></i>
@@ -5997,8 +6053,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </span>
                 </Tooltip>
                 
-                {/* View Format Dropdown - hidden on error page or when view is locked; allow on minifier even if output is from conversion */}
-                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && (
+                {/* View Format Dropdown - disabled on parser page */}
+                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
