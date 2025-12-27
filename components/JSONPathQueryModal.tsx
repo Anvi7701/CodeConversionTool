@@ -163,13 +163,13 @@ export const JSONPathQueryModal: React.FC<JSONPathQueryModalProps> = ({ inputJso
       if (activeTab === 'values') {
         if (Array.isArray(valuesResult) && valuesResult.length > 0 && typeof valuesResult[0] === 'object' && valuesResult[0] !== null && !Array.isArray(valuesResult[0])) {
           // array of objects
-          const cols = Array.from(valuesResult.reduce((set: Set<string>, obj: any) => {
+          const cols: string[] = Array.from(valuesResult.reduce((set: Set<string>, obj: any) => {
             Object.keys(obj || {}).forEach(k => set.add(k));
             return set;
           }, new Set<string>()));
           rows.push(cols.join(','));
           for (const obj of valuesResult) {
-            const vals = cols.map(k => escapeCsv(String(obj?.[k] ?? '')));
+            const vals = cols.map(k => escapeCsv(String((obj as Record<string, any>)?.[k] ?? '')));
             rows.push(vals.join(','));
           }
         } else {

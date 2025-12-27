@@ -94,6 +94,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const location = useLocation();
   const isParserPage = typeof location?.pathname === 'string' && location.pathname === '/json-parser';
   const isBeautifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-beautifier';
+  const isTransformPage = typeof location?.pathname === 'string' && location.pathname === '/json-transform';
   const isEditorPage = typeof location?.pathname === 'string' && location.pathname === '/json-editor';
   const isFormatterPage = typeof location?.pathname === 'string' && location.pathname === '/json-formatter';
   const isMinifierPage = typeof location?.pathname === 'string' && location.pathname === '/json-minifier';
@@ -196,7 +197,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Global UI setting: hide Output toolbar icons except Fullscreen
   // Show Output toolbar icons on Beautifier; keep hidden elsewhere
   // Show Output toolbar icons on Beautifier, Editor, Formatter, and Minifier pages; keep hidden elsewhere
-  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage || isParserPage);
+  const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage || isParserPage || isTransformPage);
 
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
@@ -3353,7 +3354,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={(value) => setOutputCode(value)}
+              onEdit={isTransformPage ? undefined : (value) => setOutputCode(value)}
             />
           );
         case 'form':
@@ -3362,9 +3363,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={(updatedJson) => {
+              onEdit={isTransformPage ? undefined : ((updatedJson) => {
                 setOutputCode(updatedJson);
-              }}
+              })}
             />
           );
         case 'text':
@@ -3381,7 +3382,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <TextView
               code={textCode}
-              onChange={textOutputMode === 'python-pretty' ? undefined : (value) => setOutputCode(value)}
+              onChange={textOutputMode === 'python-pretty' || isTransformPage ? undefined : (value) => setOutputCode(value)}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
             />
@@ -3393,7 +3394,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={(value) => setOutputCode(value)}
+              onEdit={isTransformPage ? undefined : (value) => setOutputCode(value)}
               showExportControl={!(lockViewTo === 'table')}
             />
           );
@@ -3428,7 +3429,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <CodeMirrorViewer
               code={outputCode}
               language={activeLanguage}
-              onChange={(value) => setOutputCode(value)}
+              onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
+              readOnly={isTransformPage}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
             />
@@ -3440,7 +3442,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         <CodeMirrorViewer
           code={outputCode}
           language={activeLanguage}
-          onChange={(value) => setOutputCode(value)}
+          onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
+          readOnly={isTransformPage}
           expandAll={expandAllTrigger}
           collapseAll={collapseAllTrigger}
         />
@@ -3857,7 +3860,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {isBeautifierPage ? (
                 <div className="flex items-center gap-2">
                   {/* Tree View button - opens separate page to show JSON tree */}
-                  {activeLanguage === 'json' && !isParserPage && (
+                  {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
                     <button
                       onClick={() => {
                         if (!inputCode.trim()) return;
@@ -3891,7 +3894,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   )}
                   {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-                  {activeLanguage === 'json' && !isParserPage && (
+                  {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
                     <button
                       onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
                       className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
@@ -3905,7 +3908,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               ) : (
                 <>
                   {/* Tree View button - opens separate page to show JSON tree */}
-                  {activeLanguage === 'json' && !isParserPage && (
+                  {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
                     <button
                       onClick={() => {
                         if (!inputCode.trim()) return;
@@ -3939,7 +3942,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </button>
                   )}
                   {/* Graph button - opens in-page Graph Viewer (same workflow) */}
-                  {activeLanguage === 'json' && !isParserPage && (
+                  {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
                     <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}>
                       <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
                       <span>Graph View</span>
@@ -4030,10 +4033,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
               {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title="Query with JSONPath">
+                <button
+                  onClick={() => {
+                    const hasInput = !!inputCode.trim();
+                    if (hasInput) {
+                      // Navigate to Transform page with input JSON instead of opening modal
+                      navigate('/json-transform', { state: { inputJson: inputCode } });
+                    } else {
+                      navigate('/json-transform');
+                    }
+                  }}
+                  className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`}
+                  title="Transform with JSONPath"
+                >
                   <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                   <span>JSONPath</span>
                 </button>
+              )}
+
+              {/* On Transform: Structure Analysis + Open Transform + JSONPath */}
+              {isTransformPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                <>
+                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn btn-blue-azure`} title="Transform with JMESPath">
+                    <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    <span>Transform with JMESPath</span>
+                  </button>
+                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn btn-blue-azure`} title="Transform with JSONPath">
+                    <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <span>Transform with JSONPath</span>
+                  </button>
+                </>
               )}
 
               {/* Beautifier second row inside ribbon: full-width wrap below main row */}
@@ -4076,8 +4105,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </>
               )}
 
+              {/* Transform second row inside ribbon: mirror Beautifier */}
+              {false && isTransformPage}
+
               {/* To XML button - converts JSON to XML or navigates to JSON To XML page */}
-              {activeLanguage === 'json' && !isParserPage && !isEditorPage && !isBeautifierPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isEditorPage && !isBeautifierPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4112,7 +4144,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To CSV button - converts JSON to CSV or navigates to JSON To CSV page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4156,7 +4188,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To YAML button - converts JSON to YAML or navigates to JSON To YAML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4190,7 +4222,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To HTML button - converts JSON to HTML or navigates to JSON To HTML page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4232,7 +4264,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To JavaScript button - converts JSON to JavaScript or navigates to JSON To JavaScript page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4265,7 +4297,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To Python button - only on JSON Converter pages; converts JSON to Python or navigates to JSON To Python page */}
-              {activeLanguage === 'json'
+              {!isTransformPage && activeLanguage === 'json'
                 && typeof location?.pathname === 'string'
                 && ['/json-to-xml','/json-to-csv','/json-to-yaml','/json-to-html','/json-to-javascript','/json-to-python','/json-to-java'].includes(location.pathname) && (
                 <button
@@ -4300,7 +4332,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
 
               {/* To Java button - converts JSON to Java or navigates to JSON To Java page */}
-              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && (
+              {activeLanguage === 'json' && !isParserPage && !isBeautifierPage && !isEditorPage && !isFormatterPage && !isMinifierPage && !isTransformPage && (
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) return;
@@ -4812,6 +4844,57 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           }
                         }}
                         className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ocean cursor-pointer`}
+                        aria-label="Insert Sample Data"
+                      >
+                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  )}
+
+                  {/* Sample Data (Transform-friendly) – JSON Transform page */}
+                  {isJsonLanguage && isTransformPage && (
+                    <Tooltip content="Insert sample JSON (Transform-friendly)">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          const sample = JSON.stringify({
+                            items: [
+                              { id: 1, name: 'Alpha', category: 'A', price: 100, tags: ['new','featured'] },
+                              { id: 2, name: 'Beta', category: 'B', price: 200, tags: ['sale'] },
+                              { id: 3, name: 'Gamma', category: 'A', price: 150, tags: [] }
+                            ],
+                            stats: { total: 3, categories: ['A','B'] },
+                            metadata: { source: 'sample', version: '1.0.0' }
+                          }, null, 2);
+                          setValidationError(null);
+                          setOutputError(null);
+                          setIsStructureAnalysisMode(false);
+                          setInputCode(sample);
+                          addToHistory(sample);
+                          setViewFormat('code');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            const sample = JSON.stringify({
+                              items: [
+                                { id: 1, name: 'Alpha', category: 'A', price: 100, tags: ['new','featured'] },
+                                { id: 2, name: 'Beta', category: 'B', price: 200, tags: ['sale'] },
+                                { id: 3, name: 'Gamma', category: 'A', price: 150, tags: [] }
+                              ],
+                              stats: { total: 3, categories: ['A','B'] },
+                              metadata: { source: 'sample', version: '1.0.0' }
+                            }, null, 2);
+                            setValidationError(null);
+                            setOutputError(null);
+                            setIsStructureAnalysisMode(false);
+                            setInputCode(sample);
+                            addToHistory(sample);
+                            setViewFormat('code');
+                          }
+                        }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
                         aria-label="Insert Sample Data"
                       >
                         <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
@@ -5829,62 +5912,70 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
                         </span>
                       </Tooltip>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                      {/* Output Sort (JSON) - positioned after Expand All (matching Input section layout) */}
-                      <div className="relative inline-flex dropdown-container overflow-visible">
-                        <Tooltip content="Sort Output JSON (toggle options)">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
-                            className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
-                            aria-label="Sort Output"
-                            title="Sort Output JSON"
-                          >
-                            <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                        {showOutputSortDropdown && (
-                          <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
-                            <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
-                            <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
-                            <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
-                            <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                      {!isTransformPage && (
+                        <>
+                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                          {/* Output Sort (JSON) - positioned after Expand All (matching Input section layout) */}
+                          <div className="relative inline-flex dropdown-container overflow-visible">
+                            <Tooltip content="Sort Output JSON (toggle options)">
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
+                                className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
+                                aria-label="Sort Output"
+                                title="Sort Output JSON"
+                              >
+                                <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
+                              </span>
+                            </Tooltip>
+                            {showOutputSortDropdown && (
+                              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
+                                <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
+                                <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
+                                <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
+                                <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                        </>
+                      )}
 
-                      {/* Undo/Redo for Output - positioned after Sort (matching Input section layout) */}
-                      <Tooltip content="Undo last change">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={canUndoOutput ? handleOutputUndo : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
-                          className={`${iconButtonClass} ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                          aria-label="Undo"
-                        >
-                          <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <Tooltip content="Redo last change">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={canRedoOutput ? handleOutputRedo : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
-                          className={`${iconButtonClass} ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                          aria-label="Redo"
-                        >
-                          <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                      {!isTransformPage && (
+                        <>
+                          {/* Undo/Redo for Output - positioned after Sort (matching Input section layout) */}
+                          <Tooltip content="Undo last change">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={canUndoOutput ? handleOutputUndo : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
+                              className={`${iconButtonClass} ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                              aria-label="Undo"
+                            >
+                              <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                          <Tooltip content="Redo last change">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={canRedoOutput ? handleOutputRedo : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
+                              className={`${iconButtonClass} ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                              aria-label="Redo"
+                            >
+                              <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                        </>
+                      )}
 
                       {/* Search Output JSON (code view only) */}
-                      {viewFormat === 'code' && (
+                      {!isTransformPage && viewFormat === 'code' && (
                         <Tooltip content="Search in Output JSON">
                           <span
                             role="button"
@@ -5898,11 +5989,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           </span>
                         </Tooltip>
                       )}
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                      {!isTransformPage && (<div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>)}
                     </>
                   )}
                   {/* Icon Toolbar for special states (validation errors, structure analysis, etc.) */}
-                  {!hideOutputToolbarIconsExceptFullscreen && (validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
+                  {!hideOutputToolbarIconsExceptFullscreen && !isTransformPage && (validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
                     <>
                       {!(validationError && errorLines.length > 0) && (
                         <>
@@ -5942,7 +6033,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {!hideOutputToolbarIconsExceptFullscreen && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
+                {!hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
@@ -6099,8 +6190,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </span>
                 </Tooltip>
                 
-                {/* View Format Dropdown - disabled on parser page */}
-                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && (
+                {/* View Format Dropdown - disabled on parser and transform pages */}
+                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
@@ -6772,7 +6863,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <CodeMirrorViewer
                                 code={outputCode || ''}
                                 language={activeLanguage}
-                                onChange={(value) => setOutputCode(value)}
+                                onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
+                                readOnly={isTransformPage}
                                 expandAll={expandAllTrigger}
                                 collapseAll={collapseAllTrigger}
                                 highlightLine={outputSearchResults.length > 0 && currentOutputSearchIndex >= 0 ? outputSearchResults[currentOutputSearchIndex].line : undefined}
