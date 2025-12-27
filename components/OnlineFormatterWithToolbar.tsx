@@ -27,6 +27,7 @@ import { analyzeJsonStructure } from '../utils/jsonStructureAnalyzer';
 import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import { ValidationModal } from './ValidationModal';
 import { JMESPathTransform } from './JMESPathTransform';
+import { JSONPathQueryModal } from './JSONPathQueryModal';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
@@ -127,6 +128,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Modal state
   const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
+  const [showJSONPathModal, setShowJSONPathModal] = useState<boolean>(false);
 
   // Conversion mode state (track if output is from XML/CSV/YAML conversion)
   const [isConversionOutput, setIsConversionOutput] = useState<boolean>(false);
@@ -2981,6 +2983,44 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     URL.revokeObjectURL(url);
   };
 
+  // Highlight an approximate line in the input editor based on a JSONPath
+  const highlightPathInInput = (path: string) => {
+    try {
+      if (!inputCode) return;
+      const lines = inputCode.split('\n');
+      // Extract last property segment before any [index]
+      const match = path.match(/\.([A-Za-z0-9_\-]+)(?:\[\d+\])?$/);
+      let key = match ? match[1] : '';
+      if (!key) {
+        const m2 = path.match(/^\$\.([A-Za-z0-9_\-]+)/);
+        key = m2 ? m2[1] : '';
+      }
+      let foundLine = -1;
+      if (key) {
+        const pattern1 = new RegExp(`\"${key}\"\\s*:`, 'i');
+        const pattern2 = new RegExp(`${key}\\s*:`, 'i');
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          if (pattern1.test(line) || pattern2.test(line)) { foundLine = i + 1; break; }
+        }
+      }
+      if (foundLine === -1) {
+        const short = path.replace(/^\$\.?/, '').split(/[\.\[]/).filter(Boolean).pop() || '';
+        if (short) {
+          const patt = new RegExp(short, 'i');
+          for (let i = 0; i < lines.length; i++) { if (patt.test(lines[i])) { foundLine = i + 1; break; } }
+        }
+      }
+      if (foundLine > 0) {
+        setHighlightedLine(foundLine);
+        setHighlightedType('simple');
+        setHighlightPulse(true);
+        setDisableAutoScroll(false);
+        setTimeout(() => setHighlightPulse(false), 1600);
+      }
+    } catch {}
+  };
+
   const handlePrint = () => {
     // Pre-validate Output JSON when printing structured views to keep behavior consistent
     if (activeLanguage === 'json' && outputCode && (viewFormat === 'tree' || viewFormat === 'form')) {
@@ -3987,6 +4027,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Transformer' : 'Transform with JMESPath'}>
                   <i className="fa-solid fa-right-left" aria-hidden="true"></i>
                   <span>Transform</span>
+                </button>
+              )}
+              {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
+                <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title="Query with JSONPath">
+                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <span>JSONPath</span>
                 </button>
               )}
 
@@ -6894,6 +6940,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               setShowJMESPathModal(false);
             }}
             onClose={() => setShowJMESPathModal(false)}
+          />
+        )}
+        {/* JSONPath Query Modal */}
+        {showJSONPathModal && (
+          <JSONPathQueryModal
+            inputJson={inputCode}
+            onApply={(resultText) => {
+              setOutputCode(resultText);
+              setViewFormat('code');
+              setValidationError(null);
+              setOutputError(null);
+              setSuccessMessage(null);
+              setShowJSONPathModal(false);
+            }}
+            onClose={() => setShowJSONPathModal(false)}
+            onHighlightPath={(p) => highlightPathInInput(p)}
           />
         )}
       </div>
