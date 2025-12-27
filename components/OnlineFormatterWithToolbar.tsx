@@ -5752,7 +5752,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : 'Output'}</h2>
+                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (isParserPage ? 'Draft-07 schema' : 'Output')}</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
                 {!isConversionOutput && (
