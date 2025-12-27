@@ -4030,7 +4030,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
               {isBeautifierPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
-                <button onClick={() => { if (!inputCode.trim()) return; try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title="Query with JSONPath">
+                <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title="Query with JSONPath">
                   <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                   <span>JSONPath</span>
                 </button>
