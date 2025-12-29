@@ -76,6 +76,8 @@ interface OnlineFormatterWithToolbarProps {
 export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProps> = ({ initialLanguage = 'json', showLeftInputActions = false, inlineStructureAnalysisIcon = false, inlineSortValidateIcons = false, showMinifyNextToBeautify = false, colorTheme = 'default', hideFormatButtons = false, initialViewFormat = 'code', lockViewTo, textOutputMode = 'plain', hideStructureAnalysisAndTransform = false }) => {
   const [inputCode, setInputCode] = useState('');
   const [outputCode, setOutputCode] = useState<string | null>(null);
+  const [outputLocked, setOutputLocked] = useState<boolean>(false);
+  const [outputTitle, setOutputTitle] = useState<string | null>(null);
   const [activeLanguage, setActiveLanguage] = useState<Language>(initialLanguage);
   const [outputError, setOutputError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -297,6 +299,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           setOutputCode(schemaText);
           setIsConversionOutput(true);
           setViewFormat('code');
+          setOutputTitle('Draft-07 schema');
         } catch (err) {
           // Invalid JSON; let normal validation flows handle
         }
@@ -3354,7 +3357,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={isTransformPage ? undefined : (value) => setOutputCode(value)}
+              onEdit={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
             />
           );
         case 'form':
@@ -3363,7 +3366,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={isTransformPage ? undefined : ((updatedJson) => {
+              onEdit={isTransformPage || outputLocked ? undefined : ((updatedJson) => {
                 setOutputCode(updatedJson);
               })}
             />
@@ -3382,7 +3385,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <TextView
               code={textCode}
-              onChange={textOutputMode === 'python-pretty' || isTransformPage ? undefined : (value) => setOutputCode(value)}
+              onChange={textOutputMode === 'python-pretty' || isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
             />
@@ -3394,7 +3397,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               data={parsedData}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
-              onEdit={isTransformPage ? undefined : (value) => setOutputCode(value)}
+              onEdit={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
               showExportControl={!(lockViewTo === 'table')}
             />
           );
@@ -3429,8 +3432,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <CodeMirrorViewer
               code={outputCode}
               language={activeLanguage}
-              onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
-              readOnly={isTransformPage}
+              onChange={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
+              readOnly={isTransformPage || outputLocked}
               expandAll={expandAllTrigger}
               collapseAll={collapseAllTrigger}
             />
@@ -3442,8 +3445,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         <CodeMirrorViewer
           code={outputCode}
           language={activeLanguage}
-          onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
-          readOnly={isTransformPage}
+          onChange={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
+          readOnly={isTransformPage || outputLocked}
           expandAll={expandAllTrigger}
           collapseAll={collapseAllTrigger}
         />
@@ -3829,32 +3832,190 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-              {/* Parser page control: Generate Schema */}
+                  {/* Parser page controls: Parse JSON, Pretty Print, Generate Schema, Export via jq */}
               {isParserPage && activeLanguage === 'json' && (
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    try {
-                      JSON.parse(inputCode.trim());
-                      const { schemaText } = generateSchemaFromSample(inputCode.trim());
-                      setOutputCode(schemaText);
-                      setIsConversionOutput(true);
-                      setViewFormat('code');
-                    } catch (err: any) {
-                      setValidationError({
-                        isValid: false,
-                        reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
-                        isFixableSyntaxError: true,
-                        suggestedLanguage: undefined
-                      });
-                    }
-                  }}
-                  className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                  title="Generate JSON Schema (Draft-07)"
-                >
-                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                  <span>Generate Schema</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  {/* Parse JSON (true parsing like JSON.parse) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      const res = parseJsonSafe(inputCode.trim());
+                      if (res.ok) {
+                        try {
+                          const formatted = JSON.stringify(res.value, null, 2);
+                          setOutputCode(formatted);
+                          setIsConversionOutput(false);
+                          setViewFormat('code');
+                          setOutputLocked(true);
+                              setOutputTitle('Parsed JSON');
+                        } catch (err: any) {
+                          setValidationError({
+                            isValid: false,
+                            reason: err?.message || 'Failed to format parsed JSON.',
+                            isFixableSyntaxError: false,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      } else {
+                        const { errors: allErrors, error: parseError } = res as ParseResultErr;
+                        const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
+                        setValidationError({
+                          isValid: false,
+                          reason: allErrors && allErrors.length ? `${msg}` : msg,
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Parse JSON (JSON.parse)"
+                  >
+                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <span>Parse JSON</span>
+                  </button>
+
+                  {/* Pretty Print (simply JSON.parse + JSON.stringify with 2-space indent) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      try {
+                        const obj = JSON.parse(inputCode.trim());
+                        const pretty = JSON.stringify(obj, null, 2);
+                        setOutputCode(pretty);
+                        setIsConversionOutput(false);
+                        setViewFormat('code');
+                        setOutputLocked(true);
+                            setOutputTitle('Pretty Printed JSON');
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before pretty printing.',
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Pretty Print JSON (2-space indent)"
+                  >
+                    <i className="fa-solid fa-align-left" aria-hidden="true"></i>
+                    <span>Pretty Print</span>
+                  </button>
+
+                  {/* Generate JSON Schema (Draft-07) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      try {
+                        JSON.parse(inputCode.trim());
+                        const { schemaText } = generateSchemaFromSample(inputCode.trim());
+                        setOutputCode(schemaText);
+                        setIsConversionOutput(true);
+                        setViewFormat('code');
+                        setOutputLocked(true);
+                            setOutputTitle('Draft-07 schema');
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Generate JSON Schema (Draft-07)"
+                  >
+                    <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    <span>Generate Schema</span>
+                  </button>
+
+                  {/* Export via jq (Windows PowerShell): download a .ps1 that pretty-prints (and sorts keys) using jq */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
+                      try {
+                        const obj = JSON.parse(inputCode.trim());
+                        const compact = JSON.stringify(obj); // compact for robust here-string
+                        const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
+                        const blob = new Blob([ps], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'export-via-jq.ps1';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before exporting via jq.',
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Export via jq (PowerShell script)"
+                  >
+                    <i className="fa-solid fa-file-export" aria-hidden="true"></i>
+                    <span>Export via jq</span>
+                  </button>
+
+                  {/* Tree View (opens separate page) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Open JSON Tree View"
+                  >
+                    <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
+                    <span>Tree View</span>
+                  </button>
+
+                  {/* Graph View (opens in-page Graph Viewer) */}
+                  <button
+                    onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
+                  >
+                    <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                    <span>Graph View</span>
+                  </button>
+
+                  {/* Transform (JMESPath/JSONPath on Transform page) */}
+                  <button
+                    onClick={() => {
+                      const hasInput = !!inputCode.trim();
+                      if (hasInput) {
+                        navigate('/json-transform', { state: { inputJson: inputCode } });
+                      } else {
+                        navigate('/json-transform');
+                      }
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="Open JSON Transform"
+                  >
+                    <i className="fa-solid fa-right-left" aria-hidden="true"></i>
+                    <span>Transform</span>
+                  </button>
+
+                  {/* Structure Analysis */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
+                    }}
+                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    title="JSON Structure Analyzer"
+                  >
+                    <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
+                    <span>Structure Analysis</span>
+                  </button>
+                </div>
               )}
 
               {isBeautifierPage ? (
@@ -5881,7 +6042,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (isParserPage ? 'Draft-07 schema' : 'Output')}</h2>
+                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (isParserPage ? (outputTitle ?? 'Output') : 'Output')}</h2>
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
                 {!isConversionOutput && (
@@ -6176,6 +6337,44 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </div>
                 )}
                 {/* Output Fullscreen toggle - moved to right-aligned group */}
+                {/* Parser-specific controls: Edit Output (unlock) and Copy Output to Input */}
+                {isParserPage && (
+                  <>
+                    <Tooltip content={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          if (!outputCode?.trim()) return;
+                          setOutputLocked((v) => !v);
+                        }}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); setOutputLocked((v) => !v); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-1 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : (outputLocked ? 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600' : 'bg-slate-500 dark:bg-slate-600 hover:bg-slate-600 dark:hover:bg-slate-500')} cursor-pointer`}
+                        aria-label={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}
+                        title={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}
+                      >
+                        <i className={`fa-solid ${outputLocked ? 'fa-pen-to-square' : 'fa-lock'} text-white text-sm`} aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                    <Tooltip content="Copy output to input">
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => {
+                          if (!outputCode?.trim()) return;
+                          setInputCode(outputCode);
+                          setViewFormat('code');
+                        }}
+                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); setInputCode(outputCode!); setViewFormat('code'); } }}
+                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-teal-400 dark:bg-teal-400' : 'bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600'} cursor-pointer`}
+                        aria-label="Copy output to input"
+                        title="Copy output to input"
+                      >
+                        <i className="fa-solid fa-arrow-left-long text-white text-sm" aria-hidden="true"></i>
+                      </span>
+                    </Tooltip>
+                  </>
+                )}
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
                     role="button"
@@ -6863,8 +7062,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               <CodeMirrorViewer
                                 code={outputCode || ''}
                                 language={activeLanguage}
-                                onChange={isTransformPage ? undefined : (value) => setOutputCode(value)}
-                                readOnly={isTransformPage}
+                                onChange={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
+                                readOnly={isTransformPage || outputLocked}
                                 expandAll={expandAllTrigger}
                                 collapseAll={collapseAllTrigger}
                                 highlightLine={outputSearchResults.length > 0 && currentOutputSearchIndex >= 0 ? outputSearchResults[currentOutputSearchIndex].line : undefined}

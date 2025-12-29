@@ -7,7 +7,7 @@ import { python } from '@codemirror/lang-python';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
 import { EditorView, Decoration, DecorationSet, WidgetType, ViewPlugin, ViewUpdate } from '@codemirror/view';
-import { foldGutter, foldKeymap, foldAll, unfoldAll } from '@codemirror/language';
+import { foldGutter, foldKeymap, foldAll, unfoldAll, foldCode } from '@codemirror/language';
 import { keymap } from '@codemirror/view';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
 
@@ -119,6 +119,7 @@ interface CodeMirrorViewerProps {
   readOnly?: boolean;
   expandAll?: boolean;
   collapseAll?: boolean;
+  collapseFirstLevel?: boolean;
   highlightLine?: number;
   highlightTrigger?: number;
 }
@@ -130,6 +131,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   readOnly = false,
   expandAll: expandAllTrigger,
   collapseAll: collapseAllTrigger,
+  collapseFirstLevel: collapseFirstLevelTrigger,
   highlightLine,
   highlightTrigger = 0,
 }) => {
@@ -167,6 +169,63 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       foldAll(editorRef.current.view);
     }
   }, [collapseAllTrigger]);
+
+  // Collapse to first level for JSON: fold immediate children under root
+  useEffect(() => {
+    if (!editorRef.current?.view || !collapseFirstLevelTrigger) return;
+    const view = editorRef.current.view;
+    try {
+      // First, unfold everything to start clean
+      unfoldAll(view);
+
+      const text = view.state.doc.toString();
+      let depth = 0;
+      let inString = false;
+      let escape = false;
+      const rootType = (() => {
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (ch === ' ' || ch === '\n' || ch === '\r' || ch === '\t') continue;
+          if (ch === '[') return 'array';
+          if (ch === '{') return 'object';
+          return 'unknown';
+        }
+        return 'unknown';
+      })();
+
+      const positions: number[] = [];
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (inString) {
+          if (!escape && ch === '"') inString = false;
+          escape = ch === '\\' && !escape;
+          continue;
+        } else {
+          if (ch === '"') { inString = true; escape = false; continue; }
+        }
+
+        if (ch === '{' || ch === '[') {
+          // When we see an opening brace/bracket, record after increasing depth
+          depth++;
+          // If parent is root (depth === 1 after increment), record position to fold this child
+          if (depth === 2) {
+            // For array root, children are objects/arrays at depth 2
+            // For object root, properties have a key and ':' then a value; we will fold starting at value brace
+            positions.push(i);
+          }
+        } else if (ch === '}' || ch === ']') {
+          depth = Math.max(0, depth - 1);
+        }
+      }
+
+      // Apply folding at recorded positions
+      for (const pos of positions) {
+        try { foldCode(view, pos); } catch {}
+      }
+    } catch (err) {
+      console.error('Error collapsing to first level:', err);
+    }
+  }, [collapseFirstLevelTrigger]);
   
   // Handle boolean toggle in CodeMirror
   const handleBooleanToggle = (pos: number, newValue: boolean) => {

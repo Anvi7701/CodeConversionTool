@@ -62,7 +62,7 @@ export const JsonParserPage: React.FC = () => {
         showLeftInputActions={true}
         inlineStructureAnalysisIcon={false}
         inlineSortValidateIcons={false}
-        showMinifyNextToBeautify={true}
+        hideFormatButtons={true}
         colorTheme="purple"
       />
     </>

@@ -45,6 +45,11 @@
         },
       }
     </script>
+    <!-- Load faker via ESM CDN and expose globally for generator (no npm install needed) -->
+    <script type="module">
+      import { faker } from 'https://esm.sh/@faker-js/faker@9.0.3';
+      window.__faker = faker;
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/standalone.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/babel.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/prettier@3.3.2/plugins/estree.js"></script>
