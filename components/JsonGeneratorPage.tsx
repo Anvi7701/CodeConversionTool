@@ -10,6 +10,40 @@ import SEO from './SEO';
 
 const TEMPLATES = Object.values(Schemas).map(s => ({ id: s.id, title: s.title, description: s.description }));
 
+function getCategory(id: TemplateId): string {
+  const security: TemplateId[] = ['loginSessions','jwtTokens','oauthCredentials','apiKeys','roles','permissions','userRoles'];
+  const finance: TemplateId[] = ['bankAccounts','creditCards','loanApplications','paymentGateways','invoices','transactions'];
+  const retail: TemplateId[] = ['users','products','orders','shoppingCarts','coupons'];
+  const social: TemplateId[] = ['blogPosts','comments','reviews','socialProfiles','messages','notifications'];
+  const events: TemplateId[] = ['events','appointments','reminders','tickets'];
+  const health: TemplateId[] = ['patients','prescriptions','labReports'];
+  const devops: TemplateId[] = ['apiResponses','errorLogs','systemMetrics','configFiles'];
+  const business: TemplateId[] = ['policyDetails','insuranceClaims','employees','payrolls'];
+  const logistics: TemplateId[] = ['warehouses','shipments','trackingUpdates','inventory'];
+  if (security.includes(id)) return 'Authentication & Security';
+  if (finance.includes(id)) return 'Financial & Banking';
+  if (retail.includes(id)) return 'E-commerce & Retail';
+  if (social.includes(id)) return 'Content & Social';
+  if (events.includes(id)) return 'Events & Scheduling';
+  if (health.includes(id)) return 'Healthcare';
+  if (logistics.includes(id)) return 'Logistics & Inventory';
+  if (devops.includes(id)) return 'Tech & DevOps';
+  if (business.includes(id)) return 'Custom Business Domains';
+  return 'Logistics & Inventory';
+}
+
+const CATEGORY_ORDER = [
+  'Authentication & Security',
+  'Financial & Banking',
+  'E-commerce & Retail',
+  'Content & Social',
+  'Events & Scheduling',
+  'Healthcare',
+  'Logistics & Inventory',
+  'Tech & DevOps',
+  'Custom Business Domains'
+];
+
 const LOCALES = [{ key: 'en', label: 'English' }, { key: 'hi', label: 'हिन्दी' }];
 const STYLES = [
   { key: 'technical', label: 'Technical (Hacker)' },
@@ -18,13 +52,13 @@ const STYLES = [
 ];
 const LABELS: Record<string, Record<string, string>> = {
   en: {
-    pageTitle: 'JSON Generator',
-    subtitle: 'Generate realistic mock JSON data for testing and development. Choose from various templates including users, products, orders, and more. Perfect for API testing, UI development, and database seeding.',
+    pageTitle: 'JSON Generator – Mock Data Templates for Every Industry',
+    subtitle: 'Generate realistic mock JSON data for testing and development. Perfect for API testing, UI development, and database seeding.',
     panelTitle: 'JSON Data Generator',
     template: 'Data Template',
     quantity: 'Quantity (1–1000)',
     generate: 'Generate JSON',
-    available: 'Available Templates',
+    available: 'Supported JSON Templates',
     language: 'Language',
     style: 'Style'
   },
@@ -49,6 +83,8 @@ export default function JsonGeneratorPage() {
   const [locale, setLocale] = useState<'en' | 'hi'>('en');
   const [style, setStyle] = useState<'technical' | 'marketing' | 'simple'>('simple');
   const outputRef = useRef<HTMLDivElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const [panelHighlight, setPanelHighlight] = useState(false);
 
   const labels = LABELS[locale];
   const desc = useMemo(() => TEMPLATES.find(t => t.id === template)?.description ?? '', [template]);
@@ -75,7 +111,11 @@ export default function JsonGeneratorPage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
-      <SEO title="JSON Generator" description="Generate mock JSON data with schema-driven templates." />
+      <SEO
+        title="JSON Generator – Mock Data Templates for Every Industry"
+        description="Create realistic JSON mock data for API testing, UI development, and database seeding. Choose templates for Authentication, Banking, E-commerce, Healthcare, Logistics, and more."
+        keywords="json generator online, mock json data generator, api testing json templates, e-commerce json mock data, healthcare json mock data"
+      />
       <div className="max-w-6xl mx-auto px-4 py-10">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-3xl font-bold">{labels.pageTitle}</h1>
@@ -92,7 +132,7 @@ export default function JsonGeneratorPage() {
         </div>
         <p className="text-slate-300 mb-6">{labels.subtitle}</p>
 
-        <section className="bg-slate-800 rounded-xl p-6 shadow-lg">
+        <section ref={panelRef} className={`bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700 ${panelHighlight ? 'panel-highlight' : ''}`}>
           <h2 className="text-xl font-semibold mb-4">{labels.panelTitle}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="group" aria-label="Generator controls">
@@ -109,15 +149,40 @@ export default function JsonGeneratorPage() {
         </div>
 
         <section className="mt-10">
-          <h3 className="text-lg font-semibold mb-3">{labels.available}</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {TEMPLATES.map(t => (
-              <div key={t.id} className="bg-slate-800 rounded-lg p-4 border border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
-                <div className="font-medium">{t.title}</div>
-                <div className="text-slate-400 text-sm">{t.description}</div>
+          <h2 className="text-xl font-semibold mb-2">{labels.available}</h2>
+          <p className="text-slate-300 text-sm mb-4">
+            Generate realistic mock JSON data for testing and development. Perfect for API testing, UI development, and database seeding.
+            Our JSON Generator supports diverse domains including Authentication &amp; Security, Financial &amp; Banking, E-commerce &amp; Retail, Content &amp; Social,
+            Events &amp; Scheduling, Healthcare, Logistics &amp; Inventory, Tech &amp; DevOps, and Custom Business Applications.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2">
+            {TEMPLATES
+              .map(t => ({ ...t, category: getCategory(t.id as TemplateId) }))
+              .sort((a, b) => {
+                const ca = CATEGORY_ORDER.indexOf(a.category);
+                const cb = CATEGORY_ORDER.indexOf(b.category);
+                if (ca !== cb) return ca - cb;
+                return a.title.localeCompare(b.title);
+              })
+              .map(t => (
+              <div key={t.id} className="bg-slate-800 rounded-md p-2 border border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
+                <div className="text-sm font-medium">{t.title}</div>
+                <div className="text-slate-400 text-xs truncate">{t.description}</div>
                 <button
-                  className="mt-3 text-sm bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded"
-                  onClick={() => setTemplate(t.id as TemplateId)}
+                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
+                  onClick={() => {
+                    setTemplate(t.id as TemplateId);
+                    requestAnimationFrame(() => {
+                      const el = panelRef.current;
+                      if (!el) return;
+                      const y = el.getBoundingClientRect().top + window.scrollY - 80;
+                      window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+                      const sel = document.getElementById('template') as HTMLSelectElement | null;
+                      sel?.focus();
+                      setPanelHighlight(true);
+                      window.setTimeout(() => setPanelHighlight(false), 1300);
+                    });
+                  }}
                   aria-label={`Select ${t.title} template`}
                 >Use</button>
               </div>

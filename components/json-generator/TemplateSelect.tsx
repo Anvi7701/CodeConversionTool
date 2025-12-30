@@ -19,21 +19,33 @@ function getCategory(id: TemplateId): string {
   const business: TemplateId[] = ['policyDetails','insuranceClaims','employees','payrolls'];
   const logistics: TemplateId[] = ['warehouses','shipments','trackingUpdates','inventory'];
 
-  if (security.includes(id)) return 'Security & Auth';
+  if (security.includes(id)) return 'Authentication & Security';
   if (finance.includes(id)) return 'Financial & Banking';
   if (retail.includes(id)) return 'E-commerce & Retail';
   if (social.includes(id)) return 'Content & Social';
   if (events.includes(id)) return 'Events & Scheduling';
   if (health.includes(id)) return 'Healthcare';
   if (devops.includes(id)) return 'Tech & DevOps';
-  if (business.includes(id)) return 'Business Domains';
+  if (business.includes(id)) return 'Custom Business Domains';
   if (logistics.includes(id)) return 'Logistics & Inventory';
   return 'Logistics & Inventory';
 }
 
 export const TemplateSelect: React.FC<Props> = ({ value, onChange, ...aria }) => {
   const allTemplates = Object.values(Schemas).map(s => ({ id: s.id, title: s.title, category: getCategory(s.id) }));
-  const categories = Array.from(new Set(allTemplates.map(t => t.category)));
+  const ORDER = [
+    'Authentication & Security',
+    'Financial & Banking',
+    'E-commerce & Retail',
+    'Content & Social',
+    'Events & Scheduling',
+    'Healthcare',
+    'Logistics & Inventory',
+    'Tech & DevOps',
+    'Custom Business Domains'
+  ];
+  const categories = Array.from(new Set(allTemplates.map(t => t.category)))
+    .sort((a, b) => ORDER.indexOf(a) - ORDER.indexOf(b));
 
   return (
     <div>
@@ -47,9 +59,12 @@ export const TemplateSelect: React.FC<Props> = ({ value, onChange, ...aria }) =>
       >
         {categories.map(cat => (
           <optgroup key={cat} label={cat}>
-            {allTemplates.filter(t => t.category === cat).map(t => (
-              <option key={t.id} value={t.id}>{t.title}</option>
-            ))}
+            {allTemplates
+              .filter(t => t.category === cat)
+              .sort((a, b) => a.title.localeCompare(b.title))
+              .map(t => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
           </optgroup>
         ))}
       </select>

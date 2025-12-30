@@ -1,0 +1,127 @@
+import React, { useMemo, useState } from 'react';
+import { CodeMirrorViewer } from './CodeMirrorViewer';
+import type { DiffEntry } from '../lib/diff/types';
+
+interface JsonCompareModalProps {
+  leftText: string;
+  rightText: string;
+  leftPathToLine: Map<string, number>;
+  rightPathToLine: Map<string, number>;
+  diffs: DiffEntry[];
+  onClose: () => void;
+}
+
+type DiffCategory = 'missing' | 'incorrectType' | 'unequal';
+
+function categorizeDiff(d: DiffEntry): DiffCategory {
+  if (d.type === 'added' || d.type === 'removed') return 'missing';
+  const lt = typeof d.leftValue;
+  const rt = typeof d.rightValue;
+  if (lt !== rt) return 'incorrectType';
+  return 'unequal';
+}
+
+export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, rightText, leftPathToLine, rightPathToLine, diffs, onClose }) => {
+  const [filters, setFilters] = useState<{ missing: boolean; incorrectType: boolean; unequal: boolean }>({ missing: true, incorrectType: true, unequal: true });
+  const [selectedIdx, setSelectedIdx] = useState<number>(-1);
+  const [leftHighlight, setLeftHighlight] = useState<number | undefined>(undefined);
+  const [leftKey, setLeftKey] = useState(0);
+  const [rightHighlight, setRightHighlight] = useState<number | undefined>(undefined);
+  const [rightKey, setRightKey] = useState(0);
+
+  const withCategory = useMemo(() => diffs.map(d => ({ d, c: categorizeDiff(d) })), [diffs]);
+  const counts = useMemo(() => {
+    return {
+      missing: withCategory.filter(x => x.c === 'missing').length,
+      incorrectType: withCategory.filter(x => x.c === 'incorrectType').length,
+      unequal: withCategory.filter(x => x.c === 'unequal').length,
+      total: diffs.length,
+    };
+  }, [withCategory, diffs.length]);
+  const filtered = useMemo(() => withCategory.filter(x => filters[x.c]).map(x => x.d), [withCategory, filters]);
+
+  function goto(i: number) {
+    if (i < 0 || i >= filtered.length) return;
+    setSelectedIdx(i);
+    const entry = filtered[i];
+    const l = leftPathToLine.get(entry.path);
+    const r = rightPathToLine.get(entry.path);
+    if (typeof l === 'number') { setLeftHighlight(l); setLeftKey(k => k + 1); }
+    if (typeof r === 'number') { setRightHighlight(r); setRightKey(k => k + 1); }
+  }
+
+  function messageFor(entry: DiffEntry): string {
+    const cat = categorizeDiff(entry);
+    if (cat === 'missing') {
+      return entry.type === 'added' ? 'Missing in base; present in compare.' : 'Present in base; missing in compare.';
+    }
+    if (cat === 'incorrectType') {
+      return `Type mismatch: ${typeof entry.leftValue} vs ${typeof entry.rightValue}.`;
+    }
+    return 'Values are unequal.';
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col">
+      {/* Header banner */}
+      <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow">
+        <div className="font-semibold text-lg">JSON Compare</div>
+        <button onClick={onClose} className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded">Back To Compare</button>
+      </div>
+
+      {/* Controls row */}
+      <div className="bg-white border-b px-4 py-2 flex items-center gap-6 text-sm">
+        <div className="px-3 py-1 border rounded bg-slate-50">Found {counts.total} differences</div>
+        <div className="flex items-center gap-4">
+          <span>Show:</span>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.missing} onChange={e => setFilters(f => ({ ...f, missing: e.target.checked }))} /> <span> {counts.missing} missing properties</span></label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.incorrectType} onChange={e => setFilters(f => ({ ...f, incorrectType: e.target.checked }))} /> <span> {counts.incorrectType} incorrect types</span></label>
+          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.unequal} onChange={e => setFilters(f => ({ ...f, unequal: e.target.checked }))} /> <span> {counts.unequal} unequal values</span></label>
+        </div>
+      </div>
+
+      {/* Body area */}
+      <div className="flex-1 bg-slate-100 grid grid-cols-12">
+        {/* Editors */}
+        <div className="col-span-9 grid grid-cols-2 gap-2 p-2 overflow-hidden">
+          <section className="bg-white border rounded relative h-full">
+            <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Base</div>
+            <div className="absolute inset-0">
+              <CodeMirrorViewer code={leftText} language="json" readOnly={true} highlightLine={leftHighlight} highlightTrigger={leftKey} />
+            </div>
+          </section>
+          <section className="bg-white border rounded relative h-full">
+            <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Compare</div>
+            <div className="absolute inset-0">
+              <CodeMirrorViewer code={rightText} language="json" readOnly={true} highlightLine={rightHighlight} highlightTrigger={rightKey} />
+            </div>
+          </section>
+        </div>
+
+        {/* Sidebar with navigation and messages */}
+        <aside className="col-span-3 border-l bg-white flex flex-col">
+          <div className="p-3 border-b flex items-center justify-between text-xs">
+            <div>{selectedIdx >= 0 ? `${selectedIdx + 1} of ${filtered.length}` : filtered.length === 0 ? '0 of 0' : `1 of ${filtered.length}`}</div>
+            <div className="flex gap-2">
+              <button className="px-2 py-1 border rounded" disabled={filtered.length === 0} onClick={() => goto(Math.max(0, selectedIdx - 1))}>{'<'}</button>
+              <button className="px-2 py-1 border rounded" disabled={filtered.length === 0} onClick={() => goto(Math.min(filtered.length - 1, selectedIdx + 1))}>{'>'}</button>
+            </div>
+          </div>
+          <div className="p-3 text-sm">
+            {filtered.length === 0 && <div className="text-slate-500">No differences with current filters.</div>}
+            {filtered.length > 0 && (
+              <div className="space-y-2">
+                {filtered.map((d, idx) => (
+                  <button key={idx} onClick={() => goto(idx)} className={`w-full text-left px-2 py-1 rounded ${idx === selectedIdx ? 'bg-slate-200' : 'hover:bg-slate-100'}`}>
+                    <div className="text-xs font-mono text-slate-700">{d.path || '/'}</div>
+                    <div className="text-xs text-slate-500">{messageFor(d)}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+};

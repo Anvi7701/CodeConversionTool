@@ -51,6 +51,7 @@ const JsonGraphViewerPage = lazy(() => import('./components/JsonGraphViewerPage.
 const JsonStructureAnalyzerPage = lazy(() => import('./components/JsonStructureAnalyzerPage.tsx').then(m => ({ default: m.JsonStructureAnalyzerPage })));
 const JsonToTreeViewConverter = lazy(() => import('./components/JsonToTreeViewConverter').then(m => ({ default: m.JsonToTreeViewConverter })));
 const JsonGeneratorPage = lazy(() => import('./components/JsonGeneratorPage').then(m => ({ default: m.default })));
+const JsonComparePage = lazy(() => import('./components/JsonComparePage').then(m => ({ default: m.default })));
 
 const App: React.FC = () => {
   const location = useLocation();
@@ -109,7 +110,8 @@ const App: React.FC = () => {
                     { label: 'JSON Structure Analyzer', to: '/json-structure-analyzer', icon: (<i className="fa-solid fa-diagram-project" aria-hidden="true"></i>) },
                     { label: 'JSON Transform', to: '/json-transform', icon: '🛠️' },
                     { label: 'JSON Parser', to: '/json-parser', icon: '🧪' },
-                    { label: 'JSON Generator', to: '/json-generator', icon: '⚙️' }
+                    { label: 'JSON Generator', to: '/json-generator', icon: '⚙️' },
+                    { label: 'JSON Compare', to: '/json-compare', icon: '🔍' }
                   ]}
                 />
               </span>
@@ -203,6 +205,7 @@ const App: React.FC = () => {
             <Route path="/json-tree-view" element={<JsonToTreeViewConverter />} />
             <Route path="/json-transform" element={<JsonTransformPage />} />
             <Route path="/json-generator" element={<JsonGeneratorPage />} />
+            <Route path="/json-compare" element={<JsonComparePage />} />
           </Routes>
         </Suspense>
       </div>

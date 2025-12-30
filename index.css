@@ -398,6 +398,25 @@ body.is-fullscreen .fullscreen-hide {
 }
 
 /* Fallback for native fullscreen API */
+
+/* Generator panel attention highlight */
+.panel-highlight {
+  animation: panelPulse 1200ms ease-in-out 1;
+}
+@keyframes panelPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59,130,246,0.45);
+    border-color: rgba(59,130,246,0.6);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(59,130,246,0.25);
+    border-color: rgba(59,130,246,0.9);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59,130,246,0.0);
+    border-color: #374151; /* slate-700 */
+  }
+}
 html:fullscreen .fullscreen-hide,
 html:-webkit-full-screen .fullscreen-hide,
 html:-moz-full-screen .fullscreen-hide,
