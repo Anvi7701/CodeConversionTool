@@ -181,11 +181,41 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
       {/* Controls row */}
       <div className="bg-white border-b px-4 py-2 flex items-center gap-6 text-sm text-slate-800">
         <div className="px-3 py-1 border rounded bg-slate-50 text-slate-800 font-medium">Found {counts.total} differences</div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span className="text-slate-800">Show:</span>
-          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.missing} onChange={e => setFilters(f => ({ ...f, missing: e.target.checked }))} /> <span> {counts.missing} missing properties</span></label>
-          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.incorrectType} onChange={e => setFilters(f => ({ ...f, incorrectType: e.target.checked }))} /> <span> {counts.incorrectType} incorrect types</span></label>
-          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.unequal} onChange={e => setFilters(f => ({ ...f, unequal: e.target.checked }))} /> <span> {counts.unequal} unequal values</span></label>
+          {/* Missing properties chip (matches red row tint) */}
+          <button
+            type="button"
+            onClick={() => setFilters(f => ({ ...f, missing: !f.missing }))}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${filters.missing ? 'ring-1 ring-red-400' : ''}`}
+            style={{ backgroundColor: 'rgba(255, 0, 0, 0.12)', borderColor: 'rgba(255, 0, 0, 0.35)' }}
+            aria-pressed={filters.missing}
+          >
+            <input type="checkbox" checked={filters.missing} readOnly className="accent-red-600" />
+            <span>{counts.missing} missing properties</span>
+          </button>
+          {/* Incorrect types chip (matches blue row tint) */}
+          <button
+            type="button"
+            onClick={() => setFilters(f => ({ ...f, incorrectType: !f.incorrectType }))}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${filters.incorrectType ? 'ring-1 ring-blue-400' : ''}`}
+            style={{ backgroundColor: 'rgba(0, 128, 255, 0.12)', borderColor: 'rgba(0, 128, 255, 0.35)' }}
+            aria-pressed={filters.incorrectType}
+          >
+            <input type="checkbox" checked={filters.incorrectType} readOnly className="accent-blue-600" />
+            <span>{counts.incorrectType} incorrect types</span>
+          </button>
+          {/* Unequal values chip (matches amber row tint) */}
+          <button
+            type="button"
+            onClick={() => setFilters(f => ({ ...f, unequal: !f.unequal }))}
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${filters.unequal ? 'ring-1 ring-amber-400' : ''}`}
+            style={{ backgroundColor: 'rgba(255, 200, 0, 0.15)', borderColor: 'rgba(255, 200, 0, 0.4)' }}
+            aria-pressed={filters.unequal}
+          >
+            <input type="checkbox" checked={filters.unequal} readOnly className="accent-amber-600" />
+            <span>{counts.unequal} unequal values</span>
+          </button>
         </div>
       </div>
 
