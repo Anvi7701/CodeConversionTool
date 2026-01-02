@@ -9,6 +9,7 @@ interface JsonCompareModalProps {
   rightPathToLine: Map<string, number>;
   diffs: DiffEntry[];
   onClose: () => void;
+  initialFilters?: { missing: boolean; incorrectType: boolean; unequal: boolean };
 }
 
 type DiffCategory = 'missing' | 'incorrectType' | 'unequal';
@@ -21,8 +22,8 @@ function categorizeDiff(d: DiffEntry): DiffCategory {
   return 'unequal';
 }
 
-export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, rightText, leftPathToLine, rightPathToLine, diffs, onClose }) => {
-  const [filters, setFilters] = useState<{ missing: boolean; incorrectType: boolean; unequal: boolean }>({ missing: true, incorrectType: true, unequal: true });
+export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, rightText, leftPathToLine, rightPathToLine, diffs, onClose, initialFilters }) => {
+  const [filters, setFilters] = useState<{ missing: boolean; incorrectType: boolean; unequal: boolean }>(initialFilters ?? { missing: true, incorrectType: true, unequal: true });
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [leftHighlight, setLeftHighlight] = useState<number | undefined>(undefined);
   const [leftKey, setLeftKey] = useState(0);
