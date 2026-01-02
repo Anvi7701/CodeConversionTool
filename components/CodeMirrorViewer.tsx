@@ -122,6 +122,8 @@ interface CodeMirrorViewerProps {
   collapseFirstLevel?: boolean;
   highlightLine?: number;
   highlightTrigger?: number;
+  lineBackgrounds?: Array<{ line: number; className: string }>;
+  backgroundsKey?: number;
 }
 
 export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({ 
@@ -134,6 +136,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   collapseFirstLevel: collapseFirstLevelTrigger,
   highlightLine,
   highlightTrigger = 0,
+  lineBackgrounds,
+  backgroundsKey = 0,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
 
@@ -268,6 +272,34 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     }
   }, [language]);
 
+  // Line background decorations for diff categories
+  const lineBackgroundPlugin = useMemo(() => {
+    const items = (lineBackgrounds || []).slice();
+    const build = (view: EditorView) => {
+      const ranges = items.map((it) => {
+        const clampedLine = Math.max(1, Math.min(view.state.doc.lines, it.line));
+        const info = view.state.doc.line(clampedLine);
+        return Decoration.line({ class: it.className }).range(info.from);
+      });
+      return Decoration.set(ranges, true);
+    };
+    return ViewPlugin.fromClass(
+      class {
+        decorations: DecorationSet;
+        constructor(view: EditorView) {
+          this.decorations = build(view);
+        }
+        update(update: ViewUpdate) {
+          if (update.docChanged || update.viewportChanged) {
+            this.decorations = build(update.view);
+          }
+        }
+      },
+      { decorations: (v) => (v as any).decorations }
+    );
+    // Recreate when inputs change
+  }, [backgroundsKey, lineBackgrounds]);
+
   // Configure extensions
   const extensions = useMemo(() => {
     const baseExtensions = [
@@ -283,9 +315,14 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     if (language.toLowerCase() === 'json' && onChange && !readOnly) {
       baseExtensions.push(booleanDecorationsPlugin(handleBooleanToggle));
     }
+
+    // Add diff line backgrounds if provided
+    if (lineBackgrounds && lineBackgrounds.length) {
+      baseExtensions.push(lineBackgroundPlugin);
+    }
     
     return baseExtensions;
-  }, [languageExtension, readOnly, language, onChange]);
+  }, [languageExtension, readOnly, language, onChange, lineBackgroundPlugin, lineBackgrounds]);
 
   // Highlight search result line
   useEffect(() => {
@@ -360,6 +397,10 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           0%, 100% { background-color: rgba(255, 255, 0, 0.3); }
           50% { background-color: rgba(255, 255, 0, 0.7); }
         }
+        /* Inline diff backgrounds */
+        .cm-line.diff-missing { background-color: rgba(255, 0, 0, 0.12); }
+        .cm-line.diff-incorrect { background-color: rgba(0, 128, 255, 0.12); }
+        .cm-line.diff-unequal { background-color: rgba(255, 200, 0, 0.15); }
       `}</style>
       <CodeMirror
         ref={editorRef}

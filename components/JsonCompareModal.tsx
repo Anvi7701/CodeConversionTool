@@ -28,6 +28,7 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
   const [leftKey, setLeftKey] = useState(0);
   const [rightHighlight, setRightHighlight] = useState<number | undefined>(undefined);
   const [rightKey, setRightKey] = useState(0);
+  const [decorKey, setDecorKey] = useState(0);
 
   const withCategory = useMemo(() => diffs.map(d => ({ d, c: categorizeDiff(d) })), [diffs]);
   const counts = useMemo(() => {
@@ -40,6 +41,54 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
   }, [withCategory, diffs.length]);
   const filtered = useMemo(() => withCategory.filter(x => filters[x.c]).map(x => x.d), [withCategory, filters]);
 
+  function findNearestLine(path: string, map: Map<string, number>): number | undefined {
+    if (map.has(path)) return map.get(path);
+    let current = path;
+    while (current && current !== '') {
+      const idx = current.lastIndexOf('/');
+      if (idx <= 0) break;
+      current = current.slice(0, idx);
+      if (map.has(current)) return map.get(current);
+    }
+    return undefined;
+  }
+
+  const leftBackgrounds = useMemo(() => {
+    const lines: Record<number, string> = {};
+    for (const d of filtered) {
+      const cat = categorizeDiff(d);
+      if (cat === 'missing') {
+        const ln = findNearestLine(d.path, leftPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-missing';
+      } else if (cat === 'incorrectType') {
+        const ln = findNearestLine(d.path, leftPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-incorrect';
+      } else {
+        const ln = findNearestLine(d.path, leftPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-unequal';
+      }
+    }
+    return Object.entries(lines).map(([line, cls]) => ({ line: Number(line), className: cls }));
+  }, [filtered, leftPathToLine]);
+
+  const rightBackgrounds = useMemo(() => {
+    const lines: Record<number, string> = {};
+    for (const d of filtered) {
+      const cat = categorizeDiff(d);
+      if (cat === 'missing') {
+        const ln = findNearestLine(d.path, rightPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-missing';
+      } else if (cat === 'incorrectType') {
+        const ln = findNearestLine(d.path, rightPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-incorrect';
+      } else {
+        const ln = findNearestLine(d.path, rightPathToLine);
+        if (typeof ln === 'number') lines[ln] = 'diff-unequal';
+      }
+    }
+    return Object.entries(lines).map(([line, cls]) => ({ line: Number(line), className: cls }));
+  }, [filtered, rightPathToLine]);
+
   function goto(i: number) {
     if (i < 0 || i >= filtered.length) return;
     setSelectedIdx(i);
@@ -48,7 +97,33 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
     const r = rightPathToLine.get(entry.path);
     if (typeof l === 'number') { setLeftHighlight(l); setLeftKey(k => k + 1); }
     if (typeof r === 'number') { setRightHighlight(r); setRightKey(k => k + 1); }
+    setDecorKey(k => k + 1);
   }
+
+  // Keyboard shortcuts: ArrowLeft/ArrowRight navigate, Esc closes, 1/2/3 toggle filters
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goto(Math.max(0, (selectedIdx === -1 ? 0 : selectedIdx) - 1));
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goto(Math.min(filtered.length - 1, (selectedIdx === -1 ? 0 : selectedIdx) + 1));
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      } else if (e.key === '1') {
+        setFilters(f => ({ ...f, missing: !f.missing }));
+      } else if (e.key === '2') {
+        setFilters(f => ({ ...f, incorrectType: !f.incorrectType }));
+      } else if (e.key === '3') {
+        setFilters(f => ({ ...f, unequal: !f.unequal }));
+      }
+      setDecorKey(k => k + 1);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [filtered.length, selectedIdx, onClose]);
 
   function messageFor(entry: DiffEntry): string {
     const cat = categorizeDiff(entry);
@@ -87,13 +162,29 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
           <section className="bg-white border rounded relative h-full">
             <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Base</div>
             <div className="absolute inset-0">
-              <CodeMirrorViewer code={leftText} language="json" readOnly={true} highlightLine={leftHighlight} highlightTrigger={leftKey} />
+              <CodeMirrorViewer
+                code={leftText}
+                language="json"
+                readOnly={true}
+                highlightLine={leftHighlight}
+                highlightTrigger={leftKey}
+                lineBackgrounds={leftBackgrounds}
+                backgroundsKey={decorKey}
+              />
             </div>
           </section>
           <section className="bg-white border rounded relative h-full">
             <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Compare</div>
             <div className="absolute inset-0">
-              <CodeMirrorViewer code={rightText} language="json" readOnly={true} highlightLine={rightHighlight} highlightTrigger={rightKey} />
+              <CodeMirrorViewer
+                code={rightText}
+                language="json"
+                readOnly={true}
+                highlightLine={rightHighlight}
+                highlightTrigger={rightKey}
+                lineBackgrounds={rightBackgrounds}
+                backgroundsKey={decorKey}
+              />
             </div>
           </section>
         </div>
