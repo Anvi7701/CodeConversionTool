@@ -46,8 +46,8 @@ export default function JsonComparePage() {
     try {
       const lObj = left.raw ? JSON.parse(left.raw) : {};
       const rObj = right.raw ? JSON.parse(right.raw) : {};
-      const lSer = serializeWithLineMap(lObj, 2);
-      const rSer = serializeWithLineMap(rObj, 2);
+      const lSer = serializeWithLineMap(lObj, 2, opts.arrayMatchKey?.trim() || undefined);
+      const rSer = serializeWithLineMap(rObj, 2, opts.arrayMatchKey?.trim() || undefined);
       setLeftFormatted(lSer.text, lSer.pathToLine);
       setRightFormatted(rSer.text, rSer.pathToLine);
       const cleaned: DiffOptions = {

@@ -132,7 +132,7 @@ export interface LineMapResult {
   pathToLine: Map<string, number>;
 }
 
-export function serializeWithLineMap(value: any, indent = 2): LineMapResult {
+export function serializeWithLineMap(value: any, indent = 2, arrayMatchKey?: string): LineMapResult {
   let line = 1;
   const pathToLine = new Map<string, number>();
   const indentStr = (lvl: number) => ' '.repeat(lvl * indent);
@@ -153,6 +153,12 @@ export function serializeWithLineMap(value: any, indent = 2): LineMapResult {
         buf.push(indentStr(lvl + 1));
         const p = join(path, String(i));
         pathToLine.set(p, line);
+        // Also map by arrayMatchKey token if present and the element is an object with that key
+        if (arrayMatchKey && isObject(val[i]) && Object.prototype.hasOwnProperty.call(val[i], arrayMatchKey)) {
+          const token = String(val[i][arrayMatchKey]);
+          const keyedPath = join(path, token);
+          pathToLine.set(keyedPath, line);
+        }
         serialize(val[i], buf, lvl + 1, p);
         if (i < val.length - 1) { buf.push(','); writeLine(buf); }
       }
