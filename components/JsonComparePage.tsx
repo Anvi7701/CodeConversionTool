@@ -91,11 +91,11 @@ export default function JsonComparePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <section className="bg-slate-800 rounded-lg border border-slate-700 h-[50vh] relative">
             <div className="absolute top-2 left-2 z-10 text-xs text-slate-300">Base</div>
-            <CodeMirrorViewer code={left.formatted} language="json" onChange={setLeftRaw} readOnly={false} highlightLine={left.highlightLine} highlightTrigger={left.highlightKey} />
+            <CodeMirrorViewer code={left.raw} language="json" onChange={setLeftRaw} readOnly={false} />
           </section>
           <section className="bg-slate-800 rounded-lg border border-slate-700 h-[50vh] relative">
             <div className="absolute top-2 left-2 z-10 text-xs text-slate-300">Compare</div>
-            <CodeMirrorViewer code={right.formatted} language="json" onChange={setRightRaw} readOnly={false} highlightLine={right.highlightLine} highlightTrigger={right.highlightKey} />
+            <CodeMirrorViewer code={right.raw} language="json" onChange={setRightRaw} readOnly={false} />
           </section>
         </div>
 
