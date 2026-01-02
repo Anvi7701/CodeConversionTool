@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
+import { EditorWithToolbar } from './EditorWithToolbar';
 import { diffJson } from '../lib/diff/engine';
 import type { DiffEntry, DiffOptions } from '../lib/diff/types';
 import { serializeWithLineMap } from '../lib/diff/engine';
@@ -163,12 +164,8 @@ export default function JsonComparePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <section className="bg-slate-800 rounded-lg border border-slate-700 h-[50vh] relative">
-            <CodeMirrorViewer code={left.raw} language="json" onChange={setLeftRaw} readOnly={false} />
-          </section>
-          <section className="bg-slate-800 rounded-lg border border-slate-700 h-[50vh] relative">
-            <CodeMirrorViewer code={right.raw} language="json" onChange={setRightRaw} readOnly={false} />
-          </section>
+          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="50vh" />
+          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="50vh" />
         </div>
 
         <section className="mt-4 bg-slate-800 rounded-lg border border-slate-700 p-3">
