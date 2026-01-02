@@ -387,20 +387,24 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   return (
     <div className="absolute inset-0 overflow-auto">
       <style>{`
+        /* Inline diff backgrounds */
+        .cm-line.diff-missing { background-color: rgba(255, 0, 0, 0.12); }
+        .cm-line.diff-incorrect { background-color: rgba(0, 128, 255, 0.12); }
+        .cm-line.diff-unequal { background-color: rgba(255, 200, 0, 0.15); }
+
+        /* Strong highlight overlay comes AFTER diff backgrounds to win cascade */
         .cm-line.search-highlight {
-          background-color: rgba(255, 255, 0, 0.3);
+          position: relative;
+          background-color: rgba(255, 235, 59, 0.35) !important;
+          box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.9);
         }
         .cm-line.search-highlight-pulse {
           animation: search-highlight-pulse 0.8s ease-in-out 2;
         }
         @keyframes search-highlight-pulse {
-          0%, 100% { background-color: rgba(255, 255, 0, 0.3); }
-          50% { background-color: rgba(255, 255, 0, 0.7); }
+          0%, 100% { box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.6); }
+          50% { box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 1); }
         }
-        /* Inline diff backgrounds */
-        .cm-line.diff-missing { background-color: rgba(255, 0, 0, 0.12); }
-        .cm-line.diff-incorrect { background-color: rgba(0, 128, 255, 0.12); }
-        .cm-line.diff-unequal { background-color: rgba(255, 200, 0, 0.15); }
       `}</style>
       <CodeMirror
         ref={editorRef}
