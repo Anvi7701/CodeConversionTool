@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { diffJson } from '../lib/diff/engine';
 import type { DiffEntry, DiffOptions } from '../lib/diff/types';
@@ -42,6 +42,7 @@ export default function JsonComparePage() {
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [showModal, setShowModal] = useState(false);
   const [pageFilters, setPageFilters] = useState<{ missing: boolean; incorrectType: boolean; unequal: boolean }>({ missing: true, incorrectType: true, unequal: true });
+  const listRef = useRef<HTMLDivElement | null>(null);
 
   function categorizeDiff(d: DiffEntry): 'missing' | 'incorrectType' | 'unequal' {
     if (d.type === 'added' || d.type === 'removed') return 'missing';
@@ -87,7 +88,26 @@ export default function JsonComparePage() {
     const rLine = right.pathToLine.get(entry.path);
     if (typeof lLine === 'number') setLeftHighlight(lLine);
     if (typeof rLine === 'number') setRightHighlight(rLine);
+    // Ensure the selected item stays in view within the list
+    const container = listRef.current;
+    if (container) {
+      const el = container.querySelector(`[data-idx="${i}"]`);
+      if (el && (el as HTMLElement).scrollIntoView) {
+        (el as HTMLElement).scrollIntoView({ block: 'nearest' });
+      }
+    }
   }
+
+  // Clamp and initialize selection whenever the filtered list changes
+  useEffect(() => {
+    if (filteredDiffs.length === 0) {
+      setSelectedIdx(-1);
+      return;
+    }
+    if (selectedIdx < 0 || selectedIdx >= filteredDiffs.length) {
+      gotoDiff(0);
+    }
+  }, [filteredDiffs.length]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
@@ -161,12 +181,12 @@ export default function JsonComparePage() {
               <button disabled={filteredDiffs.length === 0} onClick={() => gotoDiff(Math.min(filteredDiffs.length - 1, selectedIdx + 1))} className="px-2 py-1 text-xs rounded bg-slate-700 disabled:opacity-50">Next</button>
             </div>
           </div>
-          <div className="max-h-64 overflow-auto">
+          <div ref={listRef} className="max-h-64 overflow-auto">
             {filteredDiffs.length === 0 && (
               <div className="text-slate-400 text-sm">No differences. Paste JSON above and click Compare.</div>
             )}
             {filteredDiffs.map((d, idx) => (
-              <button key={idx} onClick={() => gotoDiff(idx)} className={`w-full text-left px-2 py-1 rounded ${idx === selectedIdx ? 'bg-slate-700' : 'hover:bg-slate-700'}`}>
+              <button key={idx} data-idx={idx} onClick={() => gotoDiff(idx)} className={`w-full text-left px-2 py-1 rounded ${idx === selectedIdx ? 'bg-slate-700' : 'hover:bg-slate-700'}`}>
                 <span className={`inline-block w-16 text-xs ${d.type === 'added' ? 'text-green-400' : d.type === 'removed' ? 'text-red-400' : 'text-yellow-300'}`}>{d.type.toUpperCase()}</span>
                 <span className="text-xs text-slate-200">{d.path || '/'}</span>
               </button>
