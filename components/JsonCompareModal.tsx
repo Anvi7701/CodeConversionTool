@@ -137,7 +137,7 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col">
+    <div className="fixed inset-0 z-50 flex flex-col text-slate-800">
       {/* Header banner */}
       <div className="bg-blue-600 text-white px-4 py-3 flex items-center justify-between shadow">
         <div className="font-semibold text-lg">JSON Compare</div>
@@ -145,13 +145,13 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
       </div>
 
       {/* Controls row */}
-      <div className="bg-white border-b px-4 py-2 flex items-center gap-6 text-sm">
-        <div className="px-3 py-1 border rounded bg-slate-50">Found {counts.total} differences</div>
+      <div className="bg-white border-b px-4 py-2 flex items-center gap-6 text-sm text-slate-800">
+        <div className="px-3 py-1 border rounded bg-slate-50 text-slate-800 font-medium">Found {counts.total} differences</div>
         <div className="flex items-center gap-4">
-          <span>Show:</span>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.missing} onChange={e => setFilters(f => ({ ...f, missing: e.target.checked }))} /> <span> {counts.missing} missing properties</span></label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.incorrectType} onChange={e => setFilters(f => ({ ...f, incorrectType: e.target.checked }))} /> <span> {counts.incorrectType} incorrect types</span></label>
-          <label className="flex items-center gap-2"><input type="checkbox" checked={filters.unequal} onChange={e => setFilters(f => ({ ...f, unequal: e.target.checked }))} /> <span> {counts.unequal} unequal values</span></label>
+          <span className="text-slate-800">Show:</span>
+          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.missing} onChange={e => setFilters(f => ({ ...f, missing: e.target.checked }))} /> <span> {counts.missing} missing properties</span></label>
+          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.incorrectType} onChange={e => setFilters(f => ({ ...f, incorrectType: e.target.checked }))} /> <span> {counts.incorrectType} incorrect types</span></label>
+          <label className="flex items-center gap-2 text-slate-800"><input type="checkbox" checked={filters.unequal} onChange={e => setFilters(f => ({ ...f, unequal: e.target.checked }))} /> <span> {counts.unequal} unequal values</span></label>
         </div>
       </div>
 
@@ -190,7 +190,7 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
         </div>
 
         {/* Sidebar with navigation and messages */}
-        <aside className="col-span-3 border-l bg-white flex flex-col">
+        <aside className="col-span-3 border-l bg-white flex flex-col text-slate-800">
           <div className="p-3 border-b flex items-center justify-between text-xs">
             <div>{selectedIdx >= 0 ? `${selectedIdx + 1} of ${filtered.length}` : filtered.length === 0 ? '0 of 0' : `1 of ${filtered.length}`}</div>
             <div className="flex gap-2">
@@ -199,13 +199,13 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
             </div>
           </div>
           <div className="p-3 text-sm">
-            {filtered.length === 0 && <div className="text-slate-500">No differences with current filters.</div>}
+            {filtered.length === 0 && <div className="text-slate-600">No differences with current filters.</div>}
             {filtered.length > 0 && (
               <div className="space-y-2">
                 {filtered.map((d, idx) => (
                   <button key={idx} onClick={() => goto(idx)} className={`w-full text-left px-2 py-1 rounded ${idx === selectedIdx ? 'bg-slate-200' : 'hover:bg-slate-100'}`}>
-                    <div className="text-xs font-mono text-slate-700">{d.path || '/'}</div>
-                    <div className="text-xs text-slate-500">{messageFor(d)}</div>
+                    <div className="text-xs font-mono text-slate-800">{d.path || '/'}</div>
+                    <div className="text-xs text-slate-700">{messageFor(d)}</div>
                   </button>
                 ))}
               </div>
