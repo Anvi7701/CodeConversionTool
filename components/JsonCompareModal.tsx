@@ -160,7 +160,6 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
         {/* Editors */}
         <div className="col-span-9 grid grid-cols-2 gap-2 p-2 overflow-hidden">
           <section className="bg-white border rounded relative h-full">
-            <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Base</div>
             <div className="absolute inset-0">
               <CodeMirrorViewer
                 code={leftText}
@@ -174,7 +173,6 @@ export const JsonCompareModal: React.FC<JsonCompareModalProps> = ({ leftText, ri
             </div>
           </section>
           <section className="bg-white border rounded relative h-full">
-            <div className="absolute top-2 left-2 z-10 text-xs text-slate-600">Compare</div>
             <div className="absolute inset-0">
               <CodeMirrorViewer
                 code={rightText}
