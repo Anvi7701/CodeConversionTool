@@ -42,23 +42,9 @@ export default function JsonComparePage() {
   const filteredDiffs = useMemo(() => diffs.filter(d => activeTypes[d.type]), [diffs, activeTypes]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [showModal, setShowModal] = useState(false);
-  const [pageFilters, setPageFilters] = useState<{ missing: boolean; incorrectType: boolean; unequal: boolean }>({ missing: true, incorrectType: true, unequal: true });
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  function categorizeDiff(d: DiffEntry): 'missing' | 'incorrectType' | 'unequal' {
-    if (d.type === 'added' || d.type === 'removed') return 'missing';
-    const lt = typeof d.leftValue; const rt = typeof d.rightValue;
-    if (lt !== rt) return 'incorrectType';
-    return 'unequal';
-  }
-  const counts = useMemo(() => {
-    return {
-      missing: diffs.filter(d => categorizeDiff(d) === 'missing').length,
-      incorrectType: diffs.filter(d => categorizeDiff(d) === 'incorrectType').length,
-      unequal: diffs.filter(d => categorizeDiff(d) === 'unequal').length,
-      total: diffs.length,
-    };
-  }, [diffs]);
+  // Counts and filter chips removed from page; retained in Compare popup only
 
   function formatBothAndDiff() {
     try {
@@ -125,43 +111,7 @@ export default function JsonComparePage() {
           </div>
         </header>
 
-        {/* Colored chips matching row tints */}
-        <div className="bg-slate-800 rounded-lg border border-slate-700 p-3 mb-4">
-          <div className="flex items-center gap-3 text-sm">
-            <div className="px-3 py-1 rounded border bg-slate-700 text-slate-200">Found {counts.total} differences</div>
-            <span className="text-slate-300">Show:</span>
-            <button
-              type="button"
-              onClick={() => setPageFilters(f => ({ ...f, missing: !f.missing }))}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${pageFilters.missing ? 'ring-1 ring-red-400' : ''}`}
-              style={{ backgroundColor: 'rgba(255, 0, 0, 0.12)', borderColor: 'rgba(255, 0, 0, 0.35)' }}
-              aria-pressed={pageFilters.missing}
-            >
-              <input type="checkbox" checked={pageFilters.missing} readOnly className="accent-red-500" />
-              <span>{counts.missing} missing properties</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPageFilters(f => ({ ...f, incorrectType: !f.incorrectType }))}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${pageFilters.incorrectType ? 'ring-1 ring-blue-400' : ''}`}
-              style={{ backgroundColor: 'rgba(0, 128, 255, 0.12)', borderColor: 'rgba(0, 128, 255, 0.35)' }}
-              aria-pressed={pageFilters.incorrectType}
-            >
-              <input type="checkbox" checked={pageFilters.incorrectType} readOnly className="accent-blue-500" />
-              <span>{counts.incorrectType} incorrect types</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPageFilters(f => ({ ...f, unequal: !f.unequal }))}
-              className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${pageFilters.unequal ? 'ring-1 ring-amber-400' : ''}`}
-              style={{ backgroundColor: 'rgba(255, 200, 0, 0.15)', borderColor: 'rgba(255, 200, 0, 0.4)' }}
-              aria-pressed={pageFilters.unequal}
-            >
-              <input type="checkbox" checked={pageFilters.unequal} readOnly className="accent-amber-500" />
-              <span>{counts.unequal} unequal values</span>
-            </button>
-          </div>
-        </div>
+        {/* Page-level diff summary and chips removed as requested (kept in modal) */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="50vh" />
@@ -209,7 +159,6 @@ export default function JsonComparePage() {
           leftPathToLine={left.pathToLine}
           rightPathToLine={right.pathToLine}
           diffs={diffs}
-          initialFilters={pageFilters}
           onClose={() => setShowModal(false)}
         />
       )}
