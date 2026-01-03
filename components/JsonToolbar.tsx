@@ -301,7 +301,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   aria-label="Collapse all"
                   title="Collapse All"
                 >
-                  <span className="icon">⤵︎</span>
+                  <span className="icon"><i className="fa-solid fa-compress" aria-hidden="true"></i></span>
                 </button>
               )}
               {onExpandAll && (
@@ -312,7 +312,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   aria-label="Expand all"
                   title="Expand All"
                 >
-                  <span className="icon">⤴︎</span>
+                  <span className="icon"><i className="fa-solid fa-expand" aria-hidden="true"></i></span>
                 </button>
               )}
             </div>
