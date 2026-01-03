@@ -26,6 +26,7 @@ interface JsonToolbarProps {
   variant?: 'default' | 'compact';
   formatLabel?: string; // Override Beautify label (e.g., "Format")
   validateInPrimaryRibbon?: boolean; // When true, shows Validate next to Sort in primary ribbon
+  sampleVariant?: 'button' | 'icon'; // Control Sample rendering style
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -53,6 +54,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   variant = 'default',
   formatLabel = 'Beautify',
   validateInPrimaryRibbon = false,
+  sampleVariant = 'button',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -253,16 +255,17 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {onGenerateSample && (
             <div className="toolbar-button-group">
               <button
-                className="toolbar-btn"
+                className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   setSampleDropdownOpen(!sampleDropdownOpen);
                 }}
                 disabled={disabled}
                 aria-label="Generate sample JSON"
+                title="Insert Sample"
               >
                 <span className="icon">🎲</span>
-                <span className="label">Sample</span>
+                {sampleVariant !== 'icon' && <span className="label">Sample</span>}
                 <span className="dropdown-arrow">▼</span>
               </button>
               {sampleDropdownOpen && (

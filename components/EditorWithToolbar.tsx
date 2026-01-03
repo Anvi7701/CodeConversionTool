@@ -115,6 +115,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           language="json"
           variant="compact"
           formatLabel="Format"
+          sampleVariant="icon"
           validateInPrimaryRibbon={true}
         />
       </div>
