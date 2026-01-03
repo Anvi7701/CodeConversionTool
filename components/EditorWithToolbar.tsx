@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useCallback } from 'react';
+import React, { useMemo, useRef, useCallback, useState } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { JsonToolbar } from './JsonToolbar';
 import './JsonToolbar.css';
@@ -38,6 +38,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
   const hasErrors = !!parseError;
   const errorCount = parseError ? 1 : 0;
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [expandAllTrigger, setExpandAllTrigger] = useState(false);
+  const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
 
   const triggerUpload = () => {
     try { fileInputRef.current?.click(); } catch {}
@@ -94,6 +96,16 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
     } catch {}
   }, [onChange]);
 
+  const handleExpandAll = useCallback(() => {
+    setExpandAllTrigger(true);
+    setTimeout(() => setExpandAllTrigger(false), 120);
+  }, []);
+
+  const handleCollapseAll = useCallback(() => {
+    setCollapseAllTrigger(true);
+    setTimeout(() => setCollapseAllTrigger(false), 120);
+  }, []);
+
   return (
     <section className={`bg-slate-800 rounded-lg border border-slate-700 ${className}`}>
       {/* Input toolbar */}
@@ -109,6 +121,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           onClear={() => onChange('')}
           onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
           onGenerateSample={handleGenerateSample}
+          onExpandAll={handleExpandAll}
+          onCollapseAll={handleCollapseAll}
           hasErrors={hasErrors}
           errorCount={errorCount}
           disabled={false}
@@ -129,7 +143,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           <input ref={fileInputRef} type="file" accept="application/json,.json,text/plain" className="hidden" onChange={handleFileSelected} />
         </div>
         <div className="flex-1 relative">
-          <CodeMirrorViewer code={value} language="json" onChange={onChange} readOnly={false} />
+          <CodeMirrorViewer code={value} language="json" onChange={onChange} readOnly={false} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
         </div>
       </div>
     </section>

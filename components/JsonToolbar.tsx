@@ -9,6 +9,8 @@ interface JsonToolbarProps {
   onUndo?: () => void;
   onRedo?: () => void;
   onGenerateSample?: (template: string) => void;
+  onCollapseAll?: () => void;
+  onExpandAll?: () => void;
   onViewGraph?: () => void;
   onSave?: () => void;
   onPrint?: () => void;
@@ -37,6 +39,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   onUndo,
   onRedo,
   onGenerateSample,
+  onCollapseAll,
+  onExpandAll,
   onViewGraph: _onViewGraph,
   onSave: _onSave,
   onPrint: _onPrint,
@@ -282,6 +286,34 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                     </button>
                   ))}
                 </div>
+              )}
+            </div>
+          )}
+
+          {/* Collapse/Expand All - icon-only controls */}
+          {(onCollapseAll || onExpandAll) && (
+            <div className="toolbar-button-group" style={{ marginLeft: '8px' }}>
+              {onCollapseAll && (
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onCollapseAll}
+                  disabled={disabled}
+                  aria-label="Collapse all"
+                  title="Collapse All"
+                >
+                  <span className="icon">⤵︎</span>
+                </button>
+              )}
+              {onExpandAll && (
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onExpandAll}
+                  disabled={disabled}
+                  aria-label="Expand all"
+                  title="Expand All"
+                >
+                  <span className="icon">⤴︎</span>
+                </button>
               )}
             </div>
           )}
