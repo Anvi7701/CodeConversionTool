@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { JsonToolbar } from './JsonToolbar';
 import './JsonToolbar.css';
@@ -37,6 +37,22 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
 
   const hasErrors = !!parseError;
   const errorCount = parseError ? 1 : 0;
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const triggerUpload = () => {
+    try { fileInputRef.current?.click(); } catch {}
+  };
+
+  const handleFileSelected: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      onChange(text);
+    } catch {}
+    // Reset input value so selecting the same file again still triggers change
+    try { e.target.value = ''; } catch {}
+  };
 
   return (
     <section className={`bg-slate-800 rounded-lg border border-slate-700 ${className}`}>
@@ -66,7 +82,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
         <div className="flex-shrink-0 w-10 flex flex-col gap-2 items-center justify-start pt-2 pb-2 border-r border-slate-700 bg-slate-900/30">
           <button title="Clear" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={() => onChange('')}>🧽</button>
           <button title="Copy" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}>📋</button>
-          <button title="Beautify" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={() => { try { const o = JSON.parse(value || ''); onChange(JSON.stringify(o, null, 2)); } catch {} }}>🎨</button>
+          <button title="Upload JSON file" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={triggerUpload}>📤</button>
+          <input ref={fileInputRef} type="file" accept="application/json,.json,text/plain" className="hidden" onChange={handleFileSelected} />
         </div>
         <div className="flex-1 relative">
           <CodeMirrorViewer code={value} language="json" onChange={onChange} readOnly={false} />
