@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useCallback } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { JsonToolbar } from './JsonToolbar';
 import './JsonToolbar.css';
@@ -54,6 +54,46 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
     try { e.target.value = ''; } catch {}
   };
 
+  const handleGenerateSample = useCallback((template: string) => {
+    const samples: Record<string, any> = {
+      user: {
+        id: 1,
+        name: 'John Doe',
+        email: 'john@example.com',
+        age: 30,
+        isActive: true,
+        address: { street: '123 Main St', city: 'New York', country: 'USA' }
+      },
+      api: {
+        status: 'success',
+        data: [
+          { id: 1, title: 'Item 1', price: 29.99 },
+          { id: 2, title: 'Item 2', price: 49.99 }
+        ],
+        meta: { total: 2, page: 1, perPage: 10 }
+      },
+      config: {
+        appName: 'My Application',
+        version: '1.0.0',
+        settings: { theme: 'dark', language: 'en', notifications: true },
+        endpoints: { api: 'https://api.example.com', cdn: 'https://cdn.example.com' }
+      },
+      array: [
+        { id: 1, name: 'Alice' },
+        { id: 2, name: 'Bob' },
+        { id: 3, name: 'Charlie' }
+      ],
+      nested: {
+        level1: { level2: { level3: { level4: { value: 'Deep nested value' } } } }
+      }
+    };
+    const sample = samples[template] || samples.user;
+    try {
+      const formatted = JSON.stringify(sample, null, 2);
+      onChange(formatted);
+    } catch {}
+  }, [onChange]);
+
   return (
     <section className={`bg-slate-800 rounded-lg border border-slate-700 ${className}`}>
       {/* Input toolbar */}
@@ -68,6 +108,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           onValidate={() => { try { JSON.parse(value || ''); } catch (e) { /* no-op: toolbar badge already indicates error */ } }}
           onClear={() => onChange('')}
           onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
+          onGenerateSample={handleGenerateSample}
           hasErrors={hasErrors}
           errorCount={errorCount}
           disabled={false}
