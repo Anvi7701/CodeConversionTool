@@ -25,6 +25,7 @@ interface JsonToolbarProps {
   language?: string;
   variant?: 'default' | 'compact';
   formatLabel?: string; // Override Beautify label (e.g., "Format")
+  validateInPrimaryRibbon?: boolean; // When true, shows Validate next to Sort in primary ribbon
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -51,6 +52,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   language: _language = 'json',
   variant = 'default',
   formatLabel = 'Beautify',
+  validateInPrimaryRibbon = false,
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -226,6 +228,23 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
         </div>
       </div>
 
+      {validateInPrimaryRibbon && (
+        <>
+          <div className="toolbar-separator" />
+          <div className="toolbar-group validate-group">
+            <button
+              className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
+              onClick={onValidate}
+              disabled={disabled}
+              aria-label="Validate JSON"
+            >
+              <span className="icon">✓</span>
+              <span className="label">Validate</span>
+            </button>
+          </div>
+        </>
+      )}
+
       {/* SECONDARY RIBBON: Tools & Actions */}
       <div className="toolbar-ribbon secondary-ribbon">
         <div className="toolbar-group data-group">
@@ -266,18 +285,20 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         {onGenerateSample && <div className="toolbar-separator" />}
 
-        <div className="toolbar-group validate-group">
-          {/* Validate */}
-          <button
-            className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
-            onClick={onValidate}
-            disabled={disabled}
-            aria-label="Validate JSON"
-          >
-            <span className="icon">✓</span>
-            <span className="label">Validate</span>
-          </button>
-        </div>
+        {!validateInPrimaryRibbon && (
+          <div className="toolbar-group validate-group">
+            {/* Validate */}
+            <button
+              className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
+              onClick={onValidate}
+              disabled={disabled}
+              aria-label="Validate JSON"
+            >
+              <span className="icon">✓</span>
+              <span className="label">Validate</span>
+            </button>
+          </div>
+        )}
 
         {onFullscreen && <div className="toolbar-separator" />}
 
