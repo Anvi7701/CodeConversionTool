@@ -64,7 +64,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           }}
           onMinify={() => { try { const obj = JSON.parse(value || ''); onChange(JSON.stringify(obj)); } catch {} }}
           onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); onChange(JSON.stringify(sorted, null, 2)); } catch {} }}
-          onRepair={() => { try { const fixed = fixSimpleJsonErrors(value || ''); if (fixed && fixed.trim()) onChange(fixed); } catch {} }}
+          onRepair={() => { try { const result = fixSimpleJsonErrors(value || ''); if (result && result.fixed && result.fixed.trim()) onChange(result.fixed); } catch {} }}
           onValidate={() => { try { JSON.parse(value || ''); } catch (e) { /* no-op: toolbar badge already indicates error */ } }}
           onClear={() => onChange('')}
           onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
