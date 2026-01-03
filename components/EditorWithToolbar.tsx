@@ -56,6 +56,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           errorCount={errorCount}
           disabled={false}
           language="json"
+          variant="compact"
+          formatLabel="Format"
         />
       </div>
 

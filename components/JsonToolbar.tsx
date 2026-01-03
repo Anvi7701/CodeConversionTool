@@ -23,6 +23,8 @@ interface JsonToolbarProps {
   isFullscreen?: boolean;
   disabled?: boolean;
   language?: string;
+  variant?: 'default' | 'compact';
+  formatLabel?: string; // Override Beautify label (e.g., "Format")
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -47,6 +49,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   isFullscreen = false,
   disabled = false,
   language: _language = 'json',
+  variant = 'default',
+  formatLabel = 'Beautify',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -84,16 +88,16 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {/* Beautify with Dropdown */}
           <div className="toolbar-button-group">
             <button
-              className="toolbar-btn primary"
+              className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
               onClick={() => onFormat(2)}
               disabled={disabled}
               aria-label="Beautify JSON (Ctrl+B)"
             >
               <span className="icon">🎨</span>
-              <span className="label">Beautify</span>
+              <span className="label">{formatLabel}</span>
             </button>
             <button
-              className="toolbar-dropdown-toggle"
+              className={`toolbar-dropdown-toggle ${variant === 'compact' ? 'compact' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setFormatDropdownOpen(!formatDropdownOpen);
@@ -120,7 +124,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
           {/* Minify */}
           <button
-            className="toolbar-btn primary"
+            className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
             onClick={onMinify}
             disabled={disabled}
             aria-label="Minify JSON (Ctrl+M)"
@@ -136,7 +140,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {/* Sort with Dropdown */}
           <div className="toolbar-button-group">
             <button
-              className="toolbar-btn"
+              className={`toolbar-btn ${variant === 'compact' ? 'compact' : ''}`}
               onClick={() => onSort('asc', 'keys')}
               disabled={disabled}
               aria-label="Sort keys ascending"
@@ -145,7 +149,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <span className="label">Sort</span>
             </button>
             <button
-              className="toolbar-dropdown-toggle"
+              className={`toolbar-dropdown-toggle ${variant === 'compact' ? 'compact' : ''}`}
               onClick={(e) => {
                 e.stopPropagation();
                 setSortDropdownOpen(!sortDropdownOpen);
@@ -181,7 +185,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {/* Repair (Conditional) */}
           {hasErrors && (
             <button
-              className="toolbar-btn warning"
+              className={`toolbar-btn warning ${variant === 'compact' ? 'compact' : ''}`}
               onClick={onRepair}
               disabled={disabled}
               aria-label="Repair JSON errors"
@@ -199,7 +203,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {/* Undo */}
           {onUndo && (
             <button
-              className="toolbar-btn icon-only"
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
               onClick={onUndo}
               disabled={!canUndo || disabled}
               aria-label="Undo (Ctrl+Z)"
@@ -211,7 +215,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           {/* Redo */}
           {onRedo && (
             <button
-              className="toolbar-btn icon-only"
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
               onClick={onRedo}
               disabled={!canRedo || disabled}
               aria-label="Redo (Ctrl+Y)"
@@ -265,7 +269,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
         <div className="toolbar-group validate-group">
           {/* Validate */}
           <button
-            className="toolbar-btn success"
+            className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
             onClick={onValidate}
             disabled={disabled}
             aria-label="Validate JSON"
@@ -281,7 +285,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           <div className="toolbar-group view-group">
             {/* Fullscreen */}
             <button
-              className="toolbar-btn icon-only"
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
               onClick={onFullscreen}
               disabled={disabled}
               aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
@@ -291,7 +295,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
             {/* Keyboard Shortcuts */}
             <button
-              className="toolbar-btn icon-only"
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
               onClick={() => setShowKeyboardShortcuts(!showKeyboardShortcuts)}
               aria-label="Keyboard shortcuts (?)"
             >
