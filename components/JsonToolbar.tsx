@@ -181,6 +181,24 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         </div>
 
+        {/* Optional: place Validate next to Sort within primary ribbon */}
+        {validateInPrimaryRibbon && (
+          <>
+            <div className="toolbar-separator" />
+            <div className="toolbar-group validate-group">
+              <button
+                className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onValidate}
+                disabled={disabled}
+                aria-label="Validate JSON"
+              >
+                <span className="icon">✓</span>
+                <span className="label">Validate</span>
+              </button>
+            </div>
+          </>
+        )}
+
         <div className="toolbar-separator" />
 
         <div className="toolbar-group repair-group">
@@ -227,23 +245,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           )}
         </div>
       </div>
-
-      {validateInPrimaryRibbon && (
-        <>
-          <div className="toolbar-separator" />
-          <div className="toolbar-group validate-group">
-            <button
-              className={`toolbar-btn success ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onValidate}
-              disabled={disabled}
-              aria-label="Validate JSON"
-            >
-              <span className="icon">✓</span>
-              <span className="label">Validate</span>
-            </button>
-          </div>
-        </>
-      )}
 
       {/* SECONDARY RIBBON: Tools & Actions */}
       <div className="toolbar-ribbon secondary-ribbon">
