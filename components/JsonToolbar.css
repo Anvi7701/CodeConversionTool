@@ -44,6 +44,8 @@
 
 .secondary-ribbon {
   padding-top: 8px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .toolbar-group {
@@ -54,11 +56,16 @@
   z-index: auto;
 }
 
+/* Slightly tighter gaps in the secondary ribbon to fit one line */
+.secondary-ribbon .toolbar-group {
+  gap: 4px;
+}
+
 .toolbar-separator {
   width: 2px;
-  height: 28px;
+  height: 24px;
   background: linear-gradient(to bottom, transparent, #d0d0d0, transparent);
-  margin: 0 8px;
+  margin: 0 6px;
 }
 
 /* Button Group */
@@ -189,20 +196,26 @@
 }
 
 .toolbar-btn.icon-only {
-  padding: 10px;
-  min-width: 40px;
+  padding: 6px;
+  min-width: 34px;
   justify-content: center;
+}
+
+/* Extra-compact icon-only when combined with compact variant */
+.toolbar-btn.icon-only.compact {
+  padding: 5px;
+  min-width: 32px;
 }
 
 /* Button Content */
 .toolbar-btn .icon {
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .toolbar-btn.compact .icon {
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .toolbar-btn .label {

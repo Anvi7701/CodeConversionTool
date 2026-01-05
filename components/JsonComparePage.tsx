@@ -100,25 +100,24 @@ export default function JsonComparePage() {
     <div className="min-h-screen bg-slate-900 text-slate-100">
       <SEO title="JSON Compare – Side-by-side Diff for JSON" description="Compare two JSON documents side-by-side. See added, removed, and changed paths with quick navigation and filters." keywords="json compare online, json diff, compare json objects, json side by side" />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <header className="flex items-center justify-between mb-4">
+        <header className="flex items-center justify-between mb-2">
           <h1 className="text-2xl font-bold text-slate-100">JSON Compare</h1>
           <div className="flex items-center gap-2">
             <label className="text-xs text-slate-300">Array match key</label>
             <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
             <label className="text-xs text-slate-300">Numeric tolerance</label>
             <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
-            <button className="bg-blue-600 hover:bg-blue-500 px-3 py-1 rounded text-sm" onClick={formatBothAndDiff}>Format & Compare</button>
           </div>
         </header>
 
         {/* Page-level diff summary and chips removed as requested (kept in modal) */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="50vh" />
-          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="50vh" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="50vh" onCompare={formatBothAndDiff} />
+          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="50vh" onCompare={formatBothAndDiff} />
         </div>
 
-        <section className="mt-4 bg-slate-800 rounded-lg border border-slate-700 p-3">
+        <section className="mt-3 bg-slate-800 rounded-lg border border-slate-700 p-3">
           <div className="flex items-center gap-2 mb-2">
             <DiffChip label="Added" count={diffs.filter(d => d.type === 'added').length} active={activeTypes.added} onToggle={() => setActiveTypes(s => ({ ...s, added: !s.added }))} />
             <DiffChip label="Removed" count={diffs.filter(d => d.type === 'removed').length} active={activeTypes.removed} onToggle={() => setActiveTypes(s => ({ ...s, removed: !s.removed }))} />
@@ -141,7 +140,7 @@ export default function JsonComparePage() {
           </div>
         </section>
 
-        <section className="mt-4 bg-slate-800 rounded-lg border border-slate-700 p-3">
+        <section className="mt-3 bg-slate-800 rounded-lg border border-slate-700 p-3">
           <label className="block text-xs text-slate-300 mb-1">Ignore paths (one per line)</label>
           <textarea
             className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs h-24 text-slate-100 placeholder-slate-500"

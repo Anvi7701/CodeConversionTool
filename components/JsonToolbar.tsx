@@ -16,6 +16,7 @@ interface JsonToolbarProps {
   onSave?: () => void;
   onPrint?: () => void;
   onValidate: () => void;
+  onCompare?: () => void;
   onClear: () => void;
   onCopy: () => void;
   onFullscreen?: () => void;
@@ -31,6 +32,7 @@ interface JsonToolbarProps {
   validateInPrimaryRibbon?: boolean; // When true, shows Validate next to Sort in primary ribbon
   sampleVariant?: 'button' | 'icon'; // Control Sample rendering style
   historyPlacement?: 'primary' | 'secondary';
+  sortPlacement?: 'primary' | 'secondary-icon';
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -45,11 +47,12 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   onExpandAll,
   onUploadJson,
   onViewGraph: _onViewGraph,
-  onSave: _onSave,
+  onSave,
   onPrint: _onPrint,
   onValidate,
-  onClear: _onClear,
-  onCopy: _onCopy,
+  onCompare,
+  onClear,
+  onCopy,
   onFullscreen,
   canUndo = false,
   canRedo = false,
@@ -63,6 +66,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   validateInPrimaryRibbon = false,
   sampleVariant = 'button',
   historyPlacement = 'primary',
+  sortPlacement = 'primary',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -148,6 +152,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         <div className="toolbar-separator" />
 
+        {sortPlacement === 'primary' && (
         <div className="toolbar-group sort-group">
           {/* Sort with Dropdown */}
           <div className="toolbar-button-group">
@@ -190,6 +195,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             )}
           </div>
         </div>
+        )}
 
         {/* Optional: place Validate next to Sort within primary ribbon */}
         {validateInPrimaryRibbon && (
@@ -205,6 +211,18 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 <span className="icon">✓</span>
                 <span className="label">Validate</span>
               </button>
+              {onCompare && (
+                <button
+                  className={`toolbar-btn ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onCompare}
+                  disabled={disabled}
+                  aria-label="Compare"
+                  title="Compare"
+                >
+                  <span className="icon">🔍</span>
+                  <span className="label">Compare</span>
+                </button>
+              )}
             </div>
           </>
         )}
@@ -262,8 +280,9 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
       {/* SECONDARY RIBBON: Tools & Actions */}
       <div className="toolbar-ribbon secondary-ribbon">
-        <div className="toolbar-group data-group">
-            {/* Upload JSON (icon-only) – placed to the left of Sample */}
+        {/* Section 1: Upload, Sample */}
+        {(onUploadJson || onGenerateSample) && (
+          <div className="toolbar-group data-group">
             {onUploadJson && (
               <div className="toolbar-button-group">
                 <button
@@ -273,101 +292,183 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   aria-label="Upload JSON file"
                   title="Upload JSON"
                 >
-                  <span className="icon"><i className="fa-solid fa-file-import" aria-hidden="true"></i></span>
+                  <span className="icon"><i className="fa-solid fa-upload" aria-hidden="true"></i></span>
                 </button>
               </div>
             )}
-          {/* Sample Data with Dropdown */}
-          {onGenerateSample && (
-            <div className="toolbar-button-group">
+            {onGenerateSample && (
+              <div className="toolbar-button-group">
+                <button
+                  className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSampleDropdownOpen(!sampleDropdownOpen);
+                  }}
+                  disabled={disabled}
+                  aria-label="Generate sample JSON"
+                  title="Insert Sample"
+                >
+                  <span className="icon">🎲</span>
+                  {sampleVariant !== 'icon' && <span className="label">Sample</span>}
+                  <span className="dropdown-arrow">▼</span>
+                </button>
+                {sampleDropdownOpen && (
+                  <div className="dropdown-menu">
+                    {sampleTemplates.map((template) => (
+                      <button
+                        key={template.key}
+                        onClick={() => {
+                          onGenerateSample(template.key);
+                          setSampleDropdownOpen(false);
+                        }}
+                      >
+                        {template.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {(onUploadJson || onGenerateSample) && <div className="toolbar-separator" />}
+
+        {/* Section 2: Collapse All, Expand All */}
+        {(onCollapseAll || onExpandAll) && (
+          <div className="toolbar-group structure-group">
+            {onCollapseAll && (
               <button
-                className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSampleDropdownOpen(!sampleDropdownOpen);
-                }}
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onCollapseAll}
                 disabled={disabled}
-                aria-label="Generate sample JSON"
-                title="Insert Sample"
+                aria-label="Collapse all"
+                title="Collapse All"
               >
-                <span className="icon">🎲</span>
-                {sampleVariant !== 'icon' && <span className="label">Sample</span>}
-                <span className="dropdown-arrow">▼</span>
+                <span className="icon"><i className="fa-solid fa-compress" aria-hidden="true"></i></span>
               </button>
-              {sampleDropdownOpen && (
-                <div className="dropdown-menu">
-                  {sampleTemplates.map((template) => (
-                    <button
-                      key={template.key}
-                      onClick={() => {
-                        onGenerateSample(template.key);
-                        setSampleDropdownOpen(false);
-                      }}
-                    >
-                      {template.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+            )}
+            {onExpandAll && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onExpandAll}
+                disabled={disabled}
+                aria-label="Expand all"
+                title="Expand All"
+              >
+                <span className="icon"><i className="fa-solid fa-expand" aria-hidden="true"></i></span>
+              </button>
+            )}
+          </div>
+        )}
 
-          {/* Collapse/Expand All - icon-only controls */}
-          {(onCollapseAll || onExpandAll) && (
-            <div className="toolbar-button-group" style={{ marginLeft: '8px' }}>
-              {onCollapseAll && (
+        {(onCollapseAll || onExpandAll) && <div className="toolbar-separator" />}
+
+        {/* Section 3: Undo, Redo */}
+        {historyPlacement === 'secondary' && (onUndo || onRedo) && (
+          <div className="toolbar-group history-group">
+            {onUndo && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onUndo}
+                disabled={!canUndo || disabled}
+                aria-label="Undo (Ctrl+Z)"
+                title="Undo"
+              >
+                <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+              </button>
+            )}
+            {onRedo && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onRedo}
+                disabled={!canRedo || disabled}
+                aria-label="Redo (Ctrl+Y)"
+                title="Redo"
+              >
+                <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
+              </button>
+            )}
+          </div>
+        )}
+
+        {historyPlacement === 'secondary' && (onUndo || onRedo) && <div className="toolbar-separator" />}
+
+        {/* Section 3.5: Sort (icon) when placed in secondary */}
+        {sortPlacement === 'secondary-icon' && (
+          <>
+            <div className="toolbar-group sort-secondary-group">
+              <div className="toolbar-button-group">
                 <button
                   className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                  onClick={onCollapseAll}
+                  onClick={(e) => { e.stopPropagation(); setSortDropdownOpen(!sortDropdownOpen); }}
                   disabled={disabled}
-                  aria-label="Collapse all"
-                  title="Collapse All"
+                  aria-label="Sort options"
+                  title="Sort"
                 >
-                  <span className="icon"><i className="fa-solid fa-compress" aria-hidden="true"></i></span>
+                  <span className="icon"><i className="fa-solid fa-sort" aria-hidden="true"></i></span>
                 </button>
-              )}
-              {onExpandAll && (
-                <button
-                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                  onClick={onExpandAll}
-                  disabled={disabled}
-                  aria-label="Expand all"
-                  title="Expand All"
-                >
-                  <span className="icon"><i className="fa-solid fa-expand" aria-hidden="true"></i></span>
-                </button>
-              )}
-              {historyPlacement === 'secondary' && (onUndo || onRedo) && (
-                <>
-                  {onUndo && (
-                    <button
-                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                      onClick={onUndo}
-                      disabled={!canUndo || disabled}
-                      aria-label="Undo (Ctrl+Z)"
-                      title="Undo"
-                    >
-                      <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+                {sortDropdownOpen && (
+                  <div className="dropdown-menu">
+                    <button onClick={() => { onSort('asc', 'keys'); setSortDropdownOpen(false); }}>
+                      ↑ Keys Ascending
                     </button>
-                  )}
-                  {onRedo && (
-                    <button
-                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                      onClick={onRedo}
-                      disabled={!canRedo || disabled}
-                      aria-label="Redo (Ctrl+Y)"
-                      title="Redo"
-                    >
-                      <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
+                    <button onClick={() => { onSort('desc', 'keys'); setSortDropdownOpen(false); }}>
+                      ↓ Keys Descending
                     </button>
-                  )}
-                </>
-              )}
+                    <div className="dropdown-divider" />
+                    <button onClick={() => { onSort('asc', 'values'); setSortDropdownOpen(false); }}>
+                      ↑ Values Ascending
+                    </button>
+                    <button onClick={() => { onSort('desc', 'values'); setSortDropdownOpen(false); }}>
+                      ↓ Values Descending
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
 
-        {onGenerateSample && <div className="toolbar-separator" />}
+        {/* Section 4: Clear, Copy, Download */}
+        {(onClear || onCopy || onSave) && (
+          <div className="toolbar-group edit-group">
+            {onClear && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onClear}
+                disabled={disabled}
+                aria-label="Clear"
+                title="Clear"
+              >
+                <span className="icon"><i className="fa-solid fa-trash-can" aria-hidden="true"></i></span>
+              </button>
+            )}
+            {onCopy && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onCopy}
+                disabled={disabled}
+                aria-label="Copy"
+                title="Copy"
+              >
+                <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
+              </button>
+            )}
+            {onSave && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onSave}
+                disabled={disabled}
+                aria-label="Download JSON"
+                title="Download"
+              >
+                <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
+              </button>
+            )}
+          </div>
+        )}
 
         {!validateInPrimaryRibbon && (
           <div className="toolbar-group validate-group">
@@ -381,6 +482,18 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <span className="icon">✓</span>
               <span className="label">Validate</span>
             </button>
+            {onCompare && (
+              <button
+                className={`toolbar-btn ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onCompare}
+                disabled={disabled}
+                aria-label="Compare"
+                title="Compare"
+              >
+                <span className="icon">🔍</span>
+                <span className="label">Compare</span>
+              </button>
+            )}
           </div>
         )}
 

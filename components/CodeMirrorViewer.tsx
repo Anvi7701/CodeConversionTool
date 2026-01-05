@@ -116,6 +116,7 @@ interface CodeMirrorViewerProps {
   code: string;
   language: string;
   onChange?: (value: string) => void;
+  onPaste?: (text: string) => void;
   readOnly?: boolean;
   expandAll?: boolean;
   collapseAll?: boolean;
@@ -130,6 +131,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   code, 
   language, 
   onChange, 
+  onPaste,
   readOnly = false,
   expandAll: expandAllTrigger,
   collapseAll: collapseAllTrigger,
@@ -316,13 +318,27 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       baseExtensions.push(booleanDecorationsPlugin(handleBooleanToggle));
     }
 
+    // Surface paste events to parent when editable
+    if (onPaste && !readOnly) {
+      baseExtensions.push(EditorView.domEventHandlers({
+        paste: (event, _view) => {
+          try {
+            const text = event.clipboardData?.getData('text/plain') ?? '';
+            onPaste(text);
+          } catch {}
+          // Allow default paste behavior
+          return false;
+        }
+      }));
+    }
+
     // Add diff line backgrounds if provided
     if (lineBackgrounds && lineBackgrounds.length) {
       baseExtensions.push(lineBackgroundPlugin);
     }
     
     return baseExtensions;
-  }, [languageExtension, readOnly, language, onChange, lineBackgroundPlugin, lineBackgrounds]);
+  }, [languageExtension, readOnly, language, onChange, onPaste, lineBackgroundPlugin, lineBackgrounds]);
 
   // Highlight search result line
   useEffect(() => {
