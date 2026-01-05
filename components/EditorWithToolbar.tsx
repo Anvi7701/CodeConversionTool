@@ -40,6 +40,9 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [expandAllTrigger, setExpandAllTrigger] = useState(false);
   const [collapseAllTrigger, setCollapseAllTrigger] = useState(false);
+  const [history, setHistory] = useState<string[]>([value]);
+  const [historyIndex, setHistoryIndex] = useState<number>(0);
+  const applyingFromHistoryRef = useRef(false);
 
   const triggerUpload = () => {
     try { fileInputRef.current?.click(); } catch {}
@@ -50,7 +53,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
     if (!file) return;
     try {
       const text = await file.text();
-      onChange(text);
+      handleEditorChange(text);
     } catch {}
     // Reset input value so selecting the same file again still triggers change
     try { e.target.value = ''; } catch {}
@@ -92,7 +95,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
     const sample = samples[template] || samples.user;
     try {
       const formatted = JSON.stringify(sample, null, 2);
-      onChange(formatted);
+      handleEditorChange(formatted);
     } catch {}
   }, [onChange]);
 
@@ -106,23 +109,75 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
     setTimeout(() => setCollapseAllTrigger(false), 120);
   }, []);
 
+  const handleEditorChange = useCallback((next: string) => {
+    if (!applyingFromHistoryRef.current) {
+      setHistory(prev => {
+        const current = prev[historyIndex] ?? '';
+        if (next === current) return prev;
+        const newHist = [...prev.slice(0, historyIndex + 1), next];
+        setHistoryIndex(newHist.length - 1);
+        return newHist;
+      });
+    }
+    onChange(next);
+  }, [historyIndex, onChange]);
+
+  const handleUndo = useCallback(() => {
+    if (historyIndex > 0) {
+      applyingFromHistoryRef.current = true;
+      const prevValue = history[historyIndex - 1];
+      setHistoryIndex(historyIndex - 1);
+      onChange(prevValue);
+      setTimeout(() => { applyingFromHistoryRef.current = false; }, 0);
+    }
+  }, [history, historyIndex, onChange]);
+
+  const handleRedo = useCallback(() => {
+    if (historyIndex < history.length - 1) {
+      applyingFromHistoryRef.current = true;
+      const nextValue = history[historyIndex + 1];
+      setHistoryIndex(historyIndex + 1);
+      onChange(nextValue);
+      setTimeout(() => { applyingFromHistoryRef.current = false; }, 0);
+    }
+  }, [history, historyIndex, onChange]);
+
+  // Initialize history when component mounts or when external value changes drastically
+  React.useEffect(() => {
+    // If value differs from current history position and not due to undo/redo push it
+    if (!applyingFromHistoryRef.current) {
+      setHistory(prev => {
+        const current = prev[historyIndex] ?? '';
+        if (value === current) return prev;
+        const newHist = [...prev.slice(0, historyIndex + 1), value];
+        setHistoryIndex(newHist.length - 1);
+        return newHist;
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
   return (
     <section className={`bg-slate-800 rounded-lg border border-slate-700 ${className}`}>
       {/* Input toolbar */}
       <div className="p-2 border-b border-slate-700 bg-slate-900/40 sticky top-0 z-10">
         <JsonToolbar
           onFormat={(indent) => {
-            try { const obj = JSON.parse(value || ''); onChange(JSON.stringify(obj, null, indent || 2)); } catch {}
+            try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj, null, indent || 2)); } catch {}
           }}
-          onMinify={() => { try { const obj = JSON.parse(value || ''); onChange(JSON.stringify(obj)); } catch {} }}
-          onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); onChange(JSON.stringify(sorted, null, 2)); } catch {} }}
-          onRepair={() => { try { const result = fixSimpleJsonErrors(value || ''); if (result && result.fixed && result.fixed.trim()) onChange(result.fixed); } catch {} }}
+          onMinify={() => { try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj)); } catch {} }}
+          onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); handleEditorChange(JSON.stringify(sorted, null, 2)); } catch {} }}
+          onRepair={() => { try { const result = fixSimpleJsonErrors(value || ''); if (result && result.fixed && result.fixed.trim()) handleEditorChange(result.fixed); } catch {} }}
           onValidate={() => { try { JSON.parse(value || ''); } catch (e) { /* no-op: toolbar badge already indicates error */ } }}
-          onClear={() => onChange('')}
+          onClear={() => handleEditorChange('')}
           onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
           onGenerateSample={handleGenerateSample}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
           onExpandAll={handleExpandAll}
           onCollapseAll={handleCollapseAll}
+          canUndo={historyIndex > 0}
+          canRedo={historyIndex < history.length - 1}
           hasErrors={hasErrors}
           errorCount={errorCount}
           disabled={false}
@@ -131,6 +186,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           formatLabel="Format"
           sampleVariant="icon"
           validateInPrimaryRibbon={true}
+          historyPlacement="secondary"
         />
       </div>
 
@@ -143,7 +199,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           <input ref={fileInputRef} type="file" accept="application/json,.json,text/plain" className="hidden" onChange={handleFileSelected} />
         </div>
         <div className="flex-1 relative">
-          <CodeMirrorViewer code={value} language="json" onChange={onChange} readOnly={false} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
+          <CodeMirrorViewer code={value} language="json" onChange={handleEditorChange} readOnly={false} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
         </div>
       </div>
     </section>

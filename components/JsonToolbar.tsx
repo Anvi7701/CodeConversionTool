@@ -29,6 +29,7 @@ interface JsonToolbarProps {
   formatLabel?: string; // Override Beautify label (e.g., "Format")
   validateInPrimaryRibbon?: boolean; // When true, shows Validate next to Sort in primary ribbon
   sampleVariant?: 'button' | 'icon'; // Control Sample rendering style
+  historyPlacement?: 'primary' | 'secondary';
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -59,6 +60,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   formatLabel = 'Beautify',
   validateInPrimaryRibbon = false,
   sampleVariant = 'button',
+  historyPlacement = 'primary',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -225,31 +227,35 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-group history-group">
-          {/* Undo */}
-          {onUndo && (
-            <button
-              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onUndo}
-              disabled={!canUndo || disabled}
-              aria-label="Undo (Ctrl+Z)"
-            >
-              <span className="icon">↶</span>
-            </button>
-          )}
+        {historyPlacement === 'primary' && (
+          <div className="toolbar-group history-group">
+            {/* Undo */}
+            {onUndo && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onUndo}
+                disabled={!canUndo || disabled}
+                aria-label="Undo (Ctrl+Z)"
+                title="Undo"
+              >
+                <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+              </button>
+            )}
 
-          {/* Redo */}
-          {onRedo && (
-            <button
-              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onRedo}
-              disabled={!canRedo || disabled}
-              aria-label="Redo (Ctrl+Y)"
-            >
-              <span className="icon">↷</span>
-            </button>
-          )}
-        </div>
+            {/* Redo */}
+            {onRedo && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onRedo}
+                disabled={!canRedo || disabled}
+                aria-label="Redo (Ctrl+Y)"
+                title="Redo"
+              >
+                <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* SECONDARY RIBBON: Tools & Actions */}
@@ -314,6 +320,32 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 >
                   <span className="icon"><i className="fa-solid fa-expand" aria-hidden="true"></i></span>
                 </button>
+              )}
+              {historyPlacement === 'secondary' && (onUndo || onRedo) && (
+                <>
+                  {onUndo && (
+                    <button
+                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                      onClick={onUndo}
+                      disabled={!canUndo || disabled}
+                      aria-label="Undo (Ctrl+Z)"
+                      title="Undo"
+                    >
+                      <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+                    </button>
+                  )}
+                  {onRedo && (
+                    <button
+                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                      onClick={onRedo}
+                      disabled={!canRedo || disabled}
+                      aria-label="Redo (Ctrl+Y)"
+                      title="Redo"
+                    >
+                      <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
