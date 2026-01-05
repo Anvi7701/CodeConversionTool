@@ -11,6 +11,7 @@ interface JsonToolbarProps {
   onGenerateSample?: (template: string) => void;
   onCollapseAll?: () => void;
   onExpandAll?: () => void;
+  onUploadJson?: () => void;
   onViewGraph?: () => void;
   onSave?: () => void;
   onPrint?: () => void;
@@ -42,6 +43,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   onGenerateSample,
   onCollapseAll,
   onExpandAll,
+  onUploadJson,
   onViewGraph: _onViewGraph,
   onSave: _onSave,
   onPrint: _onPrint,
@@ -261,6 +263,20 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
       {/* SECONDARY RIBBON: Tools & Actions */}
       <div className="toolbar-ribbon secondary-ribbon">
         <div className="toolbar-group data-group">
+            {/* Upload JSON (icon-only) – placed to the left of Sample */}
+            {onUploadJson && (
+              <div className="toolbar-button-group">
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onUploadJson}
+                  disabled={disabled}
+                  aria-label="Upload JSON file"
+                  title="Upload JSON"
+                >
+                  <span className="icon"><i className="fa-solid fa-file-import" aria-hidden="true"></i></span>
+                </button>
+              </div>
+            )}
           {/* Sample Data with Dropdown */}
           {onGenerateSample && (
             <div className="toolbar-button-group">

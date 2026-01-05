@@ -172,6 +172,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           onClear={() => handleEditorChange('')}
           onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
           onGenerateSample={handleGenerateSample}
+          onUploadJson={triggerUpload}
           onUndo={handleUndo}
           onRedo={handleRedo}
           onExpandAll={handleExpandAll}
@@ -195,7 +196,6 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
         <div className="flex-shrink-0 w-10 flex flex-col gap-2 items-center justify-start pt-2 pb-2 border-r border-slate-700 bg-slate-900/30">
           <button title="Clear" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={() => onChange('')}>🧽</button>
           <button title="Copy" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}>📋</button>
-          <button title="Upload JSON file" className="icon-plain no-ring text-slate-300 hover:text-white border border-white/20 rounded-md px-2 py-1" onClick={triggerUpload}>📤</button>
           <input ref={fileInputRef} type="file" accept="application/json,.json,text/plain" className="hidden" onChange={handleFileSelected} />
         </div>
         <div className="flex-1 relative">
