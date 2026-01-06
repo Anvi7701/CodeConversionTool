@@ -31,9 +31,10 @@ export interface EditorWithToolbarProps {
   className?: string;
   editorHeight?: string; // e.g. '50vh'
   onCompare?: () => void;
+  highlightUploadSample?: boolean;
 }
 
-export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, value, onChange, className = '', editorHeight = '50vh', onCompare }) => {
+export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, value, onChange, className = '', editorHeight = '50vh', onCompare, highlightUploadSample = false }) => {
   const parseError = useMemo(() => {
     if (!value || !value.trim()) return null;
     try { JSON.parse(value); return null; } catch (e: any) { return e.message || 'Invalid JSON'; }
@@ -269,6 +270,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           validateInPrimaryRibbon={true}
           historyPlacement="secondary"
           sortPlacement="secondary-icon"
+          highlightUpload={highlightUploadSample}
+          highlightSample={highlightUploadSample}
         />
       </div>
 

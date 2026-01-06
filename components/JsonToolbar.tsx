@@ -33,6 +33,8 @@ interface JsonToolbarProps {
   sampleVariant?: 'button' | 'icon'; // Control Sample rendering style
   historyPlacement?: 'primary' | 'secondary';
   sortPlacement?: 'primary' | 'secondary-icon';
+  highlightUpload?: boolean;
+  highlightSample?: boolean;
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -67,6 +69,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   sampleVariant = 'button',
   historyPlacement = 'primary',
   sortPlacement = 'primary',
+  highlightUpload = false,
+  highlightSample = false,
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -288,7 +292,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             {onUploadJson && (
               <div className="toolbar-button-group">
                 <button
-                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''} ${highlightUpload ? 'highlight' : ''}`}
                   onClick={onUploadJson}
                   disabled={disabled}
                   aria-label="Upload JSON file"
@@ -301,7 +305,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             {onGenerateSample && (
               <div className="toolbar-button-group">
                 <button
-                  className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+                  className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''} ${highlightSample ? 'highlight' : ''}`}
                   onClick={(e) => {
                     e.stopPropagation();
                     setSampleDropdownOpen(!sampleDropdownOpen);
