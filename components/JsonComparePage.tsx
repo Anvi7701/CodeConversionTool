@@ -99,10 +99,36 @@ export default function JsonComparePage() {
 
   return (
     <div className="min-h-screen bg-slate-900 text-slate-100">
-      <SEO title="JSON Compare – Side-by-side Diff for JSON" description="Compare two JSON documents side-by-side. See added, removed, and changed paths with quick navigation and filters." keywords="json compare online, json diff, compare json objects, json side by side" />
+      <SEO
+        title="JSON Compare – Compare Two JSON Files Side by Side"
+        description="Compare two JSON files side by side. Highlight differences, validate JSON, and format data instantly. Ideal for API testing and debugging."
+        keywords={[
+          'json compare',
+          'compare json online',
+          'json diff tool',
+          'json validator',
+          'json difference checker',
+          'api testing json',
+          'compare two JSON files online',
+          'JSON difference checker for API testing',
+          'free JSON compare tool for developers',
+          'highlight differences in JSON data',
+          'JSON validator and formatter online'
+        ].join(', ')}
+        canonical="https://yourdomain.com/json-compare"
+        ogUrl="https://yourdomain.com/json-compare"
+        ogImage="https://yourdomain.com/assets/json-compare-preview.png"
+      />
       <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-slate-100">JSON Compare – Compare Two JSON Files Side by Side</h1>
+          <h2 className="text-lg font-semibold text-slate-200 mt-1">Find Differences in JSON Instantly</h2>
+          <p className="text-sm text-slate-300 mt-2">
+            Compare JSON online with our free JSON Compare tool. Paste or upload two JSON files and instantly see differences highlighted side by side. Perfect for API testing, debugging, and validating JSON data structures. Supports formatting, minifying, and validation for accurate results.
+          </p>
+        </div>
+
         <header className="flex items-center justify-between mb-2">
-          <h1 className="text-2xl font-bold text-slate-100">JSON Compare</h1>
           <div className="flex items-center gap-2">
             <label className="text-xs text-slate-300">Array match key</label>
             <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
