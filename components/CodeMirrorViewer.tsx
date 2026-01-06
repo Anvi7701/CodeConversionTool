@@ -331,6 +331,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           wrap.style.userSelect = 'none';
           wrap.style.fontSize = '13px';
           wrap.style.color = '#6b7280';
+          wrap.style.padding = '6px 0';
+          wrap.style.lineHeight = '1.7';
 
           const text1 = document.createElement('span');
           text1.textContent = 'Paste or upload JSON code';
