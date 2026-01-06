@@ -215,8 +215,8 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
 
   return (
     <section className={`bg-slate-800 rounded-lg border border-slate-700 ${className}`}>
-      {/* Input toolbar */}
-      <div className="p-2 border-b border-slate-700 bg-slate-900/40 sticky top-0 z-10">
+      {/* Input toolbar (non-sticky so it moves with the editor) */}
+      <div className="p-2 border-b border-slate-700 bg-slate-900/40">
         <JsonToolbar
           onFormat={(indent) => {
             try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj, null, indent || 2)); } catch {}
