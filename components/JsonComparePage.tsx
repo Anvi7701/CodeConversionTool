@@ -114,8 +114,8 @@ export default function JsonComparePage() {
         {/* Page-level diff summary and chips removed as requested (kept in modal) */}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="50vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
-          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="50vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
+          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
+          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
         </div>
 
         <section className="mt-3 bg-slate-800 rounded-lg border border-slate-700 p-3">
