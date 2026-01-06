@@ -51,6 +51,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const pasteValidationRef = useRef<boolean>(false);
   const [showFormatToast, setShowFormatToast] = useState<boolean>(false);
+  const [showMinifyToast, setShowMinifyToast] = useState<boolean>(false);
 
   const triggerUpload = () => {
     try { fileInputRef.current?.click(); } catch {}
@@ -231,7 +232,18 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
               }
             } catch {}
           }}
-          onMinify={() => { try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj)); } catch {} }}
+          onMinify={() => { 
+            try { 
+              const obj = JSON.parse(value || ''); 
+              const minified = JSON.stringify(obj);
+              if ((value || '').trim() === minified.trim()) {
+                setShowMinifyToast(true);
+                setTimeout(() => setShowMinifyToast(false), 2000);
+              } else {
+                handleEditorChange(minified);
+              }
+            } catch {} 
+          }}
           onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); handleEditorChange(JSON.stringify(sorted, null, 2)); } catch {} }}
           
           onValidate={handleValidateClick}
@@ -285,6 +297,11 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
       {showFormatToast && (
         <div style={{ position: 'fixed', bottom: 20, right: 20, background: 'rgba(31,41,55,0.95)', color: '#fff', padding: '10px 14px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.25)', zIndex: 10000 }}>
           ✓ File is already formatted
+        </div>
+      )}
+      {showMinifyToast && (
+        <div style={{ position: 'fixed', bottom: 20, right: 20, background: 'rgba(31,41,55,0.95)', color: '#fff', padding: '10px 14px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.25)', zIndex: 10000 }}>
+          ✓ File is already minified
         </div>
       )}
     </section>
