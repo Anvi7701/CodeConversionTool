@@ -3,6 +3,8 @@
  * Only fixes errors with 95%+ success rate
  */
 
+import { validateJsonSyntax } from './errorHighlighter';
+
 export interface FixResult {
   fixed: string;
   changes: FixChange[];
@@ -212,6 +214,40 @@ export function fixSimpleJsonErrors(jsonText: string): FixResult {
     fixed = fixed.replace(/([\{,]\s*)([a-zA-Z_$][a-zA-Z0-9_$]*)(\s*):/g, '$1"$2"$3:');
     changesMade = true;
   }
+
+    // 5. Targeted pass: if validator still reports "Missing comma after property value",
+    // add a comma at the end of those lines. This handles edge cases the regex may miss
+    // such as mixed whitespace/newline patterns.
+    try {
+      const syntaxErrors = validateJsonSyntax(fixed);
+      if (syntaxErrors && syntaxErrors.length) {
+        const lines = fixed.split('\n');
+        let patched = false;
+        for (const err of syntaxErrors) {
+          if (err.message && err.message.toLowerCase().includes('missing comma')) {
+            const idx = err.line - 1;
+            if (idx >= 0 && idx < lines.length) {
+              const lineText = lines[idx];
+              // Only add comma if it currently does not end with comma
+              if (!/,\s*$/.test(lineText)) {
+                // Append comma before trailing spaces
+                lines[idx] = lineText.replace(/\s*$/, ',');
+                changes.push({
+                  type: 'missing-comma',
+                  line: err.line,
+                  description: 'Added missing comma at end of line (targeted fix)'
+                });
+                patched = true;
+              }
+            }
+          }
+        }
+        if (patched) {
+          fixed = lines.join('\n');
+          changesMade = true;
+        }
+      }
+    } catch {}
 
   return {
     fixed,
