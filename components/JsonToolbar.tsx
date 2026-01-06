@@ -5,7 +5,7 @@ interface JsonToolbarProps {
   onFormat: (indentSize: number) => void;
   onMinify: () => void;
   onSort: (direction: 'asc' | 'desc', sortBy: 'keys' | 'values') => void;
-  onRepair: () => void;
+  onRepair?: () => void;
   onUndo?: () => void;
   onRedo?: () => void;
   onGenerateSample?: (template: string) => void;
@@ -229,21 +229,23 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         <div className="toolbar-separator" />
 
-        <div className="toolbar-group repair-group">
-          {/* Repair (Conditional) */}
-          {hasErrors && (
-            <button
-              className={`toolbar-btn warning ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onRepair}
-              disabled={disabled}
-              aria-label="Repair JSON errors"
-            >
-              <span className="icon">🔧</span>
-              <span className="label">Repair</span>
-              {errorCount > 0 && <span className="badge">{errorCount}</span>}
-            </button>
-          )}
-        </div>
+        {onRepair && (
+          <div className="toolbar-group repair-group">
+            {/* Repair (Conditional) */}
+            {hasErrors && (
+              <button
+                className={`toolbar-btn warning ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onRepair}
+                disabled={disabled}
+                aria-label="Repair JSON errors"
+              >
+                <span className="icon">🔧</span>
+                <span className="label">Repair</span>
+                {errorCount > 0 && <span className="badge">{errorCount}</span>}
+              </button>
+            )}
+          </div>
+        )}
 
         <div className="toolbar-separator" />
 

@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useCallback, useState } from 'react';
 import { CodeMirrorViewer } from './CodeMirrorViewer';
 import { JsonToolbar } from './JsonToolbar';
 import './JsonToolbar.css';
-import { fixSimpleJsonErrors } from '../utils/simpleJsonFixer';
+// Repair button removed on Compare; keep modal-based fixing only
 import { parseJsonSafe } from '../utils/parseJsonSafe';
 import { StructureAnalyzerErrorModal } from './StructureAnalyzerErrorModal';
 import { ValidationModal } from './ValidationModal';
@@ -223,7 +223,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           }}
           onMinify={() => { try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj)); } catch {} }}
           onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); handleEditorChange(JSON.stringify(sorted, null, 2)); } catch {} }}
-          onRepair={() => { try { const result = fixSimpleJsonErrors(value || ''); if (result && result.fixed && result.fixed.trim()) handleEditorChange(result.fixed); } catch {} }}
+          
           onValidate={handleValidateClick}
           onCompare={onCompare}
           onClear={() => handleEditorChange('')}
