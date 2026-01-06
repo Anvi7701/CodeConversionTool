@@ -125,6 +125,7 @@ interface CodeMirrorViewerProps {
   highlightTrigger?: number;
   lineBackgrounds?: Array<{ line: number; className: string }>;
   backgroundsKey?: number;
+  placeholderText?: string;
 }
 
 export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({ 
@@ -140,6 +141,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   highlightTrigger = 0,
   lineBackgrounds,
   backgroundsKey = 0,
+  placeholderText,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
 
@@ -313,6 +315,97 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
       theme,
     ];
     
+    // Rich placeholder with icons when editor is empty
+    if (placeholderText) {
+      const ns = 'http://www.w3.org/2000/svg';
+
+      class RichPlaceholderWidget extends WidgetType {
+        toDOM() {
+          const wrap = document.createElement('span');
+          wrap.className = 'cm-rich-placeholder';
+          wrap.style.display = 'inline-flex';
+          wrap.style.alignItems = 'center';
+          wrap.style.gap = '8px';
+          wrap.style.opacity = '0.7';
+          wrap.style.pointerEvents = 'none';
+          wrap.style.userSelect = 'none';
+          wrap.style.fontSize = '13px';
+          wrap.style.color = '#6b7280';
+
+          const text1 = document.createElement('span');
+          text1.textContent = 'Paste or upload JSON code';
+
+          const uploadIcon = document.createElementNS(ns, 'svg');
+          uploadIcon.setAttribute('viewBox', '0 0 24 24');
+          uploadIcon.setAttribute('fill', 'none');
+          uploadIcon.setAttribute('stroke', 'currentColor');
+          uploadIcon.setAttribute('stroke-width', '1.5');
+          uploadIcon.style.width = '16px';
+          uploadIcon.style.height = '16px';
+          const uploadPath = document.createElementNS(ns, 'path');
+          uploadPath.setAttribute('stroke-linecap', 'round');
+          uploadPath.setAttribute('stroke-linejoin', 'round');
+          uploadPath.setAttribute('d', 'M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5');
+          uploadIcon.appendChild(uploadPath);
+
+          const sep = document.createElement('span');
+          sep.textContent = 'or';
+          sep.style.margin = '0 4px';
+
+          const text2 = document.createElement('span');
+          text2.textContent = 'try sample JSON';
+
+          const sampleIcon = document.createElementNS(ns, 'svg');
+          sampleIcon.setAttribute('viewBox', '0 0 24 24');
+          sampleIcon.setAttribute('fill', 'none');
+          sampleIcon.setAttribute('stroke', 'currentColor');
+          sampleIcon.setAttribute('stroke-width', '1.5');
+          sampleIcon.style.width = '16px';
+          sampleIcon.style.height = '16px';
+          const samplePath = document.createElementNS(ns, 'path');
+          samplePath.setAttribute('stroke-linecap', 'round');
+          samplePath.setAttribute('stroke-linejoin', 'round');
+          samplePath.setAttribute('d', 'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9');
+          sampleIcon.appendChild(samplePath);
+
+          // Order: text, icon, separator, text, icon
+          wrap.appendChild(text1);
+          wrap.appendChild(uploadIcon);
+          wrap.appendChild(sep);
+          wrap.appendChild(text2);
+          wrap.appendChild(sampleIcon);
+
+          return wrap;
+        }
+        ignoreEvent() { return true; }
+      }
+
+      const richPlaceholderPlugin = ViewPlugin.fromClass(
+        class {
+          decorations: DecorationSet;
+          constructor(view: EditorView) {
+            this.decorations = this.build(view);
+          }
+          update(update: ViewUpdate) {
+            if (update.docChanged || update.viewportChanged) {
+              this.decorations = this.build(update.view);
+            }
+          }
+          build(view: EditorView) {
+            if (view.state.doc.length === 0) {
+              return Decoration.set([
+                Decoration.widget({ widget: new RichPlaceholderWidget(), side: 1 }).range(0)
+              ]);
+            }
+            return Decoration.none;
+          }
+        },
+        { decorations: v => (v as any).decorations }
+      );
+
+      baseExtensions.push(richPlaceholderPlugin);
+    }
+
     // Add boolean checkbox plugin for JSON when editable
     if (language.toLowerCase() === 'json' && onChange && !readOnly) {
       baseExtensions.push(booleanDecorationsPlugin(handleBooleanToggle));
@@ -421,6 +514,10 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           0%, 100% { box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 0.6); }
           50% { box-shadow: inset 0 0 0 2px rgba(245, 158, 11, 1); }
         }
+
+        /* Rich placeholder styling */
+        .cm-rich-placeholder { color: #6b7280; }
+        .dark .cm-rich-placeholder { color: #9ca3af; }
       `}</style>
       <CodeMirror
         ref={editorRef}

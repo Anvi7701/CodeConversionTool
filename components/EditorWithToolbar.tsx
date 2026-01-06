@@ -275,7 +275,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
       {/* Editor without left rail; hidden file input kept for toolbar upload */}
       <div className="relative" style={{ height: editorHeight }}>
         <input ref={fileInputRef} type="file" accept="application/json,.json,text/plain" className="hidden" onChange={handleFileSelected} />
-        <CodeMirrorViewer code={value} language="json" onChange={handleEditorChange} onPaste={(text) => { pasteValidationRef.current = true; }} readOnly={false} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} />
+        <CodeMirrorViewer code={value} language="json" onChange={handleEditorChange} onPaste={(text) => { pasteValidationRef.current = true; }} readOnly={false} expandAll={expandAllTrigger} collapseAll={collapseAllTrigger} placeholderText={'Paste or upload JSON code or try sample JSON...'} />
       </div>
 
       {/* Validation Modals */}
