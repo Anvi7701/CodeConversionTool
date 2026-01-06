@@ -181,8 +181,11 @@ export function validateJsonSyntax(jsonText: string): ErrorPosition[] {
     // this error is likely a false positive caused by the missing comma
     if (error.message && 
         (error.message.includes("Expected ',' or '}'") || 
-         error.message.includes("Expected ',' or ']'") ||
-         error.message.includes("Unexpected token"))) {
+         error.message.includes("Expected ',' or '']") ||
+         error.message.includes("Unexpected token") ||
+         error.message.toLowerCase().includes("expected property name") ||
+         error.message.toLowerCase().includes("unexpected string") ||
+         error.message.toLowerCase().includes("unexpected number"))) {
       const previousLineError = self.find(e => 
         e.line === error.line - 1 && 
         e.message?.includes('Missing comma')
