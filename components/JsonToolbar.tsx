@@ -213,7 +213,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               </button>
               {onCompare && (
                 <button
-                  className={`toolbar-btn ${variant === 'compact' ? 'compact' : ''}`}
+                  className={`toolbar-btn warning ${variant === 'compact' ? 'compact' : ''}`}
                   onClick={onCompare}
                   disabled={disabled}
                   aria-label="Compare"
@@ -484,7 +484,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             </button>
             {onCompare && (
               <button
-                className={`toolbar-btn ${variant === 'compact' ? 'compact' : ''}`}
+                className={`toolbar-btn warning ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={onCompare}
                 disabled={disabled}
                 aria-label="Compare"
