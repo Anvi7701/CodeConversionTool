@@ -50,6 +50,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
   const [showErrorModal, setShowErrorModal] = useState<boolean>(false);
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
   const pasteValidationRef = useRef<boolean>(false);
+  const [showFormatToast, setShowFormatToast] = useState<boolean>(false);
 
   const triggerUpload = () => {
     try { fileInputRef.current?.click(); } catch {}
@@ -219,7 +220,16 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
       <div className="p-2 border-b border-slate-700 bg-slate-900/40">
         <JsonToolbar
           onFormat={(indent) => {
-            try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj, null, indent || 2)); } catch {}
+            try {
+              const obj = JSON.parse(value || '');
+              const formatted = JSON.stringify(obj, null, indent || 2);
+              if ((value || '').trim() === formatted.trim()) {
+                setShowFormatToast(true);
+                setTimeout(() => setShowFormatToast(false), 2000);
+              } else {
+                handleEditorChange(formatted);
+              }
+            } catch {}
           }}
           onMinify={() => { try { const obj = JSON.parse(value || ''); handleEditorChange(JSON.stringify(obj)); } catch {} }}
           onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); handleEditorChange(JSON.stringify(sorted, null, 2)); } catch {} }}
@@ -270,6 +280,13 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
         onClose={() => setShowSuccessModal(false)}
         variant="success"
       />
+
+      {/* Already formatted toast */}
+      {showFormatToast && (
+        <div style={{ position: 'fixed', bottom: 20, right: 20, background: 'rgba(31,41,55,0.95)', color: '#fff', padding: '10px 14px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.25)', zIndex: 10000 }}>
+          ✓ File is already formatted
+        </div>
+      )}
     </section>
   );
 };
