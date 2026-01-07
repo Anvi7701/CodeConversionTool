@@ -186,8 +186,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     '.cm-scroller': { overflow: 'auto' },
     '.dark .cm-editor': { backgroundColor: '#1e293b', color: '#e5e7eb' },
     '.dark .cm-content': { backgroundColor: '#1e293b', color: '#e5e7eb' },
-    '.dark .cm-gutters': { background: '#1e293b', borderRight: '1px solid #334155' },
-    '.dark .cm-gutter': { background: '#1e293b', border: 'none' },
+    '.dark .cm-gutters': { background: 'transparent', borderRight: 'none' },
+    '.dark .cm-gutter': { background: 'transparent', border: 'none' },
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#94a3b8' },
     '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#94a3b8' },
   }), []);

@@ -18,9 +18,10 @@ html.dark .cm-content {
   color: #e5e7eb !important; /* slate-200 */
 }
 html.dark .cm-gutters {
-  background-color: #1e293b !important; /* slate-800 to match editor */
-  border-right: 1px solid #334155 !important; /* subtle divider */
+  background-color: transparent !important; /* match editor exactly */
+  border-right: none !important; /* no divider */
 }
+html.dark .cm-gutter { background-color: transparent !important; }
 html.dark .cm-lineNumbers .cm-gutterElement {
   color: #94a3b8 !important; /* slate-400 for numbers */
 }
