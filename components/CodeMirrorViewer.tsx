@@ -21,7 +21,7 @@ const customFoldGutter = foldGutter({
     marker.style.userSelect = 'none';
     try {
       const isDark = document.documentElement.classList.contains('dark');
-      marker.style.color = isDark ? '#fff' : '#000';
+      marker.style.color = isDark ? '#94a3b8' : '#000';
     } catch {
       marker.style.color = '#000';
     }
@@ -186,9 +186,10 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     '.cm-scroller': { overflow: 'auto' },
     '.dark .cm-editor': { backgroundColor: '#1e293b', color: '#e5e7eb' },
     '.dark .cm-content': { backgroundColor: '#1e293b', color: '#e5e7eb' },
-    '.dark .cm-gutter': { background: 'rgba(51, 65, 85, 0.35)' },
-    '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
-    '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#fff' },
+    '.dark .cm-gutters': { background: '#0b1220', borderRight: '1px solid #334155' },
+    '.dark .cm-gutter': { background: 'transparent', border: 'none' },
+    '.dark .cm-lineNumbers .cm-gutterElement': { color: '#94a3b8' },
+    '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#94a3b8' },
   }), []);
 
   // Handle expand all

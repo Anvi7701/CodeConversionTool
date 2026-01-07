@@ -18,14 +18,14 @@ html.dark .cm-content {
   color: #e5e7eb !important; /* slate-200 */
 }
 html.dark .cm-gutters {
-  background: rgba(51,65,85,0.35) !important; /* slate-700 */
-  border: none !important;
+  background-color: #0b1220 !important; /* deep slate */
+  border-right: 1px solid #334155 !important; /* slate-700 divider */
 }
 html.dark .cm-lineNumbers .cm-gutterElement {
-  color: #cbd5e1 !important; /* slate-300 */
+  color: #94a3b8 !important; /* slate-400 */
 }
 html.dark .cm-foldGutter .cm-gutterElement > span {
-  color: #e5e7eb !important; /* slate-200 */
+  color: #94a3b8 !important; /* slate-400 */
 }
 /* Shared button styles for toolbar */
 .btn {
