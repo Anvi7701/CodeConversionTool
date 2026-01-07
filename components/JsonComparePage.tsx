@@ -44,6 +44,7 @@ export default function JsonComparePage() {
   const [showModal, setShowModal] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const bothEmpty = (left.raw.trim().length === 0) && (right.raw.trim().length === 0);
+  const bothHaveContent = (left.raw.trim().length > 0) && (right.raw.trim().length > 0);
 
   // Counts and filter chips removed from page; retained in Compare popup only
 
@@ -130,16 +131,16 @@ export default function JsonComparePage() {
 
         {/* Dark tool layout wrapper */}
         <section className="bg-slate-800 rounded-lg border border-slate-700 p-3">
-          <header className="grid grid-cols-1 md:grid-cols-3 items-center gap-2 mb-2">
-            <div className="flex items-center gap-2 justify-start">
+          <header className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
               <label className="text-xs text-slate-300">Array match key</label>
               <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
               <label className="text-xs text-slate-300">Numeric tolerance</label>
               <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
             </div>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
               <button
-                className="toolbar-btn warning compact"
+                className={`toolbar-btn warning compact ${bothHaveContent ? 'highlight' : ''}`}
                 onClick={formatBothAndDiff}
                 aria-label="Compare"
                 title="Compare"
@@ -148,7 +149,6 @@ export default function JsonComparePage() {
                 <span className="label">Compare</span>
               </button>
             </div>
-            <div className="hidden md:block" />
           </header>
 
           {/* Page-level diff summary and chips removed as requested (kept in modal) */}
