@@ -128,23 +128,25 @@ export default function JsonComparePage() {
           </p>
         </div>
 
-        <header className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-slate-300">Array match key</label>
-            <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
-            <label className="text-xs text-slate-300">Numeric tolerance</label>
-            <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
+        {/* Dark tool layout wrapper */}
+        <section className="bg-slate-800 rounded-lg border border-slate-700 p-3">
+          <header className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <label className="text-xs text-slate-300">Array match key</label>
+              <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
+              <label className="text-xs text-slate-300">Numeric tolerance</label>
+              <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
+            </div>
+          </header>
+
+          {/* Page-level diff summary and chips removed as requested (kept in modal) */}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
+            <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
           </div>
-        </header>
 
-        {/* Page-level diff summary and chips removed as requested (kept in modal) */}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
-          <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
-        </div>
-
-        <section className="mt-3 bg-slate-800 rounded-lg border border-slate-700 p-3">
+          <section className="mt-3">
           <div className="flex items-center gap-2 mb-2">
             <DiffChip label="Added" count={diffs.filter(d => d.type === 'added').length} active={activeTypes.added} onToggle={() => setActiveTypes(s => ({ ...s, added: !s.added }))} />
             <DiffChip label="Removed" count={diffs.filter(d => d.type === 'removed').length} active={activeTypes.removed} onToggle={() => setActiveTypes(s => ({ ...s, removed: !s.removed }))} />
@@ -166,8 +168,7 @@ export default function JsonComparePage() {
             ))}
           </div>
         </section>
-
-        <section className="mt-3 bg-slate-800 rounded-lg border border-slate-700 p-3">
+        <section className="mt-3">
           <label className="block text-xs text-slate-300 mb-1">Ignore paths (one per line)</label>
           <textarea
             className="w-full bg-slate-900 border border-slate-700 rounded p-2 text-xs h-24 text-slate-100 placeholder-slate-500"
@@ -175,6 +176,7 @@ export default function JsonComparePage() {
             onChange={e => setOpts(o => ({ ...o, ignorePaths: e.target.value.split('\n').map(s => s.trim()).filter(Boolean) }))}
             placeholder="/users/0/name\n/settings/theme"
           />
+        </section>
         </section>
       </div>
 
