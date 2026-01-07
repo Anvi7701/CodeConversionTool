@@ -5,6 +5,7 @@ import { diffJson } from '../lib/diff/engine';
 import type { DiffEntry, DiffOptions } from '../lib/diff/types';
 import { serializeWithLineMap } from '../lib/diff/engine';
 import SEO from './SEO';
+import { ValidationModal } from './ValidationModal';
 import { JsonCompareModal } from './JsonCompareModal';
 
 interface EditorState {
@@ -42,6 +43,7 @@ export default function JsonComparePage() {
   const filteredDiffs = useMemo(() => diffs.filter(d => activeTypes[d.type]), [diffs, activeTypes]);
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [showModal, setShowModal] = useState(false);
+  const [showInputRequired, setShowInputRequired] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
   const leftEmpty = left.raw.trim().length === 0;
   const rightEmpty = right.raw.trim().length === 0;
@@ -51,6 +53,12 @@ export default function JsonComparePage() {
 
   function formatBothAndDiff() {
     try {
+      const lText = (left.raw || '').trim();
+      const rText = (right.raw || '').trim();
+      if (!lText || !rText) {
+        setShowInputRequired(true);
+        return;
+      }
       const lObj = left.raw ? JSON.parse(left.raw) : {};
       const rObj = right.raw ? JSON.parse(right.raw) : {};
       const lSer = serializeWithLineMap(lObj, 2, opts.arrayMatchKey?.trim() || undefined);
@@ -64,6 +72,14 @@ export default function JsonComparePage() {
       };
       const result = diffJson(lObj, rObj, cleaned);
       setDiffs(result.entries);
+      <ValidationModal
+        open={showInputRequired}
+        title="Input Required"
+        message="Please enter JSON data in both editors to compare."
+        variant="error"
+        onClose={() => setShowInputRequired(false)}
+      />
+
       setShowModal(true);
     } catch (e: any) {
       alert('Invalid JSON in one of the editors.');
