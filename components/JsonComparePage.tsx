@@ -137,13 +137,24 @@ export default function JsonComparePage() {
               <label className="text-xs text-slate-300">Numeric tolerance</label>
               <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
             </div>
+            <div className="flex items-center gap-2">
+              <button
+                className="toolbar-btn warning compact"
+                onClick={formatBothAndDiff}
+                aria-label="Compare"
+                title="Compare"
+              >
+                <span className="icon">🔍</span>
+                <span className="label">Compare</span>
+              </button>
+            </div>
           </header>
 
           {/* Page-level diff summary and chips removed as requested (kept in modal) */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
-            <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" onCompare={formatBothAndDiff} highlightUploadSample={bothEmpty} />
+            <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" highlightUploadSample={bothEmpty} />
+            <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" highlightUploadSample={bothEmpty} />
           </div>
 
           <section className="mt-3">
