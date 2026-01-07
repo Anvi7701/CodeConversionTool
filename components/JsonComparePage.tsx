@@ -120,13 +120,13 @@ export default function JsonComparePage() {
         ogImage="https://yourdomain.com/assets/json-compare-preview.png"
       />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-slate-100">JSON Compare – Compare Two JSON Files Side by Side</h1>
-          <h2 className="text-lg font-semibold text-slate-200 mt-1">Find Differences in JSON Instantly</h2>
-          <p className="text-sm text-slate-300 mt-2">
+        <section className="mb-4 bg-white text-slate-800 rounded-lg border border-slate-200 p-4 shadow-sm">
+          <h1 className="text-2xl font-bold">JSON Compare – Compare Two JSON Files Side by Side</h1>
+          <h2 className="text-lg font-semibold mt-1">Find Differences in JSON Instantly</h2>
+          <p className="text-sm mt-2">
             Compare JSON online with our free JSON Compare tool. Paste or upload two JSON files and instantly see differences highlighted side by side. Perfect for API testing, debugging, and validating JSON data structures. Supports formatting, minifying, and validation for accurate results.
           </p>
-        </div>
+        </section>
 
         {/* Dark tool layout wrapper */}
         <section className="bg-slate-800 rounded-lg border border-slate-700 p-3">
