@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
@@ -10,6 +10,7 @@ import { EditorView, Decoration, DecorationSet, WidgetType, ViewPlugin, ViewUpda
 import { foldGutter, foldKeymap, foldAll, unfoldAll, foldCode } from '@codemirror/language';
 import { keymap } from '@codemirror/view';
 import type { ReactCodeMirrorRef } from '@uiw/react-codemirror';
+import { vscodeDark, vscodeLight } from '@uiw/codemirror-theme-vscode';
 
 // Create custom fold gutter with solid arrow icons (matching Input editor)
 const customFoldGutter = foldGutter({
@@ -149,6 +150,27 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   placeholderText,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
+  const [isDark, setIsDark] = useState<boolean>(() => {
+    try { return document.documentElement.classList.contains('dark'); } catch { return false; }
+  });
+
+  // Observe root class changes to update theme dynamically
+  useEffect(() => {
+    const root = document.documentElement;
+    const update = () => {
+      try { setIsDark(root.classList.contains('dark')); } catch {}
+    };
+    update();
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.type === 'attributes' && m.attributeName === 'class') {
+          update();
+        }
+      }
+    });
+    observer.observe(root, { attributes: true });
+    return () => observer.disconnect();
+  }, []);
 
   // Local theme to match Input gutter styles (24px line numbers, 18px fold gutter)
   const theme = useMemo(() => EditorView.theme({
@@ -541,7 +563,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
           allowMultipleSelections: !readOnly,
           indentOnInput: !readOnly,
         }}
-        theme={undefined}
+        theme={isDark ? vscodeDark : vscodeLight}
         style={{
           fontSize: '14px',
           height: '100%',
