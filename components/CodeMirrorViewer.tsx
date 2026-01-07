@@ -18,7 +18,12 @@ const customFoldGutter = foldGutter({
     marker.textContent = open ? '▼' : '▶';
     marker.style.cursor = 'pointer';
     marker.style.userSelect = 'none';
-    marker.style.color = '#000';
+    try {
+      const isDark = document.documentElement.classList.contains('dark');
+      marker.style.color = isDark ? '#fff' : '#000';
+    } catch {
+      marker.style.color = '#000';
+    }
     marker.style.fontWeight = '700';
     marker.style.fontSize = '14px';
     marker.title = open ? 'Fold' : 'Unfold';

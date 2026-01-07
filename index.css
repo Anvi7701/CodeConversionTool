@@ -6,6 +6,27 @@ body.is-fullscreen .fullscreen-hide {
 html, body {
   background-color: #F8F9FA;
 }
+/* Dark mode global background */
+html.dark, html.dark body {
+  background-color: #0f172a; /* slate-900 */
+}
+
+/* CodeMirror dark-mode overrides to ensure editors aren't white */
+html.dark .cm-editor,
+html.dark .cm-content {
+  background-color: #1e293b !important; /* slate-800 */
+  color: #e5e7eb !important; /* slate-200 */
+}
+html.dark .cm-gutters {
+  background: rgba(51,65,85,0.35) !important; /* slate-700 */
+  border: none !important;
+}
+html.dark .cm-lineNumbers .cm-gutterElement {
+  color: #cbd5e1 !important; /* slate-300 */
+}
+html.dark .cm-foldGutter .cm-gutterElement > span {
+  color: #e5e7eb !important; /* slate-200 */
+}
 /* Shared button styles for toolbar */
 .btn {
   display: inline-flex;
