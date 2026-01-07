@@ -130,7 +130,7 @@ export default function JsonComparePage() {
         ogImage="https://yourdomain.com/assets/json-compare-preview.png"
       />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <section className="mb-4 bg-white text-slate-800 rounded-lg border border-slate-200 p-4 shadow-sm">
+        <section className="mb-4 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h1 className="text-2xl font-bold">JSON Compare – Compare Two JSON Files Side by Side</h1>
           <h2 className="text-lg font-semibold mt-1">Find Differences in JSON Instantly</h2>
           <p className="text-sm mt-2">
@@ -143,9 +143,19 @@ export default function JsonComparePage() {
           <header className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <label className="text-xs text-slate-300">Array match key</label>
-              <input value={opts.arrayMatchKey || ''} onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs text-slate-800 placeholder-slate-500" placeholder="id" />
+              <input
+                value={opts.arrayMatchKey || ''}
+                onChange={e => setOpts(o => ({ ...o, arrayMatchKey: e.target.value }))}
+                className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 placeholder-slate-500 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600 dark:placeholder-slate-500"
+                placeholder="id"
+              />
               <label className="text-xs text-slate-300">Numeric tolerance</label>
-              <input type="number" value={opts.numericTolerance || 0} onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))} className="bg-white border border-slate-300 rounded px-2 py-1 text-xs w-20 text-slate-800 placeholder-slate-500" />
+              <input
+                type="number"
+                value={opts.numericTolerance || 0}
+                onChange={e => setOpts(o => ({ ...o, numericTolerance: Number(e.target.value) }))}
+                className="px-2 py-1 text-xs w-20 rounded bg-white border border-slate-300 text-slate-800 placeholder-slate-500 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600 dark:placeholder-slate-500"
+              />
             </div>
             <div className="flex items-center gap-2">
               <button
