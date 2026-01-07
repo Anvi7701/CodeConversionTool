@@ -53,6 +53,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
   const pasteValidationRef = useRef<boolean>(false);
   const [showFormatToast, setShowFormatToast] = useState<boolean>(false);
   const [showMinifyToast, setShowMinifyToast] = useState<boolean>(false);
+  const [actionToastMsg, setActionToastMsg] = useState<string>('');
 
   const triggerUpload = () => {
     try { fileInputRef.current?.click(); } catch {}
@@ -183,7 +184,11 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
 
   const handleValidateClick = useCallback(() => {
     const text = (value || '').trim();
-    if (!text) return;
+    if (!text) {
+      setActionToastMsg('Please enter JSON data to Validate');
+      setTimeout(() => setActionToastMsg(''), 2000);
+      return;
+    }
     const result = parseJsonSafe(text);
     if (result.ok) {
       setShowSuccessModal(true);
@@ -223,7 +228,13 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
         <JsonToolbar
           onFormat={(indent) => {
             try {
-              const obj = JSON.parse(value || '');
+              const trimmed = (value || '').trim();
+              if (!trimmed) {
+                setActionToastMsg('Please enter JSON data to Format');
+                setTimeout(() => setActionToastMsg(''), 2000);
+                return;
+              }
+              const obj = JSON.parse(trimmed);
               const formatted = JSON.stringify(obj, null, indent || 2);
               if ((value || '').trim() === formatted.trim()) {
                 setShowFormatToast(true);
@@ -235,7 +246,13 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           }}
           onMinify={() => { 
             try { 
-              const obj = JSON.parse(value || ''); 
+              const trimmed = (value || '').trim();
+              if (!trimmed) {
+                setActionToastMsg('Please enter JSON data to Minify');
+                setTimeout(() => setActionToastMsg(''), 2000);
+                return;
+              }
+              const obj = JSON.parse(trimmed); 
               const minified = JSON.stringify(obj);
               if ((value || '').trim() === minified.trim()) {
                 setShowMinifyToast(true);
@@ -245,19 +262,71 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
               }
             } catch {} 
           }}
-          onSort={(dir, by) => { try { const obj = JSON.parse(value || ''); const sorted = sortObject(obj, dir, by); handleEditorChange(JSON.stringify(sorted, null, 2)); } catch {} }}
+          onSort={(dir, by) => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Sort');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            try {
+              const obj = JSON.parse(trimmed);
+              const sorted = sortObject(obj, dir, by);
+              handleEditorChange(JSON.stringify(sorted, null, 2));
+            } catch {}
+          }}
           
           onValidate={handleValidateClick}
           onCompare={onCompare}
-          onClear={() => handleEditorChange('')}
-          onCopy={() => { try { navigator.clipboard.writeText(value || ''); } catch {} }}
+          onClear={() => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Clear');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            handleEditorChange('');
+          }}
+          onCopy={() => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Copy');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            try { navigator.clipboard.writeText(value || ''); } catch {}
+          }}
           onGenerateSample={handleGenerateSample}
           onUploadJson={triggerUpload}
           onUndo={handleUndo}
           onRedo={handleRedo}
-          onSave={handleDownload}
-          onExpandAll={handleExpandAll}
-          onCollapseAll={handleCollapseAll}
+          onSave={() => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Download');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            handleDownload();
+          }}
+          onExpandAll={() => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Expand All');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            handleExpandAll();
+          }}
+          onCollapseAll={() => {
+            const trimmed = (value || '').trim();
+            if (!trimmed) {
+              setActionToastMsg('Please enter JSON data to Collapse All');
+              setTimeout(() => setActionToastMsg(''), 2000);
+              return;
+            }
+            handleCollapseAll();
+          }}
           canUndo={historyIndex > 0}
           canRedo={historyIndex < history.length - 1}
           hasErrors={hasErrors}
@@ -305,6 +374,11 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
       {showMinifyToast && (
         <div style={{ position: 'fixed', bottom: 20, right: 20, background: 'rgba(31,41,55,0.95)', color: '#fff', padding: '10px 14px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.25)', zIndex: 10000 }}>
           ✓ File is already minified
+        </div>
+      )}
+      {actionToastMsg && (
+        <div style={{ position: 'fixed', bottom: 20, right: 20, background: 'rgba(31,41,55,0.95)', color: '#fff', padding: '10px 14px', borderRadius: 8, boxShadow: '0 6px 18px rgba(0,0,0,0.25)', zIndex: 10000 }}>
+          {actionToastMsg}
         </div>
       )}
     </section>
