@@ -43,7 +43,8 @@ export default function JsonComparePage() {
   const [selectedIdx, setSelectedIdx] = useState<number>(-1);
   const [showModal, setShowModal] = useState(false);
   const listRef = useRef<HTMLDivElement | null>(null);
-  const bothEmpty = (left.raw.trim().length === 0) && (right.raw.trim().length === 0);
+  const leftEmpty = left.raw.trim().length === 0;
+  const rightEmpty = right.raw.trim().length === 0;
   const bothHaveContent = (left.raw.trim().length > 0) && (right.raw.trim().length > 0);
 
   // Counts and filter chips removed from page; retained in Compare popup only
@@ -154,8 +155,8 @@ export default function JsonComparePage() {
           {/* Page-level diff summary and chips removed as requested (kept in modal) */}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" highlightUploadSample={bothEmpty} />
-            <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" highlightUploadSample={bothEmpty} />
+            <EditorWithToolbar side="left" value={left.raw} onChange={setLeftRaw} editorHeight="65vh" highlightUploadSample={leftEmpty} />
+            <EditorWithToolbar side="right" value={right.raw} onChange={setRightRaw} editorHeight="65vh" highlightUploadSample={rightEmpty} />
           </div>
 
           <section className="mt-3">
