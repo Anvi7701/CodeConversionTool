@@ -72,14 +72,6 @@ export default function JsonComparePage() {
       };
       const result = diffJson(lObj, rObj, cleaned);
       setDiffs(result.entries);
-      <ValidationModal
-        open={showInputRequired}
-        title="Input Required"
-        message="Please enter JSON data in both editors to compare."
-        variant="error"
-        onClose={() => setShowInputRequired(false)}
-      />
-
       setShowModal(true);
     } catch (e: any) {
       alert('Invalid JSON in one of the editors.');
@@ -208,6 +200,14 @@ export default function JsonComparePage() {
         </section>
         </section>
       </div>
+
+      <ValidationModal
+        open={showInputRequired}
+        title="Input Required"
+        message="Please enter JSON data in both editors to compare."
+        variant="error"
+        onClose={() => setShowInputRequired(false)}
+      />
 
       {showModal && (
         <JsonCompareModal
