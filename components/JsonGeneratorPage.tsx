@@ -117,23 +117,28 @@ export default function JsonGeneratorPage() {
         keywords="json generator online, mock json data generator, api testing json templates, e-commerce json mock data, healthcare json mock data"
       />
       <div className="max-w-6xl mx-auto px-4 py-10">
-        <div className="flex items-center justify-between mb-2">
-          <h1 className="text-3xl font-bold">{labels.pageTitle}</h1>
-          <div className="flex items-center gap-3">
+        {/* Light hero section (separate from dark tool container) */}
+        <section className="mb-4 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+          <h1 className="text-2xl font-bold">{labels.pageTitle}</h1>
+          <h2 className="text-lg font-semibold mt-1">Generate JSON Data Instantly</h2>
+          <p className="text-sm mt-2">{labels.subtitle}</p>
+        </section>
+
+        {/* Dark tool container */}
+        <section ref={panelRef} className={`bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700 ${panelHighlight ? 'panel-highlight' : ''}`}>
+          <h2 className="text-xl font-semibold mb-4">{labels.panelTitle}</h2>
+
+          {/* Localized controls moved into dark container */}
+          <div className="flex items-center gap-3 mb-4">
             <label className="text-sm text-slate-300" htmlFor="gen-locale">{labels.language}</label>
-            <select id="gen-locale" value={locale} onChange={e => setLocale(e.target.value as any)} className="bg-slate-800 border border-slate-700 rounded px-2 py-1">
+            <select id="gen-locale" value={locale} onChange={e => setLocale(e.target.value as any)} className="px-2 py-1 text-sm rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600">
               {LOCALES.map(l => <option key={l.key} value={l.key}>{l.label}</option>)}
             </select>
             <label className="text-sm text-slate-300" htmlFor="gen-style">{labels.style}</label>
-            <select id="gen-style" value={style} onChange={e => setStyle(e.target.value as any)} className="bg-slate-800 border border-slate-700 rounded px-2 py-1">
+            <select id="gen-style" value={style} onChange={e => setStyle(e.target.value as any)} className="px-2 py-1 text-sm rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600">
               {STYLES.map(s => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
           </div>
-        </div>
-        <p className="text-slate-300 mb-6">{labels.subtitle}</p>
-
-        <section ref={panelRef} className={`bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700 ${panelHighlight ? 'panel-highlight' : ''}`}>
-          <h2 className="text-xl font-semibold mb-4">{labels.panelTitle}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4" role="group" aria-label="Generator controls">
             <TemplateSelect value={template} onChange={setTemplate} aria-label={labels.template} />
