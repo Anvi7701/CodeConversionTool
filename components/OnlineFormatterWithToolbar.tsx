@@ -3642,7 +3642,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* New ribbon: Mode and Format selector (above main ribbon) */}
         {isJsonLanguage && (
-          <div className="flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
+          <div className={`flex items-center ${isParserPage ? 'justify-between' : 'justify-end'} gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2`}>
+            {isParserPage && (
+              <div className="flex items-center">
+                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">JSON Parser</span>
+              </div>
+            )}
             {/* Mode selector - Fast/Smart(AI) */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Mode:</span>
