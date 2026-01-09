@@ -49,7 +49,7 @@ const CATEGORY_TILE_STYLE: Record<string, string> = {
   'Authentication & Security': 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/45 border-indigo-200 dark:border-indigo-700',
   'Financial & Banking': 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-900/45 border-teal-200 dark:border-teal-700',
   'E-commerce & Retail': 'bg-sky-50 hover:bg-sky-100 dark:bg-sky-900/30 dark:hover:bg-sky-900/45 border-sky-200 dark:border-sky-700',
-  'Content & Social': 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/25 dark:hover:bg-rose-900/40 border-rose-200 dark:border-rose-700',
+  'Content & Social': 'bg-rose-50 hover:bg-rose-100 dark:bg-rose-900/20 dark:hover:bg-rose-900/40 border-rose-200 dark:border-rose-700',
   'Events & Scheduling': 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/45 border-cyan-200 dark:border-cyan-700',
   'Healthcare': 'bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/45 border-green-200 dark:border-green-700',
   'Logistics & Inventory': 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/30 dark:hover:bg-slate-900/45 border-slate-200 dark:border-slate-700',
