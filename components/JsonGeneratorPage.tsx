@@ -171,7 +171,7 @@ export default function JsonGeneratorPage() {
                 return a.title.localeCompare(b.title);
               })
               .map(t => (
-              <div key={t.id} className="bg-white dark:bg-slate-900/50 rounded-md p-2 border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
+              <div key={t.id} className="bg-purple-50 dark:bg-purple-900/30 rounded-md p-2 border border-slate-200 dark:border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{t.title}</div>
                 <div className="text-slate-600 dark:text-slate-400 text-xs truncate">{t.description}</div>
                 <button
