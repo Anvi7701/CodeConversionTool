@@ -44,35 +44,39 @@ export const JsonParserPage: React.FC = () => {
         <section className="mb-4 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <h1 className="text-2xl font-bold">JSON Parser – Parse and Extract JSON Data Online</h1>
-            <div className="flex items-center gap-2">
-              {/* Mode selection: Fast vs SmartAI */}
-              <div className="flex items-center rounded-md border border-slate-300 dark:border-slate-600 overflow-hidden">
+            {/* Header controls: Mode + Format (dispatch custom events to the toolbar) */}
+            <div className="flex items-center gap-3">
+              {/* Mode toggle */}
+              <div className="flex items-center gap-1" aria-label="Parser mode">
                 <button
-                  className="px-2 py-1 text-xs bg-white dark:bg-slate-700/40 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100"
-                  onClick={() => window.dispatchEvent(new CustomEvent('parser:set-mode', { detail: 'fast' }))}
-                  aria-label="Use Fast mode"
+                  className="px-2 py-1 text-xs rounded border border-slate-300 bg-white text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:hover:bg-slate-700"
+                  onClick={() => window.dispatchEvent(new CustomEvent('parser:setMode', { detail: { mode: 'fast' } }))}
+                  title="Fast mode"
                 >Fast</button>
                 <button
-                  className="px-2 py-1 text-xs bg-white dark:bg-slate-700/40 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border-l border-slate-300 dark:border-slate-600"
-                  onClick={() => window.dispatchEvent(new CustomEvent('parser:set-mode', { detail: 'smart' }))}
-                  aria-label="Use Smart AI mode"
+                  className="px-2 py-1 text-xs rounded border border-slate-300 bg-white text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:hover:bg-slate-700"
+                  onClick={() => window.dispatchEvent(new CustomEvent('parser:setMode', { detail: { mode: 'smart' } }))}
+                  title="Smart AI mode"
                 >Smart AI</button>
               </div>
-              {/* Format dropdown: indent style */}
+              {/* Format dropdown */}
               <label className="text-xs text-slate-600 dark:text-slate-300" htmlFor="parser-format">Format</label>
               <select
                 id="parser-format"
-                className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-700/40 dark:text-slate-100 dark:border-slate-600"
-                defaultValue={2}
-                onChange={(e) => {
-                  const v = e.target.value === 'tabs' ? 0 : Number(e.target.value);
-                  window.dispatchEvent(new CustomEvent('parser:set-indent', { detail: v }));
-                }}
-                aria-label="Set JSON indent style"
+                className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
+                onChange={(e) => window.dispatchEvent(new CustomEvent('parser:setLanguage', { detail: { language: e.target.value } }))}
+                defaultValue="json"
               >
-                <option value={2}>2 spaces</option>
-                <option value={4}>4 spaces</option>
-                <option value="tabs">Tabs</option>
+                <option value="json">JSON</option>
+                <option value="graphql">GraphQL</option>
+                <option value="java">Java</option>
+                <option value="angular">Angular</option>
+                <option value="javascript">JavaScript</option>
+                <option value="typescript">TypeScript</option>
+                <option value="xml">XML</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="yaml">YAML</option>
               </select>
             </div>
           </div>
