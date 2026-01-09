@@ -70,6 +70,19 @@ const CATEGORY_HOVER_TEXT: Record<string, string> = {
   'Custom Business Domains': 'hover:text-blue-700 dark:hover:text-blue-300'
 };
 
+// Category-specific hover border accents for the "Use" button
+const CATEGORY_HOVER_BORDER: Record<string, string> = {
+  'Authentication & Security': 'hover:border-indigo-300 dark:hover:border-indigo-700',
+  'Financial & Banking': 'hover:border-teal-300 dark:hover:border-teal-700',
+  'E-commerce & Retail': 'hover:border-sky-300 dark:hover:border-sky-700',
+  'Content & Social': 'hover:border-pink-300 dark:hover:border-pink-700',
+  'Events & Scheduling': 'hover:border-cyan-300 dark:hover:border-cyan-700',
+  'Healthcare': 'hover:border-green-300 dark:hover:border-green-700',
+  'Logistics & Inventory': 'hover:border-slate-400 dark:hover:border-slate-600',
+  'Tech & DevOps': 'hover:border-purple-300 dark:hover:border-purple-700',
+  'Custom Business Domains': 'hover:border-blue-300 dark:hover:border-blue-700'
+};
+
 const LOCALES = [{ key: 'en', label: 'English' }, { key: 'hi', label: 'हिन्दी' }];
 const STYLES = [
   { key: 'technical', label: 'Technical (Hacker)' },
@@ -201,7 +214,7 @@ export default function JsonGeneratorPage() {
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{t.title}</div>
                 <div className="text-slate-600 dark:text-slate-400 text-xs truncate">{t.description}</div>
                 <button
-                  className={`mt-2 text-xs px-2 py-1 rounded border border-slate-300 text-slate-800 bg-white/70 hover:bg-white transition-colors dark:text-slate-100 dark:bg-slate-700/40 dark:hover:bg-slate-700 dark:border-slate-600 ${CATEGORY_HOVER_TEXT[t.category] || 'hover:text-slate-700 dark:hover:text-slate-300'}`}
+                  className={`mt-2 text-xs px-2 py-1 rounded border border-slate-400 text-slate-800 bg-white/70 hover:bg-white transition-colors dark:text-slate-100 dark:bg-slate-700/40 dark:hover:bg-slate-700 dark:border-slate-600 ${CATEGORY_HOVER_TEXT[t.category] || 'hover:text-slate-700 dark:hover:text-slate-300'} ${CATEGORY_HOVER_BORDER[t.category] || 'hover:border-slate-500 dark:hover:border-slate-500'}`}
                   onClick={() => {
                     setTemplate(t.id as TemplateId);
                     requestAnimationFrame(() => {
