@@ -44,17 +44,17 @@ const CATEGORY_ORDER = [
   'Custom Business Domains'
 ];
 
-// Category-specific tile styling (light/dark theme-aware)
+// Category-specific tile styling (light/dark theme-aware) with soft hover tints
 const CATEGORY_TILE_STYLE: Record<string, string> = {
-  'Authentication & Security': 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-700',
-  'Financial & Banking': 'bg-teal-50 dark:bg-teal-900/30 border-teal-200 dark:border-teal-700',
-  'E-commerce & Retail': 'bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700',
-  'Content & Social': 'bg-pink-50 dark:bg-pink-900/30 border-pink-200 dark:border-pink-700',
-  'Events & Scheduling': 'bg-cyan-50 dark:bg-cyan-900/30 border-cyan-200 dark:border-cyan-700',
-  'Healthcare': 'bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-700',
-  'Logistics & Inventory': 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-700',
-  'Tech & DevOps': 'bg-purple-50 dark:bg-purple-900/30 border-purple-200 dark:border-purple-700',
-  'Custom Business Domains': 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
+  'Authentication & Security': 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/45 border-indigo-200 dark:border-indigo-700',
+  'Financial & Banking': 'bg-teal-50 hover:bg-teal-100 dark:bg-teal-900/30 dark:hover:bg-teal-900/45 border-teal-200 dark:border-teal-700',
+  'E-commerce & Retail': 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/45 border-amber-200 dark:border-amber-700',
+  'Content & Social': 'bg-pink-50 hover:bg-pink-100 dark:bg-pink-900/30 dark:hover:bg-pink-900/45 border-pink-200 dark:border-pink-700',
+  'Events & Scheduling': 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/45 border-cyan-200 dark:border-cyan-700',
+  'Healthcare': 'bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/45 border-green-200 dark:border-green-700',
+  'Logistics & Inventory': 'bg-slate-50 hover:bg-slate-100 dark:bg-slate-900/30 dark:hover:bg-slate-900/45 border-slate-200 dark:border-slate-700',
+  'Tech & DevOps': 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/30 dark:hover:bg-purple-900/45 border-purple-200 dark:border-purple-700',
+  'Custom Business Domains': 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/45 border-blue-200 dark:border-blue-700'
 };
 
 const LOCALES = [{ key: 'en', label: 'English' }, { key: 'hi', label: 'हिन्दी' }];
