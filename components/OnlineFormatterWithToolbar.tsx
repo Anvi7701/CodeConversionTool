@@ -3867,7 +3867,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         });
                       }
                     }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    className={`toolbar-btn primary compact`}
                     title="Parse JSON (JSON.parse)"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -3895,7 +3895,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         });
                       }
                     }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                    className={`toolbar-btn primary compact`}
                     title="Pretty Print JSON (2-space indent)"
                   >
                     <i className="fa-solid fa-align-left" aria-hidden="true"></i>
