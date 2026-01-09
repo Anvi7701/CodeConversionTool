@@ -44,31 +44,34 @@ export const JsonParserPage: React.FC = () => {
         <section className="mb-4 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <div className="flex items-center justify-between gap-3">
             <h1 className="text-2xl font-bold">JSON Parser – Parse and Extract JSON Data Online</h1>
-            <div className="flex items-center gap-3">
-              <label htmlFor="parser-mode" className="text-xs text-slate-600 dark:text-slate-300">Mode</label>
-              <select id="parser-mode" className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
-                onChange={e => {
-                  const fmt = e.target.value;
-                  window.dispatchEvent(new CustomEvent('set-view-format', { detail: fmt }));
+            <div className="flex items-center gap-2">
+              {/* Mode selection: Fast vs SmartAI */}
+              <div className="flex items-center rounded-md border border-slate-300 dark:border-slate-600 overflow-hidden">
+                <button
+                  className="px-2 py-1 text-xs bg-white dark:bg-slate-700/40 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100"
+                  onClick={() => window.dispatchEvent(new CustomEvent('parser:set-mode', { detail: 'fast' }))}
+                  aria-label="Use Fast mode"
+                >Fast</button>
+                <button
+                  className="px-2 py-1 text-xs bg-white dark:bg-slate-700/40 hover:bg-white dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border-l border-slate-300 dark:border-slate-600"
+                  onClick={() => window.dispatchEvent(new CustomEvent('parser:set-mode', { detail: 'smart' }))}
+                  aria-label="Use Smart AI mode"
+                >Smart AI</button>
+              </div>
+              {/* Format dropdown: indent style */}
+              <label className="text-xs text-slate-600 dark:text-slate-300" htmlFor="parser-format">Format</label>
+              <select
+                id="parser-format"
+                className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-700/40 dark:text-slate-100 dark:border-slate-600"
+                defaultValue={2}
+                onChange={(e) => {
+                  const v = e.target.value === 'tabs' ? 0 : Number(e.target.value);
+                  window.dispatchEvent(new CustomEvent('parser:set-indent', { detail: v }));
                 }}
-                aria-label="Select output mode">
-                <option value="code">Code</option>
-                <option value="view">Console</option>
-                <option value="tree">Tree</option>
-                <option value="form">Form</option>
-                <option value="table">Table</option>
-                <option value="text">Text</option>
-              </select>
-              <label htmlFor="parser-format" className="text-xs text-slate-600 dark:text-slate-300">Format</label>
-              <select id="parser-format" className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
-                onChange={e => {
-                  const val = e.target.value;
-                  const size = val === 'tabs' ? 0 : Number(val);
-                  window.dispatchEvent(new CustomEvent('format-indent', { detail: size }));
-                }}
-                aria-label="Select formatting indentation">
-                <option value="2">2 spaces</option>
-                <option value="4">4 spaces</option>
+                aria-label="Set JSON indent style"
+              >
+                <option value={2}>2 spaces</option>
+                <option value={4}>4 spaces</option>
                 <option value="tabs">Tabs</option>
               </select>
             </div>

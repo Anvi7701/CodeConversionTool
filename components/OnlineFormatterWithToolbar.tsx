@@ -146,6 +146,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Fast/Smart mode for JSON formatter
   const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
+  // Parser page indent size (0 = tabs, 2 or 4 spaces)
+  const [parserIndentSize, setParserIndentSize] = useState<number>(2);
   const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
   const [commentLines, setCommentLines] = useState<number[]>([]);
   const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
@@ -177,6 +179,24 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   
   // View mode state
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
+    // Listen for hero header controls on Parser page (mode + format indent)
+    useEffect(() => {
+      if (!isParserPage) return;
+      const onSetMode = (e: any) => {
+        const v = e?.detail === 'smart' ? 'smart' : 'fast';
+        setFormatterMode(v as FormatterMode);
+      };
+      const onSetIndent = (e: any) => {
+        const v = e?.detail;
+        if (v === 0 || v === 2 || v === 4) setParserIndentSize(v);
+      };
+      window.addEventListener('parser:set-mode', onSetMode);
+      window.addEventListener('parser:set-indent', onSetIndent);
+      return () => {
+        window.removeEventListener('parser:set-mode', onSetMode);
+        window.removeEventListener('parser:set-indent', onSetIndent);
+      };
+    }, [isParserPage]);
   const [viewFormat, setViewFormat] = useState<'code' | 'view' | 'tree' | 'form' | 'text' | 'console' | 'table' | 'toon'>('code');
   const [isOutputFullscreen, setIsOutputFullscreen] = useState<boolean>(false);
   const [previousView, setPreviousView] = useState<'code' | 'view' | 'tree' | 'form' | 'text' | 'console' | 'table' | 'toon'>('code');
@@ -1656,33 +1676,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       });
     }
   };
-
-  // External header controls: listen for custom events to update view/format without altering workflow
-  useEffect(() => {
-    const onSetViewFormat = (ev: Event) => {
-      try {
-        const fmt = (ev as CustomEvent).detail as any;
-        if (fmt && typeof fmt === 'string') {
-          setViewFormat(fmt);
-        }
-      } catch {}
-    };
-    const onFormatIndent = (ev: Event) => {
-      try {
-        const size = (ev as CustomEvent).detail as number;
-        if (typeof size === 'number') {
-          if (!inputCode.trim()) return;
-          handleFormat(size);
-        }
-      } catch {}
-    };
-    window.addEventListener('set-view-format' as any, onSetViewFormat as any);
-    window.addEventListener('format-indent' as any, onFormatIndent as any);
-    return () => {
-      window.removeEventListener('set-view-format' as any, onSetViewFormat as any);
-      window.removeEventListener('format-indent' as any, onFormatIndent as any);
-    };
-  }, [inputCode]);
 
   const handleCompact = () => {
     const trimmedInput = inputCode.trim();
@@ -3868,9 +3861,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     onClick={() => {
                       if (!inputCode.trim()) return;
                       const res = parseJsonSafe(inputCode.trim());
-                      if (res.ok) {
+                        if (res.ok) {
                         try {
-                          const formatted = JSON.stringify(res.value, null, 2);
+                          const indentChar = parserIndentSize === 0 ? '\t' : ' '.repeat(parserIndentSize);
+                          const formatted = JSON.stringify(res.value, null, indentChar);
                           setOutputCode(formatted);
                           setIsConversionOutput(false);
                           setViewFormat('code');
@@ -3908,7 +3902,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       try {
                         const obj = JSON.parse(inputCode.trim());
-                        const pretty = JSON.stringify(obj, null, 2);
+                        const indentChar = parserIndentSize === 0 ? '\t' : ' '.repeat(parserIndentSize);
+                        const pretty = JSON.stringify(obj, null, indentChar);
                         setOutputCode(pretty);
                         setIsConversionOutput(false);
                         setViewFormat('code');
