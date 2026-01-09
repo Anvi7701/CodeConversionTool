@@ -57,6 +57,19 @@ const CATEGORY_TILE_STYLE: Record<string, string> = {
   'Custom Business Domains': 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/45 border-blue-200 dark:border-blue-700'
 };
 
+// Category-specific hover text accents for the "Use" button
+const CATEGORY_HOVER_TEXT: Record<string, string> = {
+  'Authentication & Security': 'hover:text-indigo-700 dark:hover:text-indigo-300',
+  'Financial & Banking': 'hover:text-teal-700 dark:hover:text-teal-300',
+  'E-commerce & Retail': 'hover:text-sky-700 dark:hover:text-sky-300',
+  'Content & Social': 'hover:text-pink-700 dark:hover:text-pink-300',
+  'Events & Scheduling': 'hover:text-cyan-700 dark:hover:text-cyan-300',
+  'Healthcare': 'hover:text-green-700 dark:hover:text-green-300',
+  'Logistics & Inventory': 'hover:text-slate-700 dark:hover:text-slate-300',
+  'Tech & DevOps': 'hover:text-purple-700 dark:hover:text-purple-300',
+  'Custom Business Domains': 'hover:text-blue-700 dark:hover:text-blue-300'
+};
+
 const LOCALES = [{ key: 'en', label: 'English' }, { key: 'hi', label: 'हिन्दी' }];
 const STYLES = [
   { key: 'technical', label: 'Technical (Hacker)' },
@@ -188,7 +201,7 @@ export default function JsonGeneratorPage() {
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{t.title}</div>
                 <div className="text-slate-600 dark:text-slate-400 text-xs truncate">{t.description}</div>
                 <button
-                  className="mt-2 text-xs px-2 py-1 rounded border border-slate-300 text-slate-800 bg-white/70 hover:bg-white transition-colors dark:text-slate-100 dark:bg-slate-700/40 dark:hover:bg-slate-700 dark:border-slate-600"
+                  className={`mt-2 text-xs px-2 py-1 rounded border border-slate-300 text-slate-800 bg-white/70 hover:bg-white transition-colors dark:text-slate-100 dark:bg-slate-700/40 dark:hover:bg-slate-700 dark:border-slate-600 ${CATEGORY_HOVER_TEXT[t.category] || 'hover:text-slate-700 dark:hover:text-slate-300'}`}
                   onClick={() => {
                     setTemplate(t.id as TemplateId);
                     requestAnimationFrame(() => {
