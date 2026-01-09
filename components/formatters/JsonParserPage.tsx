@@ -42,7 +42,37 @@ export const JsonParserPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Light hero section (separate from dark tool container) */}
         <section className="mb-4 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
-          <h1 className="text-2xl font-bold">JSON Parser – Parse and Extract JSON Data Online</h1>
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="text-2xl font-bold">JSON Parser – Parse and Extract JSON Data Online</h1>
+            <div className="flex items-center gap-3">
+              <label htmlFor="parser-mode" className="text-xs text-slate-600 dark:text-slate-300">Mode</label>
+              <select id="parser-mode" className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
+                onChange={e => {
+                  const fmt = e.target.value;
+                  window.dispatchEvent(new CustomEvent('set-view-format', { detail: fmt }));
+                }}
+                aria-label="Select output mode">
+                <option value="code">Code</option>
+                <option value="view">Console</option>
+                <option value="tree">Tree</option>
+                <option value="form">Form</option>
+                <option value="table">Table</option>
+                <option value="text">Text</option>
+              </select>
+              <label htmlFor="parser-format" className="text-xs text-slate-600 dark:text-slate-300">Format</label>
+              <select id="parser-format" className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
+                onChange={e => {
+                  const val = e.target.value;
+                  const size = val === 'tabs' ? 0 : Number(val);
+                  window.dispatchEvent(new CustomEvent('format-indent', { detail: size }));
+                }}
+                aria-label="Select formatting indentation">
+                <option value="2">2 spaces</option>
+                <option value="4">4 spaces</option>
+                <option value="tabs">Tabs</option>
+              </select>
+            </div>
+          </div>
           <h2 className="text-lg font-semibold mt-1">Parse JSON and extract values easily</h2>
           <p className="text-sm mt-2">Perfect for developers working with APIs and large JSON files.</p>
         </section>

@@ -1657,6 +1657,33 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
   };
 
+  // External header controls: listen for custom events to update view/format without altering workflow
+  useEffect(() => {
+    const onSetViewFormat = (ev: Event) => {
+      try {
+        const fmt = (ev as CustomEvent).detail as any;
+        if (fmt && typeof fmt === 'string') {
+          setViewFormat(fmt);
+        }
+      } catch {}
+    };
+    const onFormatIndent = (ev: Event) => {
+      try {
+        const size = (ev as CustomEvent).detail as number;
+        if (typeof size === 'number') {
+          if (!inputCode.trim()) return;
+          handleFormat(size);
+        }
+      } catch {}
+    };
+    window.addEventListener('set-view-format' as any, onSetViewFormat as any);
+    window.addEventListener('format-indent' as any, onFormatIndent as any);
+    return () => {
+      window.removeEventListener('set-view-format' as any, onSetViewFormat as any);
+      window.removeEventListener('format-indent' as any, onFormatIndent as any);
+    };
+  }, [inputCode]);
+
   const handleCompact = () => {
     const trimmedInput = inputCode.trim();
     if (!trimmedInput || activeLanguage !== 'json') return;
