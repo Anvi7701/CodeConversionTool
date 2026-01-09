@@ -28,6 +28,7 @@ import { StatisticsDetailViewer } from './StatisticsDetailViewer';
 import { ValidationModal } from './ValidationModal';
 import { JMESPathTransform } from './JMESPathTransform';
 import { JSONPathQueryModal } from './JSONPathQueryModal';
+import './JsonToolbar.css';
 import { Tooltip } from './Tooltip';
 import type { Selection } from '../types';
 import { convertJsonToXmlCode } from '../utils/jsonToXmlConverter';
@@ -3642,12 +3643,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* New ribbon: Mode and Format selector (above main ribbon) */}
         {isJsonLanguage && (
-          <div className={`${isParserPage ? 'flex items-center justify-between gap-4 mb-2' : 'flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2'}`}>
-            {isParserPage && (
-              <div className="flex items-center">
-                <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">JSON Parser</span>
-              </div>
-            )}
+          <div className="flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
             {/* Mode selector - Fast/Smart(AI) */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Mode:</span>
