@@ -188,7 +188,7 @@ export default function JsonGeneratorPage() {
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-100">{t.title}</div>
                 <div className="text-slate-600 dark:text-slate-400 text-xs truncate">{t.description}</div>
                 <button
-                  className="mt-2 text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
+                  className="mt-2 text-xs px-2 py-1 rounded border border-slate-300 text-slate-800 bg-white/70 hover:bg-white transition-colors dark:text-slate-100 dark:bg-slate-700/40 dark:hover:bg-slate-700 dark:border-slate-600"
                   onClick={() => {
                     setTemplate(t.id as TemplateId);
                     requestAnimationFrame(() => {
