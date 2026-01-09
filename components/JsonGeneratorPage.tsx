@@ -153,9 +153,10 @@ export default function JsonGeneratorPage() {
           <JsonOutputPanel data={output} template={template} qty={qty} />
         </div>
 
-        <section className="mt-10">
+        {/* Supported templates section - visually separated and theme-aware */}
+        <section className="mt-10 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h2 className="text-xl font-semibold mb-2">{labels.available}</h2>
-          <p className="text-slate-300 text-sm mb-4">
+          <p className="text-sm mb-4 text-slate-700 dark:text-slate-300">
             Generate realistic mock JSON data for testing and development. Perfect for API testing, UI development, and database seeding.
             Our JSON Generator supports diverse domains including Authentication &amp; Security, Financial &amp; Banking, E-commerce &amp; Retail, Content &amp; Social,
             Events &amp; Scheduling, Healthcare, Logistics &amp; Inventory, Tech &amp; DevOps, and Custom Business Applications.
@@ -170,9 +171,9 @@ export default function JsonGeneratorPage() {
                 return a.title.localeCompare(b.title);
               })
               .map(t => (
-              <div key={t.id} className="bg-slate-800 rounded-md p-2 border border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
+              <div key={t.id} className="bg-white dark:bg-slate-900/50 rounded-md p-2 border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-blue-500">
                 <div className="text-sm font-medium">{t.title}</div>
-                <div className="text-slate-400 text-xs truncate">{t.description}</div>
+                <div className="text-slate-600 dark:text-slate-400 text-xs truncate">{t.description}</div>
                 <button
                   className="mt-2 text-xs bg-blue-600 hover:bg-blue-500 px-2 py-1 rounded"
                   onClick={() => {
