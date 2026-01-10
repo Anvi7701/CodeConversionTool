@@ -48,7 +48,7 @@ export const JsonParserPage: React.FC = () => {
             <div className="flex items-center gap-3">
               {/* Mode toggle */}
               <div className="flex items-center gap-2" aria-label="Parser mode">
-                <span className="text-xs text-slate-600 dark:text-slate-300">Mode</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">Mode:</span>
                 <button
                   className={`toolbar-btn primary compact`}
                   onClick={() => window.dispatchEvent(new CustomEvent('parser:setMode', { detail: { mode: 'fast' } }))}
@@ -69,7 +69,7 @@ export const JsonParserPage: React.FC = () => {
                 </button>
               </div>
               {/* Format dropdown */}
-              <label className="text-xs text-slate-600 dark:text-slate-300" htmlFor="parser-format">Format</label>
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200" htmlFor="parser-format">Format:</label>
               <select
                 id="parser-format"
                 className="px-2 py-1 text-xs rounded bg-white border border-slate-300 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200 dark:border-slate-600"
