@@ -3664,8 +3664,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           />
         )} */}
 
-        {/* New ribbon: Mode and Format selector (above main ribbon) */}
-        {isJsonLanguage && (
+        {/* New ribbon: Mode and Format selector (above main ribbon) - hidden on Parser page (header provides these) */}
+        {isJsonLanguage && !isParserPage && (
           <div className="flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
             {/* Mode selector - Fast/Smart(AI) */}
             <div className="flex items-center gap-2">
@@ -4592,8 +4592,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         
 
-        {/* For non-JSON languages, show simpler toolbar with just Format selector */}
-        {!isJsonLanguage && (
+        {/* For non-JSON languages, show simpler toolbar with just Format selector - hidden on Parser page (header provides this) */}
+        {!isJsonLanguage && !isParserPage && (
           <div className="flex items-center justify-center gap-3 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3">
             <label htmlFor="language-select-simple" className="text-sm font-medium text-gray-700 dark:text-gray-300">Format:</label>
             <select
