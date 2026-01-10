@@ -47,17 +47,24 @@ export const JsonParserPage: React.FC = () => {
             {/* Header controls: Mode + Format (dispatch custom events to the toolbar) */}
             <div className="flex items-center gap-3">
               {/* Mode toggle */}
-              <div className="flex items-center gap-1" aria-label="Parser mode">
+              <div className="flex items-center gap-2" aria-label="Parser mode">
+                <span className="text-xs text-slate-600 dark:text-slate-300">Mode</span>
                 <button
-                  className="px-2 py-1 text-xs rounded border border-slate-300 bg-white text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:hover:bg-slate-700"
+                  className={`toolbar-btn primary compact`}
                   onClick={() => window.dispatchEvent(new CustomEvent('parser:setMode', { detail: { mode: 'fast' } }))}
                   title="Fast mode"
-                >Fast</button>
+                  aria-label="Fast mode"
+                >
+                  <span className="label">Fast</span>
+                </button>
                 <button
-                  className="px-2 py-1 text-xs rounded border border-slate-300 bg-white text-slate-700 hover:bg-white dark:border-slate-600 dark:bg-slate-700/40 dark:text-slate-100 dark:hover:bg-slate-700"
+                  className={`toolbar-btn primary compact`}
                   onClick={() => window.dispatchEvent(new CustomEvent('parser:setMode', { detail: { mode: 'smart' } }))}
                   title="Smart AI mode"
-                >Smart AI</button>
+                  aria-label="Smart AI mode"
+                >
+                  <span className="label">Smart AI</span>
+                </button>
               </div>
               {/* Format dropdown */}
               <label className="text-xs text-slate-600 dark:text-slate-300" htmlFor="parser-format">Format</label>
