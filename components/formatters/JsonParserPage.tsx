@@ -55,6 +55,7 @@ export const JsonParserPage: React.FC = () => {
                   title="Fast mode"
                   aria-label="Fast mode"
                 >
+                  <span className="icon">⚡</span>
                   <span className="label">Fast</span>
                 </button>
                 <button
@@ -63,6 +64,7 @@ export const JsonParserPage: React.FC = () => {
                   title="Smart AI mode"
                   aria-label="Smart AI mode"
                 >
+                  <span className="icon">🤖</span>
                   <span className="label">Smart AI</span>
                 </button>
               </div>
