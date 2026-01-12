@@ -341,6 +341,7 @@ export const EditorWithToolbar: React.FC<EditorWithToolbarProps> = ({ side, valu
           sortPlacement="secondary-icon"
           highlightUpload={highlightUploadSample}
           highlightSample={highlightUploadSample}
+          inputEmpty={(value || '').trim().length === 0}
         />
       </div>
 

@@ -28,10 +28,38 @@
   z-index: 10;
 }
 
+/* Embedded variant removes container chrome so parent can style (e.g., dark wrappers) */
+.json-toolbar-container.embedded {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* Compact vertical spacing when embedded inside dark editor band */
+.json-toolbar-container.embedded {
+  gap: 8px; /* wider spacing between primary and secondary ribbons */
+}
+.json-toolbar-container.embedded .primary-ribbon {
+  padding-bottom: 12px; /* wider space under primary ribbon */
+  border-bottom: 1px solid #334155; /* slate-700 to mirror Compare */
+}
+.json-toolbar-container.embedded .secondary-ribbon {
+  padding-top: 8px; /* wider space above secondary ribbon */
+}
+
+/* Vertical separators inside embedded ribbons: mirror Compare (slate-700) */
+.json-toolbar-container.embedded .toolbar-separator {
+  width: 1px;
+  height: 24px; /* match Compare's taller separators */
+  background-color: #334155; /* slate-700 */
+  margin: 0 6px;
+}
+
 .toolbar-ribbon {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px; /* slightly tighter ribbon spacing to fit one line */
   flex-wrap: wrap;
   position: relative;
   z-index: auto;
@@ -101,13 +129,15 @@
   position: relative;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  white-space: nowrap; /* prevent label wrapping inside buttons */
 }
 
 /* Compact variant for dense toolbars */
 .toolbar-btn.compact {
-  padding: 6px 10px;
+  padding: 5px 7px; /* slightly tighter horizontal padding */
   font-size: 12px;
   border-radius: 6px;
+  gap: 2px; /* tighter icon-label spacing for single-line fit */
 }
 
 .toolbar-btn::before {
@@ -144,6 +174,22 @@
   opacity: 0.4;
   cursor: not-allowed;
   transform: none !important;
+}
+
+/* Ensure all ribbon buttons, including legacy `.btn` variants, fit on one line */
+.json-toolbar-container .toolbar-ribbon .btn {
+  white-space: nowrap;
+  padding: 5px 7px; /* tighter horizontal padding to reduce width */
+  gap: 2px;        /* reduce icon-label gap */
+}
+.json-toolbar-container .toolbar-ribbon .btn i,
+.json-toolbar-container .toolbar-ribbon .btn .icon {
+  font-size: 13px; /* smaller icon within ribbon for compact width */
+  line-height: 1;
+}
+.json-toolbar-container .toolbar-ribbon .btn span {
+  white-space: nowrap; /* prevent wrapping of label */
+  letter-spacing: 0.1px; /* slightly tighter tracking */
 }
 
 /* Button Variants */
@@ -198,13 +244,30 @@
 .toolbar-btn.icon-only {
   padding: 6px;
   min-width: 34px;
+  height: 28px; /* consistent height for vertical centering */
   justify-content: center;
+  align-items: center;
+  line-height: 1;
 }
 
 /* Extra-compact icon-only when combined with compact variant */
 .toolbar-btn.icon-only.compact {
   padding: 5px;
   min-width: 32px;
+  height: 28px; /* keep same height in compact for parity */
+}
+
+/* Focus visibility for accessibility */
+.toolbar-btn:focus-visible {
+  outline: 2px solid #6366f1; /* indigo-500 */
+  outline-offset: 2px;
+}
+
+/* Dark theme separators default (non-embedded) */
+.json-toolbar-container.theme-dark .toolbar-separator {
+  width: 1px;
+  height: 24px;
+  background-color: #334155; /* slate-700 */
 }
 
 /* Attention highlight for key actions (e.g., Upload, Sample) */
@@ -229,12 +292,22 @@
 }
 
 .toolbar-btn.compact .icon {
-  font-size: 15px;
+  font-size: 13px; /* smaller icon in compact variant to reduce width */
+}
+
+/* Ensure Font Awesome icons also shrink in compact buttons */
+.toolbar-btn.compact i {
+  font-size: 13px; /* ensure FA icons match compact size */
+  line-height: 1;
 }
 
 .toolbar-btn .label {
   font-size: 13px;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px; /* reduce letter spacing to save horizontal space */
+  white-space: nowrap; /* force single-line labels */
+}
+.toolbar-btn.compact .label {
+  letter-spacing: 0.1px; /* extra-tight for compact variant */
 }
 
 .toolbar-btn .badge {
@@ -639,6 +712,32 @@
   .shortcut-row span {
     color: #b0b0b0;
   }
+}
+
+/* Force dark theme regardless of OS preference when requested */
+.json-toolbar-container.theme-dark {
+  background: linear-gradient(to bottom, #1e1e1e 0%, #2d2d2d 100%);
+  border-bottom-color: #404040;
+}
+.json-toolbar-container.theme-dark .toolbar-btn {
+  background: #2d2d2d;
+  border-color: #404040;
+  color: #e0e0e0;
+}
+.json-toolbar-container.theme-dark .toolbar-btn:hover:not(:disabled) {
+  background: #3d3d3d;
+  border-color: #505050;
+}
+.json-toolbar-container.theme-dark .toolbar-separator {
+  background: linear-gradient(to bottom, transparent, #505050, transparent);
+}
+.json-toolbar-container.theme-dark .dropdown-menu {
+  background: #2d2d2d;
+  border-color: #404040;
+}
+.json-toolbar-container.theme-dark .dropdown-menu button { color: #e0e0e0; }
+.json-toolbar-container.theme-dark .dropdown-menu button:hover {
+  background: linear-gradient(135deg, #667eea25 0%, #764ba225 100%);
 }
 
 /* Loading Animation */

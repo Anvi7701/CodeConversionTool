@@ -3622,9 +3622,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const iconButtonClass = isBeautifierPage
     ? 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-blue-600 dark:border-blue-500 flex items-center justify-center'
     : 'w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all cursor-pointer border border-purple-600 dark:border-purple-500 flex items-center justify-center';
+  const parserIconSize = isParserPage ? 'text-base' : 'text-sm';
   const iconTextClass = isBeautifierPage
-    ? 'text-blue-700 dark:text-blue-400 text-sm'
-    : 'text-purple-800 dark:text-purple-500 text-sm';
+    ? `text-blue-700 dark:text-blue-400 ${parserIconSize}`
+    : `text-purple-800 dark:text-purple-500 ${parserIconSize}`;
   
   return (
     <>
@@ -3711,8 +3712,170 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
         )}
 
-        {/* Compact toolbar with smaller buttons and dropdowns */}
-        {isJsonLanguage && (
+        {/* Secondary toolbar: remaining parser actions (Parser page) */}
+        {isJsonLanguage && isParserPage && (
+          <section className="bg-transparent p-0 mb-2">
+            <div className="p-2">
+              <div className="toolbar-ribbon secondary-ribbon">
+                {/* Parse JSON */}
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    const res = parseJsonSafe(inputCode.trim());
+                    if (res.ok) {
+                      try {
+                        const formatted = JSON.stringify(res.value, null, 2);
+                        setOutputCode(formatted);
+                        setIsConversionOutput(false);
+                        setViewFormat('code');
+                        setOutputLocked(true);
+                        setOutputTitle('Parsed JSON');
+                      } catch (err: any) {
+                        setValidationError({ isValid: false, reason: err?.message || 'Failed to format parsed JSON.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      }
+                    } else {
+                      const { errors: allErrors, error: parseError } = res as ParseResultErr;
+                      const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
+                      setValidationError({ isValid: false, reason: allErrors && allErrors.length ? `${msg}` : msg, isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className={`toolbar-btn primary compact`}
+                  title="Parse JSON (JSON.parse)"
+                >
+                  <i className="icon fa-solid fa-code" aria-hidden="true"></i>
+                  <span className="label">Parse JSON</span>
+                </button>
+
+                {/* Pretty Print */}
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      const obj = JSON.parse(inputCode.trim());
+                      const pretty = JSON.stringify(obj, null, 2);
+                      setOutputCode(pretty);
+                      setIsConversionOutput(false);
+                      setViewFormat('code');
+                      setOutputLocked(true);
+                      setOutputTitle('Pretty Printed JSON');
+                    } catch (err: any) {
+                      setValidationError({ isValid: false, reason: err?.message || 'Invalid JSON. Fix errors before pretty printing.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className={`toolbar-btn primary compact`}
+                  title="Pretty Print JSON"
+                >
+                  <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
+                  <span className="label">Pretty Print</span>
+                </button>
+
+                {/* Compact JSON */}
+                <button
+                  onClick={() => { if (!inputCode.trim()) return; handleCompact(); }}
+                  className={`toolbar-btn primary compact`}
+                  title="Compact JSON"
+                >
+                  <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
+                  <span className="label">Compact</span>
+                </button>
+
+                {/* Generate JSON Schema */}
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) return;
+                    try {
+                      JSON.parse(inputCode.trim());
+                      const { schemaText } = generateSchemaFromSample(inputCode.trim());
+                      setOutputCode(schemaText);
+                      setIsConversionOutput(true);
+                      setViewFormat('code');
+                      setOutputLocked(true);
+                      setOutputTitle('Draft-07 schema');
+                    } catch (err: any) {
+                      setValidationError({ isValid: false, reason: `Invalid JSON. Fix errors before generating schema. Details: ${err?.message || ''}`, isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className={`toolbar-btn primary compact`}
+                  title="Generate JSON Schema"
+                >
+                  <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  <span className="label">Generate Schema</span>
+                </button>
+
+                {/* Export via jq */}
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
+                    try {
+                      const obj = JSON.parse(inputCode.trim());
+                      const compact = JSON.stringify(obj);
+                      const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
+                      const blob = new Blob([ps], { type: 'application/octet-stream' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'export-via-jq.ps1';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                      URL.revokeObjectURL(url);
+                    } catch (err: any) {
+                      setValidationError({ isValid: false, reason: err?.message || 'Invalid JSON. Fix errors before exporting via jq.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className={`toolbar-btn primary compact`}
+                  title="Export via jq (PowerShell)"
+                >
+                  <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
+                  <span className="label">Export via jq</span>
+                </button>
+
+                {/* Tree View */}
+                <button
+                  onClick={() => { if (!inputCode.trim()) return; navigate('/json-tree-view', { state: { inputJson: inputCode } }); }}
+                  className={`toolbar-btn primary compact`}
+                  title="Open JSON Tree View"
+                >
+                  <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
+                  <span className="label">Tree View</span>
+                </button>
+
+                {/* Graph View */}
+                <button
+                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                  className={`toolbar-btn primary compact`}
+                  title="Visualize as Graph"
+                >
+                  <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                  <span className="label">Graph View</span>
+                </button>
+
+                {/* Transform */}
+                <button
+                  onClick={() => { const hasInput = !!inputCode.trim(); if (hasInput) { navigate('/json-transform', { state: { inputJson: inputCode } }); } else { navigate('/json-transform'); } }}
+                  className={`toolbar-btn primary compact`}
+                  title="Open JSON Transform"
+                >
+                  <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
+                  <span className="label">Transform</span>
+                </button>
+
+                {/* Structure Analysis */}
+                <button
+                  onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }}
+                  className={`toolbar-btn primary compact`}
+                  title="JSON Structure Analyzer"
+                >
+                  <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
+                  <span className="label">Structure Analysis</span>
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Compact toolbar with smaller buttons and dropdowns (non-Parser pages) */}
+        {isJsonLanguage && !isParserPage && (
           <div className={`flex ${isBeautifierPage ? 'flex-wrap items-start' : 'items-center justify-between'} gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
             <div className={`flex ${isBeautifierPage ? 'flex-wrap gap-y-2' : ''} items-start gap-2 overflow-visible`}>
               {isBeautifierPage ? (
@@ -3858,7 +4021,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   {/* Parser page controls: Parse JSON, Pretty Print, Generate Schema, Export via jq */}
               {isParserPage && activeLanguage === 'json' && (
-                <div className="flex items-center gap-2">
+                <div className="parser-ribbon flex items-center gap-1">
                   {/* Parse JSON (true parsing like JSON.parse) */}
                   <button
                     onClick={() => {
@@ -3894,8 +4057,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`toolbar-btn primary compact`}
                     title="Parse JSON (JSON.parse)"
                   >
-                    <i className="fa-solid fa-code" aria-hidden="true"></i>
-                    <span>Parse JSON</span>
+                    <i className="icon fa-solid fa-code" aria-hidden="true"></i>
+                    <span className="label">Parse JSON</span>
                   </button>
 
                   {/* Pretty Print (simply JSON.parse + JSON.stringify with 2-space indent) */}
@@ -3922,8 +4085,21 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`toolbar-btn primary compact`}
                     title="Pretty Print JSON (2-space indent)"
                   >
-                    <i className="fa-solid fa-align-left" aria-hidden="true"></i>
-                    <span>Pretty Print</span>
+                    <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
+                    <span className="label">Pretty Print</span>
+                  </button>
+
+                  {/* Compact JSON (remove all whitespace) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      handleCompact();
+                    }}
+                    className={`toolbar-btn primary compact`}
+                    title="Compact JSON (remove all whitespace)"
+                  >
+                    <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
+                    <span className="label">Compact</span>
                   </button>
 
                   {/* Generate JSON Schema (Draft-07) */}
@@ -3950,8 +4126,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title="Generate JSON Schema (Draft-07)"
                   >
-                    <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                    <span>Generate Schema</span>
+                    <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    <span className="label">Generate Schema</span>
                   </button>
 
                   {/* Export via jq (Windows PowerShell): download a .ps1 that pretty-prints (and sorts keys) using jq */}
@@ -3983,8 +4159,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title="Export via jq (PowerShell script)"
                   >
-                    <i className="fa-solid fa-file-export" aria-hidden="true"></i>
-                    <span>Export via jq</span>
+                    <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
+                    <span className="label">Export via jq</span>
                   </button>
 
                   {/* Tree View (opens separate page) */}
@@ -3996,8 +4172,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title="Open JSON Tree View"
                   >
-                    <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
-                    <span>Tree View</span>
+                    <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
+                    <span className="label">Tree View</span>
                   </button>
 
                   {/* Graph View (opens in-page Graph Viewer) */}
@@ -4006,8 +4182,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                   >
-                    <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
-                    <span>Graph View</span>
+                    <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                    <span className="label">Graph View</span>
                   </button>
 
                   {/* Transform (JMESPath/JSONPath on Transform page) */}
@@ -4023,8 +4199,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title="Open JSON Transform"
                   >
-                    <i className="fa-solid fa-right-left" aria-hidden="true"></i>
-                    <span>Transform</span>
+                    <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
+                    <span className="label">Transform</span>
                   </button>
 
                   {/* Structure Analysis */}
@@ -4036,8 +4212,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
                     title="JSON Structure Analyzer"
                   >
-                    <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
-                    <span>Structure Analysis</span>
+                    <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
+                    <span className="label">Structure Analysis</span>
                   </button>
                 </div>
               )}
@@ -4621,12 +4797,74 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
-          <div className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${isParserPage ? 'bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+            {/* Parser: primary + secondary toolbars like Compare, inside same dark container */}
+            {isParserPage && (
+              <div className="p-2 border-b border-slate-700 bg-slate-900/40">
+                <JsonToolbar
+                  onFormat={handleFormat}
+                  onMinify={handleCompact}
+                  onSort={handleSort}
+                  onRepair={undefined}
+                  onUndo={handleUndo}
+                  onRedo={handleRedo}
+                  onGenerateSample={(template) => {
+                    let sample: any = { id: 1, name: 'Sample User', email: 'user@example.com' };
+                    if (template === 'api') sample = { status: 'success', data: [{ id: 1, title: 'Item 1' }, { id: 2, title: 'Item 2' }] };
+                    if (template === 'config') sample = { appName: 'Demo', version: '1.0.0', settings: { theme: 'dark', language: 'en' } };
+                    if (template === 'array') sample = [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }];
+                    if (template === 'nested') sample = { level1: { level2: { level3: { value: 'Deep' } } } };
+                    try {
+                      const formatted = JSON.stringify(sample, null, 2);
+                      setInputCode(formatted);
+                      addToHistory(formatted);
+                    } catch {}
+                  }}
+                  onCollapseAll={() => { setCollapseAllTrigger(true); setTimeout(() => setCollapseAllTrigger(false), 120); }}
+                  onExpandAll={() => { setExpandAllTrigger(true); setTimeout(() => setExpandAllTrigger(false), 120); }}
+                  onUploadJson={() => { try { fileInputRef.current?.click(); } catch {} }}
+                  onViewGraph={undefined}
+                  onSave={handleSave}
+                  onPrint={handlePrint}
+                  onValidate={handleValidate}
+                  onCompare={undefined}
+                  onClear={() => { if (!inputCode.trim()) return; setInputCode(''); addToHistory(''); }}
+                  onCopy={handleCopy}
+                  onFullscreen={() => { if (inputCode.trim()) handleToggleFullscreen(); }}
+                  canUndo={canUndoInput}
+                  canRedo={canRedoInput}
+                  hasErrors={!!validationError && !validationError.isValid}
+                  errorCount={validationError ? 1 : 0}
+                  isFullscreen={!!document.fullscreenElement}
+                  disabled={isActionDisabled}
+                  language={activeLanguage}
+                  variant="compact"
+                  formatLabel="Format"
+                  validateInPrimaryRibbon={true}
+                  sampleVariant="icon"
+                  historyPlacement="secondary"
+                  sortPlacement="secondary-icon"
+                  highlightUpload={!inputCode.trim()}
+                  highlightSample={!inputCode.trim()}
+                  uploadPlacement="primary"
+                  samplePlacement="primary"
+                  copyPlacement="primary"
+                  savePlacement="primary"
+                  fullscreenPlacement="primary"
+                  printPlacement="secondary"
+                  showFormatInPrimary={false}
+                  showMinifyInPrimary={false}
+                  onSearch={handleToggleSearch}
+                  theme="dark"
+                  inputEmpty={!inputCode.trim()}
+                />
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
-                <h2 className="text-lg font-semibold">Input</h2>
+                {!isParserPage && (<h2 className="text-lg font-semibold">Input</h2>)}
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                  <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
+                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${isParserPage ? 'hidden' : ''}`}>
                   {/* Sample Data (TOON-friendly) – placed to the left of Collapse (TOON page only) */}
                   {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
@@ -5031,7 +5269,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 icon-blue-ocean cursor-pointer`}
                         aria-label="Insert Sample Data"
                       >
-                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                        <i className="fa-solid fa-file-code text-white text-base" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -5082,7 +5320,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
                         aria-label="Insert Sample Data"
                       >
-                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
+                        <i className="fa-solid fa-file-code text-white text-base" aria-hidden="true"></i>
                       </span>
                     </Tooltip>
                   )}
@@ -5205,68 +5443,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Parser-friendly) – JSON Parser page */}
-                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-parser' && (
-                    <Tooltip content="Insert sample JSON (Parser-friendly)">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          const sample = JSON.stringify({
-                            session: {
-                              id: 'sess-001',
-                              user: { id: 99, name: 'Tester', roles: ['viewer'] },
-                              startedAt: '2025-12-22T10:15:00Z'
-                            },
-                            payload: {
-                              items: [
-                                { id: 1, name: 'Alpha', active: true },
-                                { id: 2, name: 'Beta', active: false }
-                              ],
-                              stats: { count: 2, valid: true }
-                            },
-                            flags: ["parse", "validate", "highlight"]
-                          }, null, 2);
-                          setValidationError(null);
-                          setOutputError(null);
-                          setIsStructureAnalysisMode(false);
-                          setInputCode(sample);
-                          addToHistory(sample);
-                          setViewFormat('code');
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            const sample = JSON.stringify({
-                              session: {
-                                id: 'sess-001',
-                                user: { id: 99, name: 'Tester', roles: ['viewer'] },
-                                startedAt: '2025-12-22T10:15:00Z'
-                              },
-                              payload: {
-                                items: [
-                                  { id: 1, name: 'Alpha', active: true },
-                                  { id: 2, name: 'Beta', active: false }
-                                ],
-                                stats: { count: 2, valid: true }
-                              },
-                              flags: ["parse", "validate", "highlight"]
-                            }, null, 2);
-                            setValidationError(null);
-                            setOutputError(null);
-                            setIsStructureAnalysisMode(false);
-                            setInputCode(sample);
-                            addToHistory(sample);
-                            setViewFormat('code');
-                          }
-                        }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
-                        aria-label="Insert Sample Data"
-                      >
-                        <i className="fa-solid fa-file-code text-white text-sm" aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
-                  )}
+                  {/* Legacy Parser-specific Upload/Sample removed; replaced by new ribbons */}
 
                   {/* Sample Data (Editor-friendly) – JSON Editor page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-editor' && (
@@ -5551,49 +5728,50 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Collapse/Expand All – moved to be first after Input label */}
-                  {isJsonLanguage && (
+                  {/* Collapse/Expand All – hidden on Parser page (handled in ribbons) */}
+                  {isJsonLanguage && !isParserPage && (
                     <>
                       <Tooltip content="Collapse all JSON blocks">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={inputCode.trim() ? () => inputEditorApiRef.current?.foldAll() : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
-                          className={`${iconButtonClass} ml-1 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Collapse All Input"
-                        >
-                          <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <Tooltip content="Expand all JSON blocks">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={inputCode.trim() ? () => inputEditorApiRef.current?.unfoldAll() : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
-                          className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Expand All Input"
-                        >
-                          <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-
-                      {/* Sort (Input) – moved to appear after Expand All */}
-                      <div className="relative inline-flex dropdown-container overflow-visible">
-                        <Tooltip content="Sort Input JSON (toggle options)">
                           <span
                             role="button"
                             tabIndex={0}
-                            onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
-                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer'}`}
-                            aria-label="Sort Input"
-                            title="Sort Input JSON"
+                            onClick={inputCode.trim() ? () => inputEditorApiRef.current?.foldAll() : undefined}
+                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.foldAll(); } }}
+                            className={`${iconButtonClass} ml-1 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            aria-label="Collapse All Input"
                           >
-                            <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
+                            <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
                           </span>
+                      </Tooltip>
+                      <Tooltip content="Expand all JSON blocks">
+                          <span
+                            role="button"
+                            tabIndex={0}
+                            onClick={inputCode.trim() ? () => inputEditorApiRef.current?.unfoldAll() : undefined}
+                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); inputEditorApiRef.current?.unfoldAll(); } }}
+                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                            aria-label="Expand All Input"
+                          >
+                            <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
+                          </span>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+
+                      {/* Sort (Input) – moved to appear after Expand All */
+                      }
+                      <div className="relative inline-flex dropdown-container overflow-visible">
+                        <Tooltip content="Sort Input JSON (toggle options)">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={() => { if (isActionDisabled || !inputCode.trim()) return; setShowSortDropdown(!showSortDropdown); }}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !isActionDisabled && inputCode.trim()) { e.preventDefault(); setShowSortDropdown(!showSortDropdown); } }}
+                              className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700 cursor-pointer' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600 cursor-pointer'}`}
+                              aria-label="Sort Input"
+                              title="Sort Input JSON"
+                            >
+                              <i className="fa-solid fa-sort text-white text-base" aria-hidden="true"></i>
+                            </span>
                         </Tooltip>
                         {showSortDropdown && (
                           <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
@@ -5608,47 +5786,46 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </>
                   )}
                     {/* GROUP 2: Save, Download, Copy (hide when left rail is enabled to avoid duplication) */}
-                    {!showLeftInputActions && (
+                    {!showLeftInputActions && !isParserPage && (
                       <>
-                        <Tooltip content="Save to file">
-                          <button
-                            onClick={handleSave}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
-                            aria-label="Save"
-                            
-                          >
-                            💾
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Download to file">
-                          <button
-                            onClick={handleDownload}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
-                            aria-label="Download"
-                            
-                          >
-                            📥
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Copy to clipboard">
-                          <button
-                            onClick={handleCopy}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
-                            aria-label="Copy"
-                            
-                          >
-                            📋
-                          </button>
-                        </Tooltip>
-                        <Tooltip content="Print">
-                          <button
-                            onClick={handlePrint}
-                            className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-xl cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30'}`}
-                            aria-label="Print"
-                          >
-                            🖨️
-                          </button>
-                        </Tooltip>
+                          <>
+                            <Tooltip content="Save to file">
+                              <button
+                                onClick={handleSave}
+                                className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
+                                aria-label="Save"
+                              >
+                                💾
+                              </button>
+                            </Tooltip>
+                            <Tooltip content="Download to file">
+                              <button
+                                onClick={handleDownload}
+                                className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
+                                aria-label="Download"
+                              >
+                                📥
+                              </button>
+                            </Tooltip>
+                            <Tooltip content="Copy to clipboard">
+                              <button
+                                onClick={handleCopy}
+                                className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
+                                aria-label="Copy"
+                              >
+                                📋
+                              </button>
+                            </Tooltip>
+                            <Tooltip content="Print">
+                              <button
+                                onClick={handlePrint}
+                                className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
+                                aria-label="Print"
+                              >
+                                🖨️
+                              </button>
+                            </Tooltip>
+                          </>
                       </>
                     )}
                     
@@ -5658,59 +5835,64 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   
 
-                  {/* GROUP 4: Undo and Redo (INPUT JSON) – remains after Sort */}
-                  <Tooltip content="Undo last change">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={canUndoInput && inputCode.trim() ? handleUndo : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput && inputCode.trim()) { e.preventDefault(); handleUndo(); } }}
-                      className={`${iconButtonClass} ${(canUndoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
-                      aria-label="Undo"
-                    >
-                      <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <Tooltip content="Redo last change">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={canRedoInput && inputCode.trim() ? handleRedo : undefined}
-                      onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput && inputCode.trim()) { e.preventDefault(); handleRedo(); } }}
-                      className={`${iconButtonClass} ${(canRedoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
-                      aria-label="Redo"
-                    >
-                      <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
-                    </span>
-                  </Tooltip>
-                  <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                  {/* GROUP 4: Undo and Redo (INPUT JSON) – hidden on Parser page (handled in ribbons) */}
+                  {!isParserPage && (
+                    <>
+                      <Tooltip content="Undo last change">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={canUndoInput && inputCode.trim() ? handleUndo : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoInput && inputCode.trim()) { e.preventDefault(); handleUndo(); } }}
+                          className={`${iconButtonClass} ${(canUndoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
+                          aria-label="Undo"
+                        >
+                          <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <Tooltip content="Redo last change">
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={canRedoInput && inputCode.trim() ? handleRedo : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoInput && inputCode.trim()) { e.preventDefault(); handleRedo(); } }}
+                          className={`${iconButtonClass} ${(canRedoInput && inputCode.trim()) ? '' : 'opacity-40 cursor-not-allowed'}`}
+                          aria-label="Redo"
+                        >
+                          <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
+                        </span>
+                      </Tooltip>
+                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                    </>
+                  )}
 
-                  {/* GROUP 4.5: Search (JSON only) */}
-                  {isJsonLanguage && (
+                  {/* GROUP 4.5: Search (JSON only) – hidden on Parser page (handled in ribbons) */}
+                  {isJsonLanguage && !isParserPage && (
                     <Tooltip content="Search in Input JSON">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={inputCode.trim() ? handleToggleSearch : undefined}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleSearch(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ocean' : 'icon-blue-ocean cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : (showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'))}`}
-                        aria-label="Search"
-                      >
-                        <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
-                      </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={inputCode.trim() ? handleToggleSearch : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleSearch(); } }}
+                          className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ocean' : 'icon-blue-ocean cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : (showSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'))}`}
+                          aria-label="Search"
+                        >
+                          <i className="fa-solid fa-search text-white text-base" aria-hidden="true"></i>
+                        </span>
                     </Tooltip>
                   )}
+                  {/* Parser-only duplicates of Clear/Copy/Download/Print removed; handled in ribbons */}
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
                       {/* Validate moved to right side toolbar */}
 
-                  {/* GROUP 5: Compact (JSON only) - hidden on json-editor */}
-                  {isJsonLanguage && !showMinifyNextToBeautify && !isEditorPage && (
+                  {/* GROUP 5: Compact (JSON only) - hidden on json-editor and parser page (duplicate with ribbon) */}
+                  {isJsonLanguage && !showMinifyNextToBeautify && !isEditorPage && !isParserPage && (
                     <>
                       <Tooltip content="Compact JSON data, remove all whitespaces">
                         <button
                           onClick={handleCompact}
-                          className="p-1 rounded-md transition-all text-xl cursor-pointer border border-black/30 dark:border-white/30 icon-hover-bg text-slate-700 dark:text-slate-200"
+                          className="p-1 rounded-md transition-all text-base cursor-pointer border border-black/30 dark:border-white/30 icon-hover-bg text-slate-700 dark:text-slate-200"
                           aria-label="Compact"
                         >
                           📦
@@ -5730,40 +5912,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && !(validationError && errorLines.length > 0) && (
+                  {isJsonLanguage && !isParserPage && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={inputCode.trim() ? handleValidate : undefined}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleValidate(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-200 dark:bg-green-300' : 'hover:bg-green-500 dark:hover:bg-green-400 cursor-pointer bg-green-400 dark:bg-green-300')}`}
-                        aria-label="Validate Input JSON"
-                      >
-                        <i className="fa-solid fa-check text-sm" aria-hidden="true" style={{ color: '#333' }}></i>
-                      </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={inputCode.trim() ? handleValidate : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleValidate(); } }}
+                          className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-200 dark:bg-green-300' : 'hover:bg-green-500 dark:hover:bg-green-400 cursor-pointer bg-green-400 dark:bg-green-300')}`}
+                          aria-label="Validate Input JSON"
+                        >
+                          <i className="fa-solid fa-check text-base" aria-hidden="true" style={{ color: '#333' }}></i>
+                        </span>
                     </Tooltip>
                   )}
-                  {!isFullscreen && (
+                  {!isFullscreen && !isParserPage && (
                     <Tooltip content="Enter fullscreen">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={inputCode.trim() ? handleToggleFullscreen : undefined}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleFullscreen(); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
-                        aria-label="Enter Fullscreen"
-                      >
-                        <i className="fa-solid fa-expand text-sm" aria-hidden="true" style={{ color: '#333' }}></i>
-                      </span>
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          onClick={inputCode.trim() ? handleToggleFullscreen : undefined}
+                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleFullscreen(); } }}
+                          className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
+                          aria-label="Enter Fullscreen"
+                        >
+                          <i className="fa-solid fa-expand text-base" aria-hidden="true" style={{ color: '#333' }}></i>
+                        </span>
                     </Tooltip>
                   )}
-                </div>
+                  </div>
               </div>
             </div>
 
             {/* GROUP 1: Upload and Clear - positioned at top right inside the textarea box (hidden when left actions enabled) */}
-            {!showLeftInputActions && (
+            {!showLeftInputActions && !isParserPage && (
             <div className="absolute top-16 right-8 z-20 flex items-center gap-1.5 pointer-events-auto">
               <Tooltip content="Upload a code file">
                 <button
@@ -5843,8 +6025,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
 
             {/* Dedicated left rail column and reserved content area */}
-            <div className="flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900">
-                {showLeftInputActions && (
+            <div className={`${isParserPage ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
+              {showLeftInputActions && !isParserPage && (
                   <div className={`left-rail flex-shrink-0 w-[42px] flex flex-col gap-1.5 pt-2 pb-2 items-center bg-transparent dark:bg-transparent z-20 border-r border-slate-200 dark:border-slate-600 mr-2 transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                     {isBeautifierPage ? (
                       <>
@@ -5861,21 +6043,23 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <i className="fa-solid fa-upload text-white text-sm" aria-hidden="true"></i>
                           </span>
                         </Tooltip>
-                        {/* 2. Download file */}
-                        <Tooltip content="Download file">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={inputCode.trim() ? handleDownload : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
-                            className={`${iconButtonClass} mt-0.5 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Download"
-                          >
-                            <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
+                        {/* 2. Download file (hidden on parser page; moved to main toolbar) */}
+                        {!isParserPage && (
+                          <Tooltip content="Download file">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={inputCode.trim() ? handleDownload : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
+                              className={`${iconButtonClass} mt-0.5 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Download"
+                            >
+                              <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
                         {/* 3. Save file */}
-                        {!(validationError && errorLines.length > 0) && (
+                        {!(validationError && errorLines.length > 0) && !isParserPage && (
                           <Tooltip content="Save file">
                             <span
                               role="button"
@@ -5903,34 +6087,41 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           </span>
                         </Tooltip>
                         {/* 5. Clear input */}
-                        <Tooltip content="Clear input">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={handleClear}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
-                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Clear Input"
-                          >
-                            <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                        {/* 6. Print */}
-                        <Tooltip content="Print">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={inputCode.trim() ? handlePrint : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
-                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Print"
-                          >
-                            <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
+                        {/* Hide Clear in left rail on parser page (moved to main toolbar) */}
+                        {!isParserPage && (
+                          <Tooltip content="Clear input">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={handleClear}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
+                              className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Clear Input"
+                            >
+                              <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
+                        {/* 6. Print (hidden on parser page; moved to main toolbar) */}
+                        {!isParserPage && (
+                          <Tooltip content="Print">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={inputCode.trim() ? handlePrint : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
+                              className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Print"
+                            >
+                              <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
                       </>
                     ) : (
                       <>
+                        {/* Hide Upload in left rail on parser page (moved to main toolbar) */}
+                        {!isParserPage && (
                         <Tooltip content="Upload file">
                           <span
                             role="button"
@@ -5943,70 +6134,83 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             <i className="fa-solid fa-upload text-white text-sm" aria-hidden="true"></i>
                           </span>
                         </Tooltip>
-                        <Tooltip content="Clear input">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={handleClear}
-                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
-                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Clear Input"
-                          >
-                            <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                        <Tooltip content="Download file">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={inputCode.trim() ? handleDownload : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
-                            className={`${iconButtonClass} mt-0.5 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Download"
-                          >
-                            <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
+                        )}
+                        {/* Hide Clear in left rail on parser page (moved to main toolbar) */}
+                        {!isParserPage && (
+                          <Tooltip content="Clear input">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={handleClear}
+                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClear(); } }}
+                              className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Clear Input"
+                            >
+                              <i className="fa-solid fa-trash text-red-500 text-sm" aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
+                        {!isParserPage && (
+                          <Tooltip content="Download file">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={inputCode.trim() ? handleDownload : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleDownload(); } }}
+                              className={`${iconButtonClass} mt-0.5 ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Download"
+                            >
+                              <i className={`fa-solid fa-download ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
                         {!(validationError && errorLines.length > 0) && (
                           <>
-                            <Tooltip content="Save file">
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={handleSave}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                                className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                aria-label="Save"
-                              >
-                                <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
-                              </span>
-                            </Tooltip>
-                            <Tooltip content="Copy to clipboard">
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={handleCopy}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
-                                className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                                aria-label="Copy"
-                              >
-                                <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                              </span>
-                            </Tooltip>
+                            {!isParserPage && (
+                              <Tooltip content="Save file">
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={handleSave}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
+                                  className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  aria-label="Save"
+                                >
+                                  <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
+                                </span>
+                              </Tooltip>
+                            )}
+                            {/* Hide Copy in left rail on parser page (moved to main toolbar) */}
+                            {!isParserPage && (
+                              <Tooltip content="Copy to clipboard">
+                                <span
+                                  role="button"
+                                  tabIndex={0}
+                                  onClick={handleCopy}
+                                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopy(); } }}
+                                  className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                                  aria-label="Copy"
+                                >
+                                  <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
+                                </span>
+                              </Tooltip>
+                            )}
                           </>
                         )}
-                        <Tooltip content="Print">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={inputCode.trim() ? handlePrint : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
-                            className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                            aria-label="Print"
-                          >
-                            <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
+                        {!isParserPage && (
+                          <Tooltip content="Print">
+                            <span
+                              role="button"
+                              tabIndex={0}
+                              onClick={inputCode.trim() ? handlePrint : undefined}
+                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handlePrint(); } }}
+                              className={`${iconButtonClass} ${!inputCode.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
+                              aria-label="Print"
+                            >
+                              <i className={`fa-solid fa-print ${iconTextClass}`} aria-hidden="true"></i>
+                            </span>
+                          </Tooltip>
+                        )}
                       </>
                     )}
                   </div>
@@ -6066,7 +6270,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (isParserPage ? (outputTitle ?? 'Output') : 'Output')}</h2>
+                {!isParserPage && (
+                  <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (outputTitle ?? 'Output')}</h2>
+                )}
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
                 {!isConversionOutput && (
@@ -6132,28 +6338,54 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         <>
                           {/* Undo/Redo for Output - positioned after Sort (matching Input section layout) */}
                           <Tooltip content="Undo last change">
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={canUndoOutput ? handleOutputUndo : undefined}
-                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
-                              className={`${iconButtonClass} ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                              aria-label="Undo"
-                            >
-                              <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
-                            </span>
+                            {isParserPage ? (
+                              <button
+                                onClick={canUndoOutput ? handleOutputUndo : undefined}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
+                                className="toolbar-btn icon-only compact"
+                                disabled={!canUndoOutput}
+                                aria-label="Undo"
+                                title="Undo"
+                              >
+                                <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
+                              </button>
+                            ) : (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={canUndoOutput ? handleOutputUndo : undefined}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
+                                className={`${iconButtonClass} ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                                aria-label="Undo"
+                              >
+                                <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
+                              </span>
+                            )}
                           </Tooltip>
                           <Tooltip content="Redo last change">
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={canRedoOutput ? handleOutputRedo : undefined}
-                              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
-                              className={`${iconButtonClass} ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                              aria-label="Redo"
-                            >
-                              <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
-                            </span>
+                            {isParserPage ? (
+                              <button
+                                onClick={canRedoOutput ? handleOutputRedo : undefined}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
+                                className="toolbar-btn icon-only compact"
+                                disabled={!canRedoOutput}
+                                aria-label="Redo"
+                                title="Redo"
+                              >
+                                <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
+                              </button>
+                            ) : (
+                              <span
+                                role="button"
+                                tabIndex={0}
+                                onClick={canRedoOutput ? handleOutputRedo : undefined}
+                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
+                                className={`${iconButtonClass} ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
+                                aria-label="Redo"
+                              >
+                                <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
+                              </span>
+                            )}
                           </Tooltip>
                           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
                         </>
