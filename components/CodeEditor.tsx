@@ -41,7 +41,8 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
   // Custom theme & gutter styling
   const theme = useMemo(() => EditorView.theme({
     '&': { height: '100%' },
-    '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px', backgroundColor: '#ffffff' },
+    '.cm-content': { fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', fontSize: '14px', backgroundColor: '#ffffff', color: '#111827' },
+    '.cm-editor': { backgroundColor: '#ffffff', height: '100%', color: '#111827' },
     '.cm-lineNumbers .cm-gutterElement': { padding: '0 6px 0 4px', color: '#000' },
     // Gutter styling
     // Previous default (record for revert):
@@ -54,11 +55,9 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
     '.dark .cm-lineNumbers .cm-gutterElement': { color: '#fff' },
     // Surrounding area/background outside the text content
     '.cm-scroller': { fontFamily: 'inherit', overflow: 'auto', maxHeight: '100%' },
-    // Editor background - pure white
-    '.cm-editor': { backgroundColor: '#ffffff', height: '100%' },
     // Dark theme variants
-    '.dark .cm-editor': { backgroundColor: '#1e293b' },
-    '.dark .cm-content': { backgroundColor: '#1e293b' },
+    '.dark .cm-editor': { backgroundColor: '#1e293b', color: '#e5e7eb' },
+    '.dark .cm-content': { backgroundColor: '#1e293b', color: '#e5e7eb' },
     '.cm-line': { lineHeight: '20px' },
     // Single solid arrow styling
     '.cm-foldGutter .cm-gutterElement': { display: 'flex', alignItems: 'center', justifyContent: 'center' },

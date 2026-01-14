@@ -39,13 +39,16 @@
 /* Compact vertical spacing when embedded inside dark editor band */
 .json-toolbar-container.embedded {
   gap: 8px; /* wider spacing between primary and secondary ribbons */
+  width: 100%; /* occupy full available width when embedded */
 }
 .json-toolbar-container.embedded .primary-ribbon {
-  padding-bottom: 12px; /* wider space under primary ribbon */
-  border-bottom: 1px solid #334155; /* slate-700 to mirror Compare */
+  /* Equalize vertical padding so icons sit centered */
+  padding: 4px 0; 
+  border-bottom: none; /* use full-width divider element instead */
 }
 .json-toolbar-container.embedded .secondary-ribbon {
-  padding-top: 8px; /* wider space above secondary ribbon */
+  /* Equalize vertical padding so icons sit centered */
+  padding: 4px 0;
 }
 
 /* Vertical separators inside embedded ribbons: mirror Compare (slate-700) */
@@ -56,6 +59,14 @@
   margin: 0 6px;
 }
 
+/* Full-width divider between ribbons when embedded inside dark band */
+.json-toolbar-container.embedded .toolbar-full-divider {
+  width: 100%;
+  height: 1px;
+  background-color: #334155; /* slate-700 */
+  opacity: 0.9;
+}
+
 .toolbar-ribbon {
   display: flex;
   align-items: center;
@@ -63,6 +74,16 @@
   flex-wrap: wrap;
   position: relative;
   z-index: auto;
+}
+
+/* Flexible spacer to push subsequent groups to the far right */
+.toolbar-flex-spacer {
+  flex: 1 1 auto;
+}
+
+/* Ensure consistent ribbon height in embedded mode for vertical centering */
+.json-toolbar-container.embedded .toolbar-ribbon {
+  min-height: 36px;
 }
 
 .primary-ribbon {

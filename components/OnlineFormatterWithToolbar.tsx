@@ -3011,6 +3011,64 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     URL.revokeObjectURL(url);
   };
 
+  // Save As JSON helper: prompts for filename and saves .json (fallback to download)
+  const saveAsJsonFile = async (jsonText: string, suggestedName: string = 'data.json') => {
+    try {
+      // Ensure min valid JSON text; if parseable, stringify to normalized format
+      let text = jsonText;
+      try {
+        const parsed = JSON.parse(jsonText);
+        text = JSON.stringify(parsed, null, 2);
+      } catch {
+        // keep original if not strictly parseable; user might want raw content
+      }
+      // @ts-ignore
+      if (window.showSaveFilePicker) {
+        try {
+          // @ts-ignore
+          const handle = await window.showSaveFilePicker({
+            suggestedName,
+            types: [
+              {
+                description: 'JSON File',
+                accept: { 'application/json': ['.json'] },
+              },
+            ],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(new Blob([text], { type: 'application/json' }));
+          await writable.close();
+          return;
+        } catch (err: any) {
+          if (err && err.name === 'AbortError') return; // user cancelled
+        }
+      }
+      // Fallback: download via anchor
+      const blob = new Blob([text], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = suggestedName.endsWith('.json') ? suggestedName : `${suggestedName.replace(/\.?$/,'')}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.warn('Save As JSON failed:', e);
+    }
+  };
+
+  const handleSaveAsJsonInput = async () => {
+    if (!inputCode.trim()) return;
+    await saveAsJsonFile(inputCode, 'input.json');
+  };
+
+  const handleSaveAsJsonOutput = async () => {
+    const content = (outputCode && outputCode.trim()) ? outputCode : inputCode;
+    if (!content.trim()) return;
+    await saveAsJsonFile(content, 'output.json');
+  };
+
   // Highlight an approximate line in the input editor based on a JSONPath
   const highlightPathInInput = (path: string) => {
     try {
@@ -4796,7 +4854,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div className="w-full flex flex-col lg:flex-row gap-6 min-h-[600px]">
+        <div className={`w-full flex flex-col lg:flex-row ${isParserPage ? 'gap-3 bg-slate-800 rounded-lg border border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
           <div className={`w-full lg:w-1/2 flex flex-col ${isParserPage ? 'bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser: primary + secondary toolbars like Compare, inside same dark container */}
             {isParserPage && (
@@ -4825,6 +4883,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onUploadJson={() => { try { fileInputRef.current?.click(); } catch {} }}
                   onViewGraph={undefined}
                   onSave={handleSave}
+                  onSaveAs={handleSaveAsJsonInput}
                   onPrint={handlePrint}
                   onValidate={handleValidate}
                   onCompare={undefined}
@@ -4841,6 +4900,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   variant="compact"
                   formatLabel="Format"
                   validateInPrimaryRibbon={true}
+                  showSeparatorAfterValidatePrimary={false}
                   sampleVariant="icon"
                   historyPlacement="secondary"
                   sortPlacement="secondary-icon"
@@ -4850,7 +4910,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   samplePlacement="primary"
                   copyPlacement="primary"
                   savePlacement="primary"
-                  fullscreenPlacement="primary"
+                  saveAsPlacement="primary"
+                  fullscreenPlacement="secondary"
                   printPlacement="secondary"
                   showFormatInPrimary={false}
                   showMinifyInPrimary={false}
@@ -6243,12 +6304,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
               </div>
 
-            {/* Character count - positioned at bottom right */}
-            <div className="absolute bottom-2 right-6 z-10 pointer-events-none">
-              <span className="text-xs text-slate-500 dark:text-slate-400 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm px-2 py-1 rounded-md shadow-sm">
-                {inputCode.length} chars
-              </span>
-            </div>
+            {/* Removed character count overlay to avoid extra 'chars' text near toolbar */}
 
             {/* Legacy buttons for non-JSON languages */}
             {!isJsonLanguage && (
@@ -6266,7 +6322,63 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3 ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${isParserPage ? 'bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+            {/* Parser Output primary/secondary ribbons above content to mirror Input placement */}
+            {isParserPage && !isTransformPage && (
+              <div className="p-2 border-b border-slate-700 bg-slate-900/40 w-full">
+                <JsonToolbar
+                  onFormat={(indent) => handleFormat(indent)}
+                  onMinify={() => handleMinify()}
+                  onSort={(dir, by) => handleSortOutput(dir, by)}
+                  onUndo={handleOutputUndo}
+                  onRedo={handleOutputRedo}
+                  onCollapseAll={handleCollapseAllFields}
+                  onExpandAll={handleExpandAllFields}
+                  onUploadJson={undefined}
+                  onSearch={handleToggleOutputSearch}
+                  onSave={() => handleDownload()}
+                  onSaveAs={() => handleSaveAsJsonOutput()}
+                  onPrint={() => handlePrint()}
+                  onValidate={handleValidateOutput}
+                  onCompare={undefined}
+                  onClear={handleClearOutput}
+                  onCopy={handleCopyOutput}
+                  onFullscreen={() => handleToggleOutputFullscreen()}
+                  onToggleEditLock={() => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); }}
+                  isLocked={!!outputLocked}
+                  onCopyOutputToInput={() => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); }}
+                  canUndo={canUndoOutput}
+                  canRedo={canRedoOutput}
+                  hasErrors={!!(validationError || outputError || aiError)}
+                  errorCount={errorLines.length}
+                  isFullscreen={isOutputFullscreen}
+                  disabled={isActionDisabled}
+                  language={activeLanguage}
+                  variant="compact"
+                  formatLabel="Format"
+                  validateInPrimaryRibbon={true}
+                  sampleVariant="icon"
+                  historyPlacement="secondary"
+                  sortPlacement="secondary-icon"
+                  uploadPlacement="secondary"
+                  samplePlacement="secondary"
+                  copyPlacement="primary"
+                  savePlacement="primary"
+                  saveAsPlacement="primary"
+                  fullscreenPlacement="secondary"
+                  showFormatInPrimary={false}
+                  showMinifyInPrimary={false}
+                  theme="dark"
+                  printPlacement="secondary"
+                  inputEmpty={!outputCode || !outputCode.trim()}
+                  enableSearch={viewFormat === 'code'}
+                  enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0)}
+                  enableSort={!!outputCode && !!outputCode.trim()}
+                  enableValidate={activeLanguage === 'json' && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && !isConversionOutput}
+                />
+              </div>
+            )}
+
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -6275,7 +6387,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
-                {!isConversionOutput && (
+                {!isConversionOutput && !isParserPage && (
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
                   {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
@@ -6450,7 +6562,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {!hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
+                {!isParserPage && !hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
@@ -6594,7 +6706,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
                 {/* Output Fullscreen toggle - moved to right-aligned group */}
                 {/* Parser-specific controls: Edit Output (unlock) and Copy Output to Input */}
-                {isParserPage && (
+                {!isParserPage && (
                   <>
                     <Tooltip content={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}>
                       <span
@@ -6631,6 +6743,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   </>
                 )}
+                {!isParserPage && (
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
                     role="button"
@@ -6644,6 +6757,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`} aria-hidden="true" style={{ color: '#333' }}></i>
                   </span>
                 </Tooltip>
+                )}
                 
                 {/* View Format Dropdown - disabled on parser and transform pages */}
                 {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && (
@@ -6773,7 +6887,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
               )}
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
-              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && (
+              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage && (
                 <div className={`right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                   {isBeautifierPage ? (
                     <>
@@ -6904,6 +7018,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   )}
                 </div>
               )}
+              
+
               <div className="flex-grow relative bg-white dark:bg-slate-900/50 min-h-0">
                 {isLoading ? (
                   <FormattingLoading />
@@ -7257,7 +7373,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <div className="flex-1 min-h-0 relative">
                         {/* Output Search Panel */}
                         {showOutputSearchPanel && viewFormat === 'code' && (
-                          <div className="flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-700 mr-[42px]">
+                          <div className={`flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-700 ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage) ? 'mr-[42px]' : ''}`}>
                             <input
                               type="text"
                               value={outputSearchQuery}
@@ -7310,7 +7426,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           </div>
                         )}
                         
-                        <div className="relative h-full mr-[42px]">
+                        <div className={`relative h-full ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage) ? 'mr-[42px]' : ''}`}>
                           {/* Render different views based on viewFormat for JSON */}
                           {activeLanguage === 'json' && viewFormat !== 'code'
                             ? renderStructuredOutputView()
