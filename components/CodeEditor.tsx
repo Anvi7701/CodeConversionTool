@@ -187,7 +187,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
           onCreateEditor={(view) => { viewRef.current = view; }}
           onChange={(val) => onChange(val)}
           style={{ height: '100%', fontSize: '14px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' }}
-          placeholder={placeholder || (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
+          placeholder={placeholder !== undefined ? placeholder : (language ? `Enter your ${language.toUpperCase()} code here...` : 'Enter your code here...')}
           theme={undefined}
           editable={true}
           autoFocus={false}

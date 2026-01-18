@@ -216,9 +216,17 @@
 /* Button Variants */
 .toolbar-btn.primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: #000 !important;
   border-color: #667eea;
   font-weight: 600;
+}
+
+/* Force black text for primary button contents */
+.toolbar-btn.primary .icon,
+.toolbar-btn.primary .label,
+.toolbar-btn.primary i,
+.toolbar-btn.primary span {
+  color: #000 !important;
 }
 
 .toolbar-btn.primary:hover:not(:disabled) {
@@ -236,6 +244,30 @@
 .toolbar-btn.success:hover:not(:disabled) {
   background: linear-gradient(135deg, #0e7d75 0%, #2dd362 100%);
   box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+
+.toolbar-btn.fullscreen {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+  font-weight: 600;
+}
+
+.toolbar-btn.fullscreen:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+/* Black variant for fullscreen button when requested */
+.toolbar-btn.fullscreen.fullscreen-black {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+.toolbar-btn.fullscreen.fullscreen-black:hover:not(:disabled) {
+  background: #000000;
+  filter: brightness(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .toolbar-btn.warning {
@@ -737,20 +769,66 @@
 
 /* Force dark theme regardless of OS preference when requested */
 .json-toolbar-container.theme-dark {
-  background: linear-gradient(to bottom, #1e1e1e 0%, #2d2d2d 100%);
-  border-bottom-color: #404040;
+  /* Switch from near-black to medium grey */
+  background: linear-gradient(to bottom, #3f3f46 0%, #6b7280 100%); /* zinc-700 to slate-500 */
+  border-bottom-color: #6b7280; /* slate-500 */
 }
 .json-toolbar-container.theme-dark .toolbar-btn {
-  background: #2d2d2d;
-  border-color: #404040;
-  color: #e0e0e0;
+  background: #4b5563; /* slate-600 */
+  border-color: #6b7280; /* slate-500 */
+  color: #f1f5f9; /* slate-100 text */
 }
 .json-toolbar-container.theme-dark .toolbar-btn:hover:not(:disabled) {
-  background: #3d3d3d;
-  border-color: #505050;
+  background: #64748b; /* slate-500/600 hover */
+  border-color: #818b9b; /* lighter grey border on hover */
+}
+/* Primary buttons in dark theme: use slate palette instead of purple gradient */
+.json-toolbar-container.theme-dark .toolbar-btn.primary {
+  background: #475569; /* slate-600 */
+  border-color: #64748b; /* slate-500/600 */
+  color: #f8fafc !important; /* slate-50 text */
+}
+.json-toolbar-container.theme-dark .toolbar-btn.primary .icon,
+.json-toolbar-container.theme-dark .toolbar-btn.primary .label,
+.json-toolbar-container.theme-dark .toolbar-btn.primary i,
+.json-toolbar-container.theme-dark .toolbar-btn.primary span {
+  color: #f8fafc !important;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.primary:hover:not(:disabled) {
+  background: #334155; /* slate-700 */
+  border-color: #475569; /* slate-600 */
+}
+.json-toolbar-container.theme-dark .toolbar-btn.success {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  color: white;
+  border-color: #11998e;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.success:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0e7d75 0%, #2dd362 100%);
+  box-shadow: 0 4px 12px rgba(17, 153, 142, 0.4);
+}
+.json-toolbar-container.theme-dark .toolbar-btn.fullscreen {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.fullscreen:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+/* Ensure black variant stays black in dark theme */
+.json-toolbar-container.theme-dark .toolbar-btn.fullscreen.fullscreen-black {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.fullscreen.fullscreen-black:hover:not(:disabled) {
+  background: #000000;
+  filter: brightness(1.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 .json-toolbar-container.theme-dark .toolbar-separator {
-  background: linear-gradient(to bottom, transparent, #505050, transparent);
+  background: linear-gradient(to bottom, transparent, #818b9b, transparent);
 }
 .json-toolbar-container.theme-dark .dropdown-menu {
   background: #2d2d2d;
@@ -811,4 +889,13 @@
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
+}
+
+/* Orange color for Clear icon (trash-can) */
+.toolbar-btn .icon .fa-trash-can {
+  color: #f97316 !important; /* orange-600 */
+}
+
+.json-toolbar-container.theme-dark .toolbar-btn .icon .fa-trash-can {
+  color: #fb923c !important; /* orange-400 for better visibility in dark mode */
 }

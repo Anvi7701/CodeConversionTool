@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, useImperativeHandle } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { json } from '@codemirror/lang-json';
 import { xml } from '@codemirror/lang-xml';
@@ -101,20 +101,24 @@ function createBooleanDecorations(view: EditorView, onChange: (pos: number, newV
 // ViewPlugin for managing boolean decorations
 const booleanDecorationsPlugin = (onChange: (pos: number, newValue: boolean) => void) => ViewPlugin.fromClass(
   class {
-    decorations: DecorationSet;
-
     constructor(view: EditorView) {
+      // Using JSDoc to avoid TS field syntax that Babel may not parse
+      /** @type {*} */
+      // @ts-ignore
       this.decorations = createBooleanDecorations(view, onChange);
     }
 
     update(update: ViewUpdate) {
+      // @ts-ignore
       if (update.docChanged || update.viewportChanged) {
+        // @ts-ignore
         this.decorations = createBooleanDecorations(update.view, onChange);
       }
     }
   },
   {
-    decorations: v => v.decorations
+    // @ts-ignore
+    decorations: (v: any) => v.decorations
   }
 );
 
@@ -132,6 +136,8 @@ interface CodeMirrorViewerProps {
   lineBackgrounds?: Array<{ line: number; className: string }>;
   backgroundsKey?: number;
   placeholderText?: string;
+  enableFolding?: boolean;
+  editorApiRef?: React.Ref<{ foldAll: () => void; unfoldAll: () => void }>;
 }
 
 export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({ 
@@ -148,6 +154,8 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   lineBackgrounds,
   backgroundsKey = 0,
   placeholderText,
+  enableFolding = true,
+  editorApiRef,
 }) => {
   const editorRef = useRef<ReactCodeMirrorRef>(null);
   const [isDark, setIsDark] = useState<boolean>(() => {
@@ -192,19 +200,41 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     '.dark .cm-foldGutter .cm-gutterElement > span': { color: '#94a3b8' },
   }), []);
 
+  // (extensions built later in a single useMemo; removed duplicate)
+
   // Handle expand all
   useEffect(() => {
+    if (!enableFolding) return;
     if (expandAllTrigger && editorRef.current?.view) {
       unfoldAll(editorRef.current.view);
     }
-  }, [expandAllTrigger]);
+  }, [expandAllTrigger, enableFolding]);
 
   // Handle collapse all
   useEffect(() => {
+    if (!enableFolding) return;
     if (collapseAllTrigger && editorRef.current?.view) {
       foldAll(editorRef.current.view);
     }
-  }, [collapseAllTrigger]);
+  }, [collapseAllTrigger, enableFolding]);
+
+  // Imperative API for programmatic fold/unfold without relying on triggers
+  useImperativeHandle(editorApiRef, () => ({
+    foldAll: () => {
+      try {
+        if (!enableFolding || !editorRef.current?.view) return;
+        const v = editorRef.current.view;
+        foldAll(v);
+      } catch {}
+    },
+    unfoldAll: () => {
+      try {
+        if (!enableFolding || !editorRef.current?.view) return;
+        const v = editorRef.current.view;
+        unfoldAll(v);
+      } catch {}
+    }
+  }), [enableFolding]);
 
   // Collapse to first level for JSON: fold immediate children under root
   useEffect(() => {
@@ -317,12 +347,15 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
     };
     return ViewPlugin.fromClass(
       class {
-        decorations: DecorationSet;
         constructor(view: EditorView) {
+          /** @type {*} */
+          // @ts-ignore
           this.decorations = build(view);
         }
         update(update: ViewUpdate) {
+          // @ts-ignore
           if (update.docChanged || update.viewportChanged) {
+            // @ts-ignore
             this.decorations = build(update.view);
           }
         }
@@ -336,8 +369,7 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
   const extensions = useMemo(() => {
     const baseExtensions = [
       languageExtension,
-      customFoldGutter, // Use custom fold gutter (same as Text view)
-      keymap.of(foldKeymap), // Keyboard shortcuts for folding
+      ...(enableFolding ? [customFoldGutter, keymap.of(foldKeymap)] : []),
       EditorView.lineWrapping, // Wrap long lines
       ...(readOnly ? [EditorView.editable.of(false)] : []), // Only add read-only if specified
       theme,
@@ -412,12 +444,15 @@ export const CodeMirrorViewer: React.FC<CodeMirrorViewerProps> = ({
 
       const richPlaceholderPlugin = ViewPlugin.fromClass(
         class {
-          decorations: DecorationSet;
           constructor(view: EditorView) {
+            /** @type {*} */
+            // @ts-ignore
             this.decorations = this.build(view);
           }
           update(update: ViewUpdate) {
+            // @ts-ignore
             if (update.docChanged || update.viewportChanged) {
+              // @ts-ignore
               this.decorations = this.build(update.view);
             }
           }

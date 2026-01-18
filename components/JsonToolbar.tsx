@@ -58,6 +58,7 @@ interface JsonToolbarProps {
   printPlacement?: 'primary' | 'secondary';
   inputEmpty?: boolean; // state-aware content emptiness to disable relevant actions
   showSeparatorAfterValidatePrimary?: boolean; // control separator after Validate in primary ribbon
+  fullscreenStyle?: 'default' | 'black'; // Customize fullscreen button background
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -116,6 +117,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   printPlacement = 'secondary',
   inputEmpty = false,
   showSeparatorAfterValidatePrimary = true,
+  fullscreenStyle = 'default',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -280,20 +282,25 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
         )}
         {hasOutputActions && <div className="toolbar-separator" />}
 
-        {/* Edit group: Search, Copy */}
-        {(onSearch || copyPlacement === 'primary') && (
+        {/* Search group: Search only */}
+        {onSearch && (
+          <div className="toolbar-group search-group">
+            <button
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+              onClick={onSearch}
+              disabled={disabled || isEmpty || !enableSearch}
+              aria-label="Search"
+              title="Search"
+            >
+              <span className="icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
+            </button>
+          </div>
+        )}
+        {onSearch && <div className="toolbar-separator" />}
+
+        {/* Edit group: Copy, Save As, Download in separate section */}
+        {(copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && (
           <div className="toolbar-group edit-group">
-            {onSearch && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onSearch}
-                disabled={disabled || isEmpty || !enableSearch}
-                aria-label="Search"
-                title="Search"
-              >
-                <span className="icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
-              </button>
-            )}
             {copyPlacement === 'primary' && (
               <button
                 className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
@@ -305,13 +312,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
               </button>
             )}
-          </div>
-        )}
-        {(onSearch || copyPlacement === 'primary') && <div className="toolbar-separator" />}
-
-        {/* Download group: Save As + Download in separate section */}
-        {((saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && (
-          <div className="toolbar-group download-group">
             {saveAsPlacement === 'primary' && onSaveAs && (
               <button
                 className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
@@ -336,7 +336,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             )}
           </div>
         )}
-        {((saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && <div className="toolbar-separator" />}
+        {(copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && <div className="toolbar-separator" />}
 
         {/* Validate group: right-aligned */}
         {validateInPrimaryRibbon && (
@@ -361,7 +361,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
         {fullscreenPlacement === 'primary' && onFullscreen && (
           <div className="toolbar-group view-group">
             <button
-              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+              className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
               onClick={onFullscreen}
               disabled={disabled || isEmpty}
               aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
@@ -528,8 +528,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             <div className="toolbar-separator" />
           </>
         )}
-        {/* Section 4: Clear, Copy, Download, Print */}
-        {(onClear || (onCopy && copyPlacement === 'secondary') || (onSave && savePlacement === 'secondary') || (onSaveAs && saveAsPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary')) && (
+        {/* Section 4: Clear, Copy, Download */}
+        {(onClear || (onCopy && copyPlacement === 'secondary') || (onSave && savePlacement === 'secondary') || (onSaveAs && saveAsPlacement === 'secondary')) && (
           <div className="toolbar-group edit-group">
             {onClear && (
               <button
@@ -575,17 +575,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 <span className="icon"><i className="fa-regular fa-floppy-disk" aria-hidden="true"></i></span>
               </button>
             )}
-            {_onPrint && printPlacement === 'secondary' && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={_onPrint}
-                disabled={disabled || isEmpty}
-                aria-label="Print"
-                title="Print"
-              >
-                <span className="icon"><i className="fa-solid fa-print" aria-hidden="true"></i></span>
-              </button>
-            )}
           </div>
         )}
 
@@ -616,25 +605,39 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
 
-        {onFullscreen && fullscreenPlacement === 'secondary' && <div className="toolbar-separator" />}
+        {(onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary') ? <div className="toolbar-separator" /> : null}
 
         {/* Push view group to far right on secondary ribbon */}
-        {onFullscreen && fullscreenPlacement === 'secondary' && (
+        {((onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary')) && (
           <div className="toolbar-flex-spacer" />
         )}
 
-        {onFullscreen && fullscreenPlacement === 'secondary' && (
+        {((onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary')) && (
           <div className="toolbar-group view-group">
+            {/* Print before Fullscreen */}
+            {_onPrint && printPlacement === 'secondary' && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={_onPrint}
+                disabled={disabled || isEmpty}
+                aria-label="Print"
+                title="Print"
+              >
+                <span className="icon"><i className="fa-solid fa-print" aria-hidden="true"></i></span>
+              </button>
+            )}
             {/* Fullscreen at extreme right */}
-            <button
-              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onFullscreen}
-              disabled={disabled}
-              aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
-              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-            >
-              <span className="icon">⛶</span>
-            </button>
+            {onFullscreen && fullscreenPlacement === 'secondary' && (
+              <button
+                className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onFullscreen}
+                disabled={disabled}
+                aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
+                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              >
+                <span className="icon">⛶</span>
+              </button>
+            )}
           </div>
         )}
       </div>

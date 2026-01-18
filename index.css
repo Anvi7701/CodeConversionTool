@@ -4,11 +4,29 @@ body.is-fullscreen .fullscreen-hide {
 }
 /* Global page background for contrast */
 html, body {
-  background-color: #F8F9FA;
+  background-color: #ffffff; /* White background for light mode */
 }
 /* Dark mode global background */
 html.dark, html.dark body {
   background-color: #0f172a; /* slate-900 */
+}
+
+/* Force-light overrides for editors within JSON Parser container */
+.force-light-editors .cm-editor,
+.force-light-editors .cm-content {
+  background-color: #ffffff !important;
+  color: #111827 !important; /* slate-900 text */
+}
+.force-light-editors .cm-gutters,
+.force-light-editors .cm-gutter {
+  background: rgba(241, 245, 249, 0.5) !important; /* slate-100/200 tint */
+  border: none !important;
+}
+.force-light-editors .cm-lineNumbers .cm-gutterElement {
+  color: #000 !important;
+}
+.force-light-editors .cm-foldGutter .cm-gutterElement > span {
+  color: #000 !important;
 }
 
 /* CodeMirror dark-mode overrides to ensure editors aren't white */
@@ -76,22 +94,192 @@ html.dark .cm-foldGutter .cm-gutterElement > span {
   background-image: linear-gradient(90deg, #93c5fd, #60a5fa, #3b82f6);
 }
 .btn-blue-azure:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(59,130,246,0.35); }
-/* For lighter backgrounds, ensure text is dark gray for readability */
-.btn-blue-azure, .btn-blue-azure span, .btn-blue-azure i { color: #333; }
+/* For lighter backgrounds, ensure text is black for readability and distinction */
+.btn-blue-azure, .btn-blue-azure span, .btn-blue-azure i { color: #000 !important; }
 
 .btn-blue-sky {
   background-image: linear-gradient(90deg, #38bdf8, #0ea5e9, #3b82f6);
 }
 .btn-blue-sky:hover { filter: brightness(0.95); box-shadow: 0 8px 24px rgba(14,165,233,0.35); }
-/* For lighter sky background, ensure text is dark gray for readability */
-.btn-blue-sky, .btn-blue-sky span, .btn-blue-sky i { color: #333; }
+/* For lighter sky background, ensure text is black for readability and distinction */
+.btn-blue-sky, .btn-blue-sky span, .btn-blue-sky i { color: #000 !important; }
 
 /* New: extra-light blue for variation (for Pretty Print) */
 .btn-blue-ice {
   background-image: linear-gradient(90deg, #dbeafe, #a7c7fd, #6ea9fa);
 }
 .btn-blue-ice:hover { filter: brightness(0.97); box-shadow: 0 8px 24px rgba(110,169,250,0.35); }
-.btn-blue-ice, .btn-blue-ice span, .btn-blue-ice i { color: #333; }
+.btn-blue-ice, .btn-blue-ice span, .btn-blue-ice i { color: #000 !important; }
+
+/* Main action buttons for JSON Parser page */
+.main-button,
+button.main-button,
+.parser-ribbon .main-button {
+  background: #64748b !important;              /* slate-500: lighter shade */
+  background-image: none !important;           /* override gradient */
+  color: #f8fafc !important;                   /* slate-50 */
+  border: none !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  transition: background 0.25s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: none !important;
+}
+
+.main-button:hover,
+button.main-button:hover,
+.parser-ribbon .main-button:hover {
+  background: #475569 !important;              /* slate-600 on hover */
+  background-image: none !important;
+  filter: none !important;
+  box-shadow: 0 4px 12px rgba(51, 65, 85, 0.3) !important;
+}
+
+.main-button .icon,
+.main-button .label,
+.main-button i,
+.main-button span,
+.parser-ribbon .main-button .icon,
+.parser-ribbon .main-button .label,
+.parser-ribbon .main-button i,
+.parser-ribbon .main-button span {
+  color: white !important;
+}
+
+/* Navigation/secondary action buttons for JSON Parser page */
+.nav-button,
+button.nav-button,
+.parser-ribbon .nav-button {
+  background: transparent !important;
+  background-image: none !important;           /* override gradient */
+  border: 1px solid #475569 !important;         /* outline slate */
+  color: #475569 !important;
+  padding: 8px 18px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  transition: all 0.25s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  box-shadow: none !important;
+}
+
+.nav-button:hover,
+button.nav-button:hover,
+.parser-ribbon .nav-button:hover {
+  background: rgba(71, 85, 105, 0.12) !important; /* soft slate hover fill */
+  background-image: none !important;
+  border-color: #334155 !important;             /* slate-700 */
+  color: #334155 !important;
+  filter: none !important;
+  box-shadow: 0 2px 8px rgba(51, 65, 85, 0.2) !important;
+}
+
+.nav-button .icon,
+.nav-button .label,
+.nav-button i,
+.nav-button span,
+.parser-ribbon .nav-button .icon,
+.parser-ribbon .nav-button .label,
+.parser-ribbon .nav-button i,
+.parser-ribbon .nav-button span {
+  color: inherit !important;
+}
+
+/* Force black text for OLD parser page secondary action buttons (legacy) */
+.parser-ribbon .btn:not(.main-button):not(.nav-button), 
+.parser-ribbon .btn:not(.main-button):not(.nav-button) span, 
+.parser-ribbon .btn:not(.main-button):not(.nav-button) i,
+.parser-ribbon .btn:not(.main-button):not(.nav-button) .label,
+.parser-ribbon .btn:not(.main-button):not(.nav-button) .icon {
+  color: #000 !important;
+  font-weight: 600;
+}
+
+/* Group labels for button sections */
+.group-label {
+  font-size: 12px;
+  color: #9BA0B3;
+  margin: 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Button group containers */
+.main-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Compact parser ribbon: place all buttons in one line with tighter sizing */
+.parser-ribbon.compact {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.parser-ribbon.compact .main-actions,
+.parser-ribbon.compact .nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+.parser-ribbon.compact .main-button,
+.parser-ribbon.compact .nav-button {
+  padding: 6px 10px !important;
+  font-size: 13px !important;
+  border-radius: 6px !important;
+  white-space: nowrap !important;
+}
+.parser-ribbon.compact .main-button .label,
+.parser-ribbon.compact .nav-button .label,
+.parser-ribbon.compact .main-button span,
+.parser-ribbon.compact .nav-button span {
+  white-space: nowrap !important;
+}
+.parser-ribbon.compact .main-button i,
+.parser-ribbon.compact .nav-button i,
+.parser-ribbon.compact .main-button .icon,
+.parser-ribbon.compact .nav-button .icon {
+  margin-right: 4px !important;
+}
+
+/* Parser ribbon legacy buttons: force slate palette */
+.parser-ribbon .toolbar-btn.primary {
+  background: #475569 !important;   /* slate-600 */
+  border-color: #64748b !important; /* slate-500/600 */
+  color: #f8fafc !important;        /* slate-50 */
+}
+.parser-ribbon .toolbar-btn.primary .icon,
+.parser-ribbon .toolbar-btn.primary .label,
+.parser-ribbon .toolbar-btn.primary i,
+.parser-ribbon .toolbar-btn.primary span {
+  color: #f8fafc !important;
+}
+.parser-ribbon .toolbar-btn.primary:hover {
+  background: #334155 !important;   /* slate-700 */
+  border-color: #475569 !important;
+}
 
 /* Icon variant of blue-ice for small rail/tool icons */
 .icon-blue-ice {

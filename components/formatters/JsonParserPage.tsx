@@ -5,7 +5,7 @@ import './JsonBeautifierPage.css';
 
 export const JsonParserPage: React.FC = () => {
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
+    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100">
       <Helmet>
         <title>JSON Parser | Free Online JSON Parsing Tool</title>
         <meta name="description" content="Parse JSON online and extract data quickly. Validate and format JSON for easy integration." />
@@ -93,8 +93,8 @@ export const JsonParserPage: React.FC = () => {
           <p className="text-sm mt-2">Perfect for developers working with APIs and large JSON files.</p>
         </section>
 
-        {/* Dark tool container to match Compare page ribbon/toolbar theme */}
-        <section className="bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700">
+        {/* Tool container: white in light mode, dark in dark mode */}
+        <section className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 force-light-editors">
           {/* Use shared formatter/editor only; schema appears in main Output */}
           <OnlineFormatterWithToolbar
             initialLanguage="json"

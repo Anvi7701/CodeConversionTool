@@ -1,4 +1,4 @@
-﻿// @ts-nocheck
+// @ts-nocheck
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
 import { jsonToToon } from '../utils/jsonToToon';
 import SEO from './SEO';
@@ -158,6 +158,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
   // Ref for input editor folding API
   const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
+  const outputViewerApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
   // Input line numbers are always on to match output gutter
   const [showInputLineNumbers] = useState<boolean>(true);
 
@@ -425,25 +426,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         event.preventDefault();
         setTestErrorMode(prev => prev === '503' ? null : '503');
         if (testErrorMode !== '503') {
-          console.log('🧪 Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+          console.log('?? Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
         event.preventDefault();
         setTestErrorMode(prev => prev === '500' ? null : '500');
         if (testErrorMode !== '500') {
-          console.log('🧪 Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+          console.log('?? Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
         event.preventDefault();
         setTestErrorMode(prev => prev === '429' ? null : '429');
         if (testErrorMode !== '429') {
-          console.log('🧪 Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
+          console.log('?? Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.key === 'z' && !event.shiftKey) {
         const target = event.target as HTMLElement;
@@ -631,10 +632,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         let commentInfo = '';
         if (res.hasComments) {
-          commentInfo = `\n\n📝 **Comments Detected** (${res.comments.length}):\n`;
+          commentInfo = `\n\n?? **Comments Detected** (${res.comments.length}):\n`;
           res.comments.forEach(m => {
             const prefix = m.kind === 'single' ? '// ' : '/* ';
-            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '…' : ''}\n`;
+            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '�' : ''}\n`;
           });
           commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
         }
@@ -655,7 +656,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             suggestedLanguage: undefined
           });
         } else {
-          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n📍 Error Locations:\n`;
+          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n?? Error Locations:\n`;
           allErrors.forEach(error => {
             fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
           });
@@ -681,25 +682,25 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         event.preventDefault();
         setTestErrorMode(prev => prev === '503' ? null : '503');
         if (testErrorMode !== '503') {
-          console.log('🧪 Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
+          console.log('?? Test 503 Error Mode ENABLED - Next AI operation will simulate "Service Overloaded" error');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.shiftKey && event.key === 'S') {
         event.preventDefault();
         setTestErrorMode(prev => prev === '500' ? null : '500');
         if (testErrorMode !== '500') {
-          console.log('🧪 Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
+          console.log('?? Test 500 Error Mode ENABLED - Next AI operation will simulate "Server Error"');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && event.shiftKey && event.key === 'R') {
         event.preventDefault();
         setTestErrorMode(prev => prev === '429' ? null : '429');
         if (testErrorMode !== '429') {
-          console.log('🧪 Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
+          console.log('?? Test 429 Error Mode ENABLED - Next AI operation will simulate "Rate Limit" error');
         } else {
-          console.log('✅ Test Error Mode DISABLED - Normal AI operation');
+          console.log('? Test Error Mode DISABLED - Normal AI operation');
         }
       } else if (event.ctrlKey && !event.shiftKey && (event.key === 'z' || event.key === 'Z')) {
         const target = event.target as HTMLElement;
@@ -1265,10 +1266,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         let commentInfo = '';
         if (res.hasComments) {
-          commentInfo = `\n\n📝 **Comments Detected** (${res.comments.length}):\n`;
+          commentInfo = `\n\n?? **Comments Detected** (${res.comments.length}):\n`;
           res.comments.forEach(m => {
             const prefix = m.kind === 'single' ? '// ' : '/* ';
-            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '…' : ''}\n`;
+            commentInfo += `- Line ${m.line}: ${prefix}${m.preview}${m.preview.length >= 80 ? '�' : ''}\n`;
           });
           commentInfo += `\n*Note: Comments are not valid in JSON. Use Auto Fix to remove them safely without changing other logic.*\n`;
         }
@@ -1294,7 +1295,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           });
         } else {
           // Fast mode messaging
-          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n📍 Error Locations:\n`;
+          let fastError = `Invalid JSON syntax: ${parseError.message}\n\n?? Error Locations:\n`;
           allErrors.forEach(error => {
             fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
           });
@@ -1496,7 +1497,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           } else {
             setInputCode(correctedCode);
             addToHistory(correctedCode);
-            setSuccessMessage("✅ AI successfully corrected the syntax. You can now format the code.");
+            setSuccessMessage("? AI successfully corrected the syntax. You can now format the code.");
             // Clear any existing input highlight after AI correction
             clearHighlight();
           }
@@ -1576,7 +1577,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               
               if (hasComplexErrors) {
                 // Has complex errors - suggest Smart mode
-                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n?? Error Locations:\n`;
                 allErrors.forEach(error => {
                   fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
                 });
@@ -1591,7 +1592,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 return;
               } else {
                 // Only simple errors - can be fixed
-                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+                let fastError = `Invalid JSON syntax: ${jsonErr.message}\n\n?? Error Locations:\n`;
                 allErrors.forEach(error => {
                   fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
                 });
@@ -1968,11 +1969,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       return;
     }
     
-    // If in Tree View, copy as plain text with tree connectors (├──, └──, │)
+    // If in Tree View, copy as plain text with tree connectors (+--, +--, �)
     if (viewFormat === 'tree') {
       try {
         const parsedData = JSON.parse(outputCode);
-        const treeText = `🌳 JSON Tree View\n${'─'.repeat(40)}\n\n${generateTreeText(parsedData)}`;
+        const treeText = `?? JSON Tree View\n${'-'.repeat(40)}\n\n${generateTreeText(parsedData)}`;
         await navigator.clipboard.writeText(treeText);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
@@ -1982,11 +1983,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       return;
     }
     
-    // If in Form View, copy as plain text with type icons (📝, 🔢, ☑, 📦, 📚)
+    // If in Form View, copy as plain text with type icons (??, ??, ?, ??, ??)
     if (viewFormat === 'form') {
       try {
         const parsedData = JSON.parse(outputCode);
-        const formText = `📋 JSON Form View\n${'─'.repeat(40)}\n\n${generateFormText(parsedData)}`;
+        const formText = `?? JSON Form View\n${'-'.repeat(40)}\n\n${generateFormText(parsedData)}`;
         await navigator.clipboard.writeText(formText);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
@@ -2021,7 +2022,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     setIsStructureAnalysisMode(false); // Reset structure analysis mode
   };
 
-  // Removed: Move handler (copy input to output) — button removed and handler unused
+  // Removed: Move handler (copy input to output) � button removed and handler unused
 
   // Expand All Fields: expand all nodes in Form and View
   const handleExpandAllFields = () => {
@@ -2156,8 +2157,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Helper function to generate tree-style text representation of JSON data
   const generateTreeText = (data: any, indent: string = '', isLast: boolean = true, prefix: string = ''): string => {
-    const connector = isLast ? '└── ' : '├── ';
-    const extension = isLast ? '    ' : '│   ';
+    const connector = isLast ? '+-- ' : '+-- ';
+    const extension = isLast ? '    ' : '�   ';
     let result = '';
 
     if (data === null) {
@@ -2173,8 +2174,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const entries = data;
       entries.forEach((item, index) => {
         const isLastItem = index === entries.length - 1;
-        const itemConnector = isLastItem ? '└── ' : '├── ';
-        const itemExtension = isLastItem ? '    ' : '│   ';
+        const itemConnector = isLastItem ? '+-- ' : '+-- ';
+        const itemExtension = isLastItem ? '    ' : '�   ';
         
         if (typeof item === 'object' && item !== null) {
           result += `${prefix}${itemConnector}[${index}] ${Array.isArray(item) ? `Array (${item.length} items)` : `Object (${Object.keys(item).length} props)`}\n`;
@@ -2188,8 +2189,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       const entries = Object.entries(data);
       entries.forEach(([key, value], index) => {
         const isLastItem = index === entries.length - 1;
-        const itemConnector = isLastItem ? '└── ' : '├── ';
-        const itemExtension = isLastItem ? '    ' : '│   ';
+        const itemConnector = isLastItem ? '+-- ' : '+-- ';
+        const itemExtension = isLastItem ? '    ' : '�   ';
         
         if (typeof value === 'object' && value !== null) {
           result += `${prefix}${itemConnector}${key}: ${Array.isArray(value) ? `Array (${value.length} items)` : `Object (${Object.keys(value).length} props)`}\n`;
@@ -2214,15 +2215,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
     }
 
     if (typeof data !== 'object') {
-      const typeLabel = typeof data === 'boolean' ? (data ? '☑ true' : '☐ false') : 
+      const typeLabel = typeof data === 'boolean' ? (data ? '? true' : '? false') : 
                         typeof data === 'number' ? `${data}` : 
                         typeof data === 'string' ? `"${data}"` : String(data);
       return `${indentStr}Value: ${typeLabel}\n`;
     }
 
     if (Array.isArray(data)) {
-      result += `${indentStr}📚 Array [${data.length} items]\n`;
-      result += `${indentStr}${'─'.repeat(40)}\n`;
+      result += `${indentStr}?? Array [${data.length} items]\n`;
+      result += `${indentStr}${'-'.repeat(40)}\n`;
       data.forEach((item, index) => {
         result += `${indentStr}  Item ${index + 1}:\n`;
         if (typeof item === 'object' && item !== null) {
@@ -2237,16 +2238,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
       entries.forEach(([key, value]) => {
         if (typeof value === 'object' && value !== null) {
           if (Array.isArray(value)) {
-            result += `${indentStr}📚 ${key}: Array [${value.length} items]\n`;
+            result += `${indentStr}?? ${key}: Array [${value.length} items]\n`;
           } else {
-            result += `${indentStr}📦 ${key}: Object {${Object.keys(value).length} props}\n`;
+            result += `${indentStr}?? ${key}: Object {${Object.keys(value).length} props}\n`;
           }
           result += generateFormText(value, indent, level + 1);
         } else {
-          const typeIcon = typeof value === 'string' ? '📝' : 
-                          typeof value === 'number' ? '🔢' : 
-                          typeof value === 'boolean' ? (value ? '☑' : '☐') : 
-                          value === null ? '∅' : '•';
+          const typeIcon = typeof value === 'string' ? '??' : 
+                          typeof value === 'number' ? '??' : 
+                          typeof value === 'boolean' ? (value ? '?' : '?') : 
+                          value === null ? '�' : '�';
           const val = value === null ? 'null' : typeof value === 'string' ? `"${value}"` : String(value);
           result += `${indentStr}${typeIcon} ${key}: ${val}\n`;
         }
@@ -2368,7 +2369,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 <body>
     <div class="container">
         <div class="header">
-            <h1>${viewType === 'tree' ? '🌳 Tree View' : '📋 Form View'}</h1>
+            <h1>${viewType === 'tree' ? '?? Tree View' : '?? Form View'}</h1>
             <p>${title}</p>
         </div>
         <div class="content">
@@ -2535,7 +2536,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   .footer { margin-top: 30px; color: #6c757d; font-size: 10pt; border-top: 1px solid #dee2e6; padding-top: 10px; }
 </style></head>
 <body>
-  <h1>📊 JSON ${viewTitle}</h1>
+  <h1>?? JSON ${viewTitle}</h1>
   <pre>${txt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
   <div class="footer">Generated on ${new Date().toLocaleString()}</div>
 </body></html>`;
@@ -2764,7 +2765,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 <body>
     <div class="container">
         <div class="header">
-            <h1>📈 JSON Structure Analysis Report</h1>
+            <h1>?? JSON Structure Analysis Report</h1>
             <p>Comprehensive analysis of your JSON structure and statistics</p>
         </div>
         
@@ -2772,7 +2773,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <div>
                 <!-- Validation Status -->
                 <div class="card ${analysisData.isValid ? 'status-valid' : 'status-invalid'}">
-                    <h2>${analysisData.isValid ? '✅' : '❌'} Validation Status</h2>
+                    <h2>${analysisData.isValid ? '?' : '?'} Validation Status</h2>
                     <div class="info-row">
                         <span class="info-label">Status:</span>
                         <span class="info-value" style="color: ${analysisData.isValid ? '#28a745' : '#dc3545'};">${analysisData.isValid ? 'Valid' : 'Invalid'}</span>
@@ -2784,7 +2785,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 
                 <!-- Summary -->
                 <div class="card summary-card" style="margin-top: 20px;">
-                    <h2>📋 Summary</h2>
+                    <h2>?? Summary</h2>
                     ${Object.entries(analysisData.summary).map(([key, value]) => `
                         <div class="info-row">
                             <span class="info-label">${key.replace(/([A-Z])/g, ' $1').trim()}:</span>
@@ -2795,7 +2796,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 
                 <!-- Details -->
                 <div class="card details-card" style="margin-top: 20px;">
-                    <h2>🔍 Details</h2>
+                    <h2>?? Details</h2>
                     ${Object.entries(analysisData.details)
                         .filter(([key]) => !['objectKeys', 'valueTypes'].includes(key))
                         .map(([key, value]) => `
@@ -2810,36 +2811,36 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <!-- Statistics -->
             <div>
                 <div class="card stats-card">
-                    <h2>📈 Statistics</h2>
+                    <h2>?? Statistics</h2>
                     <p style="color: #856404; margin-bottom: 20px; font-size: 14px;">Complete breakdown of data types in your JSON</p>
                     
                     <div class="stat-item stat-strings">
-                        <span class="stat-label">📝 Strings</span>
+                        <span class="stat-label">?? Strings</span>
                         <span class="stat-value" style="color: #28a745;">${analysisData.statistics.strings}</span>
                     </div>
                     
                     <div class="stat-item stat-numbers">
-                        <span class="stat-label">🔢 Numbers</span>
+                        <span class="stat-label">?? Numbers</span>
                         <span class="stat-value" style="color: #0d6efd;">${analysisData.statistics.numbers}</span>
                     </div>
                     
                     <div class="stat-item stat-booleans">
-                        <span class="stat-label">✓ Booleans</span>
+                        <span class="stat-label">? Booleans</span>
                         <span class="stat-value" style="color: #6f42c1;">${analysisData.statistics.booleans}</span>
                     </div>
                     
                     <div class="stat-item stat-nulls">
-                        <span class="stat-label">∅ Nulls</span>
+                        <span class="stat-label">� Nulls</span>
                         <span class="stat-value" style="color: #6c757d;">${analysisData.statistics.nulls}</span>
                     </div>
                     
                     <div class="stat-item stat-objects">
-                        <span class="stat-label">📦 Objects</span>
+                        <span class="stat-label">?? Objects</span>
                         <span class="stat-value" style="color: #fd7e14;">${analysisData.statistics.objects}</span>
                     </div>
                     
                     <div class="stat-item stat-arrays">
-                        <span class="stat-label">📚 Arrays</span>
+                        <span class="stat-label">?? Arrays</span>
                         <span class="stat-value" style="color: #17a2b8;">${analysisData.statistics.arrays}</span>
                     </div>
                 </div>
@@ -3197,34 +3198,97 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   };
 
   // Validate Output JSON (explicit action via Output header toolbar)
-  const handleValidateOutput = () => {
+  const handleValidateOutput = async () => {
     if (activeLanguage !== 'json') return;
     const content = outputCode || '';
-    if (!content.trim()) return;
+    if (!content.trim()) {
+      setValidationError({ isValid: false, reason: "Output is empty.", isFixableSyntaxError: false, suggestedLanguage: undefined });
+      return;
+    }
+
+    setIsValidating(true);
+    setOutputError(null);
+    setValidationError(null);
+    setSuccessMessage(null);
+    setIsValidated(false);
+    setErrorLines([]);
+    setAppliedFixes([]);
+    setShowFixSummary(false);
+    setAiError(null);
 
     try {
-      JSON.parse(content);
-      // Valid: show success modal, do not alter output/view
-      setValidationError(null);
-      setErrorLines([]);
-      setValidationSuccessText('JSON is valid');
-      setShowValidationSuccess(true);
-    } catch (jsonErr: any) {
-      // Invalid: show detailed errors in Output box (current behavior)
-      const allErrors = validateJsonSyntax(content);
+      const res = parseJsonSafe(content);
+      if (res.ok) {
+        setErrorLines([]);
+        // Show success modal
+        setValidationSuccessText('Output JSON is valid');
+        setShowValidationSuccess(true);
+        setIsValidated(true);
+        setIsValidating(false);
+        return;
+      }
+
+      const { errors: allErrors, error: parseError } = res as ParseResultErr;
       setErrorLines(allErrors);
       setErrorSource('output');
+
+      if (formatterMode === 'smart') {
+        // Smart mode: offer AI-powered correction
+        let errorAnalysis = `### Invalid JSON Syntax in Output\n\n**Error Details:**\n${parseError.message}`;
+
+        if (allErrors.length > 0) {
+          errorAnalysis += `\n\n**Error Locations:**\n`;
+          allErrors.forEach(error => {
+            errorAnalysis += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+          });
+        }
+
+        errorAnalysis += `\n\n**What Happened:**\nThe output JSON has syntax errors. This could be due to:\n- Missing or extra commas\n- Unclosed quotes or brackets\n- Invalid characters or formatting\n\n### AI-Powered Resolution Available\n\nClick \"Fix Complex Errors with AI\" to automatically fix these syntax errors.`;
+        
+        setValidationError({
+          isValid: false,
+          reason: errorAnalysis,
+          isFixableSyntaxError: true,
+          suggestedLanguage: undefined
+        });
+      } else {
+        // Fast mode messaging
+        let fastError = `Invalid JSON syntax in output: ${parseError.message}\n\n?? Error Locations:\n`;
+        allErrors.forEach(error => {
+          fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
+        });
+
+        setValidationError({
+          isValid: false,
+          reason: fastError,
+          isFixableSyntaxError: true,
+          suggestedLanguage: undefined
+        });
+      }
+    } catch (err: any) {
       setValidationError({
         isValid: false,
-        reason: `Invalid JSON syntax in output: ${jsonErr.message}`,
-        isFixableSyntaxError: true,
+        reason: `Failed to validate output: ${err.message}`,
+        isFixableSyntaxError: false,
         suggestedLanguage: undefined
       });
+    } finally {
+      setIsValidating(false);
     }
   };
 
   const isActionDisabled = isLoading || isValidating || isCorrecting;
   const isJsonLanguage = activeLanguage === 'json';
+  const isJsonOutput = useMemo(() => {
+    const content = outputCode ?? '';
+    if (!content.trim()) return false;
+    try {
+      JSON.parse(content);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [outputCode]);
   // Input history availability (JSON input edits)
   const canUndoInput = historyIndex > 0 && isJsonLanguage;
   const canRedoInput = historyIndex < history.length - 1 && isJsonLanguage;
@@ -3367,7 +3431,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         
         if (hasComplexErrors) {
           // Has complex errors - suggest Smart mode
-          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n?? Error Locations:\n`;
           allErrors.forEach(error => {
             fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
           });
@@ -3380,7 +3444,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           });
         } else {
           // Only simple errors - can be fixed
-          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n📍 Error Locations:\n`;
+          let fastError = `Invalid JSON syntax in output: ${jsonErr.message}\n\n?? Error Locations:\n`;
           allErrors.forEach(error => {
             fastError += `- Line ${error.line}, Column ${error.column}${error.message ? ': ' + error.message : ''}\n`;
           });
@@ -3408,6 +3472,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   }, [viewFormat, outputCode, activeLanguage]);
 
   // Helper to render non-code views for formatted output
+  // Allow expand/collapse triggers to work on parser page output
+  const outputExpandAll = expandAllTrigger;
+  const outputCollapseAll = collapseAllTrigger;
   const renderStructuredOutputView = () => {
     if (!outputCode) return null;
     try {
@@ -3427,8 +3494,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 code={toonText}
                 language="text"
                 readOnly
-                expandAll={expandAllTrigger}
-                collapseAll={collapseAllTrigger}
+                expandAll={outputExpandAll}
+                collapseAll={outputCollapseAll}
+                enableFolding={isParserPage ? (viewFormat === 'code') : true}
               />
             </div>
           );
@@ -3437,8 +3505,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <TreeView
               data={parsedData}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
               onEdit={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
             />
           );
@@ -3446,8 +3514,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <FormView
               data={parsedData}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
               onEdit={isTransformPage || outputLocked ? undefined : ((updatedJson) => {
                 setOutputCode(updatedJson);
               })}
@@ -3468,8 +3536,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <TextView
               code={textCode}
               onChange={textOutputMode === 'python-pretty' || isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
             />
           );
         case 'table':
@@ -3477,8 +3545,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             <TableView
               ref={tableViewRef}
               data={parsedData}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
               onEdit={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
               showExportControl={!(lockViewTo === 'table')}
             />
@@ -3492,8 +3560,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             return (
               <StatisticsDetailViewer
                 data={parsedData}
-                expandAll={expandAllTrigger}
-                collapseAll={collapseAllTrigger}
+                expandAll={outputExpandAll}
+                collapseAll={outputCollapseAll}
                 onClose={() => {
                   setOutputCode('');
                   setIsStructureAnalysisMode(false);
@@ -3505,8 +3573,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           return (
             <ConsoleView
               data={parsedData}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
             />
           );
         default:
@@ -3516,8 +3584,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               language={activeLanguage}
               onChange={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
               readOnly={isTransformPage || outputLocked}
-              expandAll={expandAllTrigger}
-              collapseAll={collapseAllTrigger}
+              expandAll={outputExpandAll}
+              collapseAll={outputCollapseAll}
+              enableFolding={isParserPage ? (viewFormat === 'code') : true}
+              editorApiRef={isParserPage ? outputViewerApiRef : undefined}
             />
           );
       }
@@ -3529,8 +3599,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           language={activeLanguage}
           onChange={isTransformPage || outputLocked ? undefined : (value) => setOutputCode(value)}
           readOnly={isTransformPage || outputLocked}
-          expandAll={expandAllTrigger}
-          collapseAll={collapseAllTrigger}
+          expandAll={outputExpandAll}
+          collapseAll={outputCollapseAll}
+          enableFolding={isParserPage ? (viewFormat === 'code') : true}
+          editorApiRef={isParserPage ? outputViewerApiRef : undefined}
         />
       );
     }
@@ -3748,7 +3820,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Test mode indicator */}
               {testErrorMode && (
                 <span className="ml-2 px-2 py-1 bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 text-xs font-medium rounded border border-red-300 dark:border-red-700 animate-pulse">
-                  🧪 Test {testErrorMode} Error
+                  ?? Test {testErrorMode} Error
                 </span>
               )}
             </div>
@@ -3770,170 +3842,214 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
         )}
 
-        {/* Secondary toolbar: remaining parser actions (Parser page) */}
-        {isJsonLanguage && isParserPage && (
+        {/* Parser page ribbon with slate-themed buttons */}
+        {isJsonLanguage && isParserPage && activeLanguage === 'json' && (
           <section className="bg-transparent p-0 mb-2">
             <div className="p-2">
-              <div className="toolbar-ribbon secondary-ribbon">
-                {/* Parse JSON */}
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    const res = parseJsonSafe(inputCode.trim());
-                    if (res.ok) {
+              <div className="parser-ribbon compact flex flex-row items-center gap-2">
+                <div className="main-actions">
+                  {/* Parse JSON (true parsing like JSON.parse) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      const res = parseJsonSafe(inputCode.trim());
+                      if (res.ok) {
+                        try {
+                          const formatted = JSON.stringify(res.value, null, 2);
+                          setOutputCode(formatted);
+                          setIsConversionOutput(false);
+                          setViewFormat('code');
+                          setOutputLocked(true);
+                          setOutputTitle('Parsed JSON');
+                        } catch (err: any) {
+                          setValidationError({
+                            isValid: false,
+                            reason: err?.message || 'Failed to format parsed JSON.',
+                            isFixableSyntaxError: false,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      } else {
+                        const { errors: allErrors, error: parseError } = res as ParseResultErr;
+                        const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
+                        setValidationError({
+                          isValid: false,
+                          reason: allErrors && allErrors.length ? `${msg}` : msg,
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`main-button`}
+                    title="Parse JSON (JSON.parse)"
+                  >
+                    <i className="icon fa-solid fa-code" aria-hidden="true"></i>
+                    <span className="label">Parse JSON</span>
+                  </button>
+
+                  {/* Pretty Print (simply JSON.parse + JSON.stringify with 2-space indent) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
                       try {
-                        const formatted = JSON.stringify(res.value, null, 2);
-                        setOutputCode(formatted);
+                        const obj = JSON.parse(inputCode.trim());
+                        const pretty = JSON.stringify(obj, null, 2);
+                        setOutputCode(pretty);
                         setIsConversionOutput(false);
                         setViewFormat('code');
                         setOutputLocked(true);
-                        setOutputTitle('Parsed JSON');
+                        setOutputTitle('Pretty Printed JSON');
                       } catch (err: any) {
-                        setValidationError({ isValid: false, reason: err?.message || 'Failed to format parsed JSON.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                        setValidationError({
+                          isValid: false,
+                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before pretty printing.',
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
                       }
-                    } else {
-                      const { errors: allErrors, error: parseError } = res as ParseResultErr;
-                      const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
-                      setValidationError({ isValid: false, reason: allErrors && allErrors.length ? `${msg}` : msg, isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className={`toolbar-btn primary compact`}
-                  title="Parse JSON (JSON.parse)"
-                >
-                  <i className="icon fa-solid fa-code" aria-hidden="true"></i>
-                  <span className="label">Parse JSON</span>
-                </button>
+                    }}
+                    className={`main-button`}
+                    title="Pretty Print JSON (2-space indent)"
+                  >
+                    <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
+                    <span className="label">Pretty Print</span>
+                  </button>
 
-                {/* Pretty Print */}
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    try {
-                      const obj = JSON.parse(inputCode.trim());
-                      const pretty = JSON.stringify(obj, null, 2);
-                      setOutputCode(pretty);
-                      setIsConversionOutput(false);
-                      setViewFormat('code');
-                      setOutputLocked(true);
-                      setOutputTitle('Pretty Printed JSON');
-                    } catch (err: any) {
-                      setValidationError({ isValid: false, reason: err?.message || 'Invalid JSON. Fix errors before pretty printing.', isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className={`toolbar-btn primary compact`}
-                  title="Pretty Print JSON"
-                >
-                  <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
-                  <span className="label">Pretty Print</span>
-                </button>
+                  {/* Compact JSON (remove all whitespace) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      handleCompact();
+                    }}
+                    className={`main-button`}
+                    title="Compact JSON (remove all whitespace)"
+                  >
+                    <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
+                    <span className="label">Compact</span>
+                  </button>
 
-                {/* Compact JSON */}
-                <button
-                  onClick={() => { if (!inputCode.trim()) return; handleCompact(); }}
-                  className={`toolbar-btn primary compact`}
-                  title="Compact JSON"
-                >
-                  <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
-                  <span className="label">Compact</span>
-                </button>
+                  {/* Generate JSON Schema (Draft-07) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      try {
+                        JSON.parse(inputCode.trim());
+                        const { schemaText } = generateSchemaFromSample(inputCode.trim());
+                        setOutputCode(schemaText);
+                        setIsConversionOutput(true);
+                        setViewFormat('code');
+                        setOutputLocked(true);
+                        setOutputTitle('Draft-07 schema');
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`main-button`}
+                    title="Generate JSON Schema (Draft-07)"
+                  >
+                    <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                    <span className="label">Generate Schema</span>
+                  </button>
+                </div>
+                <div className="nav-actions">
+                  {/* Export via jq (Windows PowerShell): download a .ps1 that pretty-prints (and sorts keys) using jq */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
+                      try {
+                        const obj = JSON.parse(inputCode.trim());
+                        const compact = JSON.stringify(obj); // compact for robust here-string
+                        const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
+                        const blob = new Blob([ps], { type: 'application/octet-stream' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'export-via-jq.ps1';
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                      } catch (err: any) {
+                        setValidationError({
+                          isValid: false,
+                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before exporting via jq.',
+                          isFixableSyntaxError: true,
+                          suggestedLanguage: undefined
+                        });
+                      }
+                    }}
+                    className={`nav-button`}
+                    title="Export via jq (PowerShell script)"
+                  >
+                    <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
+                    <span className="label">Export via jq</span>
+                  </button>
 
-                {/* Generate JSON Schema */}
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) return;
-                    try {
-                      JSON.parse(inputCode.trim());
-                      const { schemaText } = generateSchemaFromSample(inputCode.trim());
-                      setOutputCode(schemaText);
-                      setIsConversionOutput(true);
-                      setViewFormat('code');
-                      setOutputLocked(true);
-                      setOutputTitle('Draft-07 schema');
-                    } catch (err: any) {
-                      setValidationError({ isValid: false, reason: `Invalid JSON. Fix errors before generating schema. Details: ${err?.message || ''}`, isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className={`toolbar-btn primary compact`}
-                  title="Generate JSON Schema"
-                >
-                  <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                  <span className="label">Generate Schema</span>
-                </button>
+                  {/* Tree View (opens separate page) */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                    }}
+                    className={`nav-button`}
+                    title="Open JSON Tree View"
+                  >
+                    <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
+                    <span className="label">Tree View</span>
+                  </button>
 
-                {/* Export via jq */}
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
-                    try {
-                      const obj = JSON.parse(inputCode.trim());
-                      const compact = JSON.stringify(obj);
-                      const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
-                      const blob = new Blob([ps], { type: 'application/octet-stream' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'export-via-jq.ps1';
-                      document.body.appendChild(a);
-                      a.click();
-                      document.body.removeChild(a);
-                      URL.revokeObjectURL(url);
-                    } catch (err: any) {
-                      setValidationError({ isValid: false, reason: err?.message || 'Invalid JSON. Fix errors before exporting via jq.', isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className={`toolbar-btn primary compact`}
-                  title="Export via jq (PowerShell)"
-                >
-                  <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
-                  <span className="label">Export via jq</span>
-                </button>
+                  {/* Graph View (opens in-page Graph Viewer) */}
+                  <button
+                    onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                    className={`nav-button`}
+                    title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
+                  >
+                    <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                    <span className="label">Graph View</span>
+                  </button>
 
-                {/* Tree View */}
-                <button
-                  onClick={() => { if (!inputCode.trim()) return; navigate('/json-tree-view', { state: { inputJson: inputCode } }); }}
-                  className={`toolbar-btn primary compact`}
-                  title="Open JSON Tree View"
-                >
-                  <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
-                  <span className="label">Tree View</span>
-                </button>
+                  {/* Transform (JMESPath/JSONPath on Transform page) */}
+                  <button
+                    onClick={() => {
+                      const hasInput = !!inputCode.trim();
+                      if (hasInput) {
+                        navigate('/json-transform', { state: { inputJson: inputCode } });
+                      } else {
+                        navigate('/json-transform');
+                      }
+                    }}
+                    className={`nav-button`}
+                    title="Open JSON Transform"
+                  >
+                    <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
+                    <span className="label">Transform</span>
+                  </button>
 
-                {/* Graph View */}
-                <button
-                  onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                  className={`toolbar-btn primary compact`}
-                  title="Visualize as Graph"
-                >
-                  <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
-                  <span className="label">Graph View</span>
-                </button>
-
-                {/* Transform */}
-                <button
-                  onClick={() => { const hasInput = !!inputCode.trim(); if (hasInput) { navigate('/json-transform', { state: { inputJson: inputCode } }); } else { navigate('/json-transform'); } }}
-                  className={`toolbar-btn primary compact`}
-                  title="Open JSON Transform"
-                >
-                  <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
-                  <span className="label">Transform</span>
-                </button>
-
-                {/* Structure Analysis */}
-                <button
-                  onClick={() => { if (!inputCode.trim()) return; navigate('/json-structure-analyzer', { state: { inputJson: inputCode } }); }}
-                  className={`toolbar-btn primary compact`}
-                  title="JSON Structure Analyzer"
-                >
-                  <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
-                  <span className="label">Structure Analysis</span>
-                </button>
+                  {/* Structure Analysis */}
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
+                    }}
+                    className={`nav-button`}
+                    title="JSON Structure Analyzer"
+                  >
+                    <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
+                    <span className="label">Structure Analysis</span>
+                  </button>
+                </div>
               </div>
             </div>
           </section>
         )}
 
         {/* Compact toolbar with smaller buttons and dropdowns (non-Parser pages) */}
-        {isJsonLanguage && !isParserPage && (
+        {isJsonLanguage && !(isParserPage || isTransformPage) && (
           <div className={`flex ${isBeautifierPage ? 'flex-wrap items-start' : 'items-center justify-between'} gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
             <div className={`flex ${isBeautifierPage ? 'flex-wrap gap-y-2' : ''} items-start gap-2 overflow-visible`}>
               {isBeautifierPage ? (
@@ -3968,7 +4084,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         >
                           <i className="fa-solid fa-magic" aria-hidden="true"></i>
                           <span>Beautify</span>
-                          <span className="text-xs">▼</span>
+                          <span className="text-xs">?</span>
                         </button>
                         {showBeautifyDropdown && (
                           <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
@@ -4031,7 +4147,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       >
                         <i className="fa-solid fa-magic" aria-hidden="true"></i>
                         <span>Beautify</span>
-                        <span className="text-xs">▼</span>
+                        <span className="text-xs">?</span>
                       </button>
                       {showBeautifyDropdown && (
                         <div className={`absolute top-full left-0 mt-1 bg-white dark:bg-gray-800 border rounded-lg shadow-lg z-10 w-[120px] min-w-[120px] ${isBeautifierPage ? 'border-blue-200 dark:border-blue-700' : 'border-purple-200 dark:border-purple-700'}`}>
@@ -4077,204 +4193,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </button>
               )}
 
-                  {/* Parser page controls: Parse JSON, Pretty Print, Generate Schema, Export via jq */}
-              {isParserPage && activeLanguage === 'json' && (
-                <div className="parser-ribbon flex items-center gap-1">
-                  {/* Parse JSON (true parsing like JSON.parse) */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      const res = parseJsonSafe(inputCode.trim());
-                      if (res.ok) {
-                        try {
-                          const formatted = JSON.stringify(res.value, null, 2);
-                          setOutputCode(formatted);
-                          setIsConversionOutput(false);
-                          setViewFormat('code');
-                          setOutputLocked(true);
-                              setOutputTitle('Parsed JSON');
-                        } catch (err: any) {
-                          setValidationError({
-                            isValid: false,
-                            reason: err?.message || 'Failed to format parsed JSON.',
-                            isFixableSyntaxError: false,
-                            suggestedLanguage: undefined
-                          });
-                        }
-                      } else {
-                        const { errors: allErrors, error: parseError } = res as ParseResultErr;
-                        const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
-                        setValidationError({
-                          isValid: false,
-                          reason: allErrors && allErrors.length ? `${msg}` : msg,
-                          isFixableSyntaxError: true,
-                          suggestedLanguage: undefined
-                        });
-                      }
-                    }}
-                    className={`toolbar-btn primary compact`}
-                    title="Parse JSON (JSON.parse)"
-                  >
-                    <i className="icon fa-solid fa-code" aria-hidden="true"></i>
-                    <span className="label">Parse JSON</span>
-                  </button>
-
-                  {/* Pretty Print (simply JSON.parse + JSON.stringify with 2-space indent) */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      try {
-                        const obj = JSON.parse(inputCode.trim());
-                        const pretty = JSON.stringify(obj, null, 2);
-                        setOutputCode(pretty);
-                        setIsConversionOutput(false);
-                        setViewFormat('code');
-                        setOutputLocked(true);
-                            setOutputTitle('Pretty Printed JSON');
-                      } catch (err: any) {
-                        setValidationError({
-                          isValid: false,
-                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before pretty printing.',
-                          isFixableSyntaxError: true,
-                          suggestedLanguage: undefined
-                        });
-                      }
-                    }}
-                    className={`toolbar-btn primary compact`}
-                    title="Pretty Print JSON (2-space indent)"
-                  >
-                    <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
-                    <span className="label">Pretty Print</span>
-                  </button>
-
-                  {/* Compact JSON (remove all whitespace) */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      handleCompact();
-                    }}
-                    className={`toolbar-btn primary compact`}
-                    title="Compact JSON (remove all whitespace)"
-                  >
-                    <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
-                    <span className="label">Compact</span>
-                  </button>
-
-                  {/* Generate JSON Schema (Draft-07) */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      try {
-                        JSON.parse(inputCode.trim());
-                        const { schemaText } = generateSchemaFromSample(inputCode.trim());
-                        setOutputCode(schemaText);
-                        setIsConversionOutput(true);
-                        setViewFormat('code');
-                        setOutputLocked(true);
-                            setOutputTitle('Draft-07 schema');
-                      } catch (err: any) {
-                        setValidationError({
-                          isValid: false,
-                          reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
-                          isFixableSyntaxError: true,
-                          suggestedLanguage: undefined
-                        });
-                      }
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title="Generate JSON Schema (Draft-07)"
-                  >
-                    <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                    <span className="label">Generate Schema</span>
-                  </button>
-
-                  {/* Export via jq (Windows PowerShell): download a .ps1 that pretty-prints (and sorts keys) using jq */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
-                      try {
-                        const obj = JSON.parse(inputCode.trim());
-                        const compact = JSON.stringify(obj); // compact for robust here-string
-                        const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
-                        const blob = new Blob([ps], { type: 'application/octet-stream' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = 'export-via-jq.ps1';
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                      } catch (err: any) {
-                        setValidationError({
-                          isValid: false,
-                          reason: err?.message || 'Invalid JSON. Please fix syntax errors before exporting via jq.',
-                          isFixableSyntaxError: true,
-                          suggestedLanguage: undefined
-                        });
-                      }
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title="Export via jq (PowerShell script)"
-                  >
-                    <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
-                    <span className="label">Export via jq</span>
-                  </button>
-
-                  {/* Tree View (opens separate page) */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      navigate('/json-tree-view', { state: { inputJson: inputCode } });
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title="Open JSON Tree View"
-                  >
-                    <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
-                    <span className="label">Tree View</span>
-                  </button>
-
-                  {/* Graph View (opens in-page Graph Viewer) */}
-                  <button
-                    onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
-                  >
-                    <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
-                    <span className="label">Graph View</span>
-                  </button>
-
-                  {/* Transform (JMESPath/JSONPath on Transform page) */}
-                  <button
-                    onClick={() => {
-                      const hasInput = !!inputCode.trim();
-                      if (hasInput) {
-                        navigate('/json-transform', { state: { inputJson: inputCode } });
-                      } else {
-                        navigate('/json-transform');
-                      }
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title="Open JSON Transform"
-                  >
-                    <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
-                    <span className="label">Transform</span>
-                  </button>
-
-                  {/* Structure Analysis */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
-                    }}
-                    className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
-                    title="JSON Structure Analyzer"
-                  >
-                    <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
-                    <span className="label">Structure Analysis</span>
-                  </button>
-                </div>
-              )}
 
               {isBeautifierPage ? (
                 <div className="flex items-center gap-2">
@@ -4849,16 +4767,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {/* Copy Success Toast */}
         {copySuccess && (
           <div className="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-fade-in">
-            ✓ Copied to clipboard!
+            ? Copied to clipboard!
           </div>
         )}
 
         {/* Editor Area */}
-        <div className={`w-full flex flex-col lg:flex-row ${isParserPage ? 'gap-3 bg-slate-800 rounded-lg border border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
-          <div className={`w-full lg:w-1/2 flex flex-col ${isParserPage ? 'bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+        <div className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser: primary + secondary toolbars like Compare, inside same dark container */}
-            {isParserPage && (
-              <div className="p-2 border-b border-slate-700 bg-slate-900/40">
+            {(isParserPage || isTransformPage) && (
+              <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
                 <JsonToolbar
                   onFormat={handleFormat}
                   onMinify={handleCompact}
@@ -4878,8 +4796,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       addToHistory(formatted);
                     } catch {}
                   }}
-                  onCollapseAll={() => { setCollapseAllTrigger(true); setTimeout(() => setCollapseAllTrigger(false), 120); }}
-                  onExpandAll={() => { setExpandAllTrigger(true); setTimeout(() => setExpandAllTrigger(false), 120); }}
+                  onCollapseAll={() => { if (inputCode.trim()) inputEditorApiRef.current?.foldAll?.(); }}
+                  onExpandAll={() => { if (inputCode.trim()) inputEditorApiRef.current?.unfoldAll?.(); }}
                   onUploadJson={() => { try { fileInputRef.current?.click(); } catch {} }}
                   onViewGraph={undefined}
                   onSave={handleSave}
@@ -4912,6 +4830,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   savePlacement="primary"
                   saveAsPlacement="primary"
                   fullscreenPlacement="secondary"
+                  fullscreenStyle="black"
                   printPlacement="secondary"
                   showFormatInPrimary={false}
                   showMinifyInPrimary={false}
@@ -4921,12 +4840,54 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 />
               </div>
             )}
+            {isTransformPage && (
+              <div className="px-2 py-2 border-b bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) {
+                      setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      return;
+                    }
+                    try {
+                      JSON.parse(inputCode);
+                      setShowJMESPathModal(true);
+                    } catch {
+                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className="btn btn-blue-azure"
+                  title="Transform with JMESPath"
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  <span>Transform with JMESPath</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) {
+                      setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      return;
+                    }
+                    try {
+                      JSON.parse(inputCode);
+                      setShowJSONPathModal(true);
+                    } catch {
+                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className="btn btn-blue-azure"
+                  title="Transform with JSONPath"
+                >
+                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <span>Transform with JSONPath</span>
+                </button>
+              </div>
+            )}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
-                {!isParserPage && (<h2 className="text-lg font-semibold">Input</h2>)}
+                {!(isParserPage || isTransformPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${isParserPage ? 'hidden' : ''}`}>
-                  {/* Sample Data (TOON-friendly) – placed to the left of Collapse (TOON page only) */}
+                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage) ? 'hidden' : ''}`}>
+                  {/* Sample Data (TOON-friendly) � placed to the left of Collapse (TOON page only) */}
                   {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
                       <span
@@ -5011,7 +4972,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (XML-friendly) – JSON To XML page */}
+                  {/* Sample Data (XML-friendly) � JSON To XML page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-xml' && (
                     <Tooltip content="Insert sample JSON (XML-friendly)">
                       <span
@@ -5068,7 +5029,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (YAML-friendly) – JSON To YAML page */}
+                  {/* Sample Data (YAML-friendly) � JSON To YAML page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-yaml' && (
                     <Tooltip content="Insert sample JSON (YAML-friendly)">
                       <span
@@ -5139,7 +5100,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (CSV-friendly) – JSON To CSV page */}
+                  {/* Sample Data (CSV-friendly) � JSON To CSV page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-csv' && (
                     <Tooltip content="Insert sample JSON (CSV-friendly)">
                       <span
@@ -5180,7 +5141,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (HTML-friendly) – JSON To HTML page */}
+                  {/* Sample Data (HTML-friendly) � JSON To HTML page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-html' && (
                     <Tooltip content="Insert sample JSON (HTML-friendly)">
                       <span
@@ -5221,7 +5182,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (JavaScript-friendly) – JSON To JavaScript page */}
+                  {/* Sample Data (JavaScript-friendly) � JSON To JavaScript page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-javascript' && (
                     <Tooltip content="Insert sample JSON (JavaScript-friendly)">
                       <span
@@ -5284,7 +5245,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Beautifier-friendly) – JSON Beautifier page */}
+                  {/* Sample Data (Beautifier-friendly) � JSON Beautifier page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-beautifier' && (
                     <Tooltip content="Insert sample JSON (Beautifier-friendly)">
                       <span
@@ -5335,7 +5296,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Transform-friendly) – JSON Transform page */}
+                  {/* Sample Data (Transform-friendly) � JSON Transform page */}
                   {isJsonLanguage && isTransformPage && (
                     <Tooltip content="Insert sample JSON (Transform-friendly)">
                       <span
@@ -5386,7 +5347,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Formatter-friendly) – JSON Formatter page */}
+                  {/* Sample Data (Formatter-friendly) � JSON Formatter page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-formatter' && (
                     <Tooltip content="Insert sample JSON (Formatter-friendly)">
                       <span
@@ -5449,7 +5410,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Minifier-friendly) – JSON Minifier page */}
+                  {/* Sample Data (Minifier-friendly) � JSON Minifier page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-minifier' && (
                     <Tooltip content="Insert sample JSON (Minifier-friendly)">
                       <span
@@ -5506,7 +5467,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   {/* Legacy Parser-specific Upload/Sample removed; replaced by new ribbons */}
 
-                  {/* Sample Data (Editor-friendly) – JSON Editor page */}
+                  {/* Sample Data (Editor-friendly) � JSON Editor page */}
                   {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-editor' && (
                     <Tooltip content="Insert sample JSON (Editor-friendly)">
                       <span
@@ -5557,62 +5518,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Python-friendly) – JSON To Python page */}
-                  {isJsonLanguage && typeof location?.pathname === 'string' && location.pathname === '/json-to-python' && (
-                    <Tooltip content="Insert sample JSON (Python-friendly)">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          const sample = JSON.stringify({
-                            settings: {
-                              debug: true,
-                              retries: 3,
-                              timeoutSeconds: 15,
-                            },
-                            users: [
-                              { id: 1, name: 'Alice', roles: ['admin', 'editor'], active: true },
-                              { id: 2, name: 'Bob', roles: ['viewer'], active: false }
-                            ],
-                            metadata: { region: 'us-east', version: '1.0.0' }
-                          }, null, 2);
-                          setValidationError(null);
-                          setOutputError(null);
-                          setIsStructureAnalysisMode(false);
-                          setInputCode(sample);
-                          addToHistory(sample);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            const sample = JSON.stringify({
-                              settings: {
-                                debug: true,
-                                retries: 3,
-                                timeoutSeconds: 15,
-                              },
-                              users: [
-                                { id: 1, name: 'Alice', roles: ['admin', 'editor'], active: true },
-                                { id: 2, name: 'Bob', roles: ['viewer'], active: false }
-                              ],
-                              metadata: { region: 'us-east', version: '1.0.0' }
-                            }, null, 2);
-                            setValidationError(null);
-                            setOutputError(null);
-                            setIsStructureAnalysisMode(false);
-                            setInputCode(sample);
-                            addToHistory(sample);
-                          }
-                        }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ml-1 hover:bg-cyan-700 dark:hover:bg-cyan-600 cursor-pointer bg-cyan-600 dark:bg-cyan-500`}
-                        aria-label="Insert Sample Data"
-                      >
-                        <i className="fa-brands fa-python text-white text-sm" aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
-                  )}
+                  {/* Sample Data (Python-friendly) – temporarily disabled due to dev parser issue */}
 
-                  {/* Sample Data (Tree-friendly) – placed to the left of Collapse (Tree page only) */}
+                  {/* Sample Data (Tree-friendly) � placed to the left of Collapse (Tree page only) */}
                   {isJsonLanguage && lockViewTo === 'tree' && (
                     <Tooltip content="Insert sample JSON (Tree-friendly)">
                       <span
@@ -5685,7 +5593,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Table-friendly) – placed to the left of Collapse (Table page only) */}
+                  {/* Sample Data (Table-friendly) � placed to the left of Collapse (Table page only) */}
                   {isJsonLanguage && lockViewTo === 'table' && (
                     <Tooltip content="Insert sample JSON (Table-friendly)">
                       <span
@@ -5697,7 +5605,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
                             { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' },
                             { id: 4, name: 'Diego Ruiz', role: 'Data Analyst', department: 'Analytics', salary: 112500, startDate: '2023-01-09', remote: false, location: 'Denver' },
-                            { id: 5, name: 'Eva Müller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
+                            { id: 5, name: 'Eva M�ller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
                           ], null, 2);
                           setValidationError(null);
                           setOutputError(null);
@@ -5714,7 +5622,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                               { id: 2, name: 'Bob Smith', role: 'Designer', department: 'Product', salary: 98000, startDate: '2021-11-02', remote: false, location: 'Austin' },
                               { id: 3, name: 'Cara Lee', role: 'PM', department: 'Growth', salary: 135000, startDate: '2020-07-19', remote: true, location: 'Boston' },
                               { id: 4, name: 'Diego Ruiz', role: 'Data Analyst', department: 'Analytics', salary: 112500, startDate: '2023-01-09', remote: false, location: 'Denver' },
-                              { id: 5, name: 'Eva Müller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
+                              { id: 5, name: 'Eva M�ller', role: 'QA', department: 'Quality', salary: 90500, startDate: '2022-09-26', remote: true, location: 'Remote' }
                             ], null, 2);
                             setValidationError(null);
                             setOutputError(null);
@@ -5732,7 +5640,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Sample Data (Python Pretty) – placed to the left of Collapse (Python page only) */}
+                  {/* Sample Data (Python Pretty) � placed to the left of Collapse (Python page only) */}
                   {isJsonLanguage && lockViewTo === 'text' && textOutputMode === 'python-pretty' && (
                     <Tooltip content="Insert sample JSON (Python script)">
                       <span
@@ -5789,7 +5697,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   )}
 
-                  {/* Collapse/Expand All – hidden on Parser page (handled in ribbons) */}
+                  {/* Collapse/Expand All — hidden on Parser page */}
                   {isJsonLanguage && !isParserPage && (
                     <>
                       <Tooltip content="Collapse all JSON blocks">
@@ -5818,7 +5726,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
 
-                      {/* Sort (Input) – moved to appear after Expand All */
+                      {/* Sort (Input) � moved to appear after Expand All */
                       }
                       <div className="relative inline-flex dropdown-container overflow-visible">
                         <Tooltip content="Sort Input JSON (toggle options)">
@@ -5836,10 +5744,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </Tooltip>
                         {showSortDropdown && (
                           <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
-                            <button onClick={() => { handleSort('asc','keys'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
-                            <button onClick={() => { handleSort('desc','keys'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
-                            <button onClick={() => { handleSort('asc','values'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
-                            <button onClick={() => { handleSort('desc','values'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                            <button onClick={() => { handleSort('asc','keys'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A ? Z)</button>
+                            <button onClick={() => { handleSort('desc','keys'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z ? A)</button>
+                            <button onClick={() => { handleSort('asc','values'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A ? Z)</button>
+                            <button onClick={() => { handleSort('desc','values'); setShowSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z ? A)</button>
                           </div>
                         )}
                       </div>
@@ -5856,7 +5764,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
                                 aria-label="Save"
                               >
-                                💾
+                                ??
                               </button>
                             </Tooltip>
                             <Tooltip content="Download to file">
@@ -5865,7 +5773,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
                                 aria-label="Download"
                               >
-                                📥
+                                ??
                               </button>
                             </Tooltip>
                             <Tooltip content="Copy to clipboard">
@@ -5874,7 +5782,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
                                 aria-label="Copy"
                               >
-                                📋
+                                ??
                               </button>
                             </Tooltip>
                             <Tooltip content="Print">
@@ -5883,7 +5791,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 className={`${isPurpleTheme ? 'p-1 rounded-md transition-all text-base cursor-pointer border border-purple-500 bg-white text-purple-800 hover:bg-purple-100 hover:text-purple-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-600' : 'p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-all text-base cursor-pointer border border-black/30 dark:border-white/30'}`}
                                 aria-label="Print"
                               >
-                                🖨️
+                                ???
                               </button>
                             </Tooltip>
                           </>
@@ -5896,7 +5804,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
                   
 
-                  {/* GROUP 4: Undo and Redo (INPUT JSON) – hidden on Parser page (handled in ribbons) */}
+                  {/* GROUP 4: Undo and Redo (INPUT JSON) � hidden on Parser page (handled in ribbons) */}
                   {!isParserPage && (
                     <>
                       <Tooltip content="Undo last change">
@@ -5927,7 +5835,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </>
                   )}
 
-                  {/* GROUP 4.5: Search (JSON only) – hidden on Parser page (handled in ribbons) */}
+                  {/* GROUP 4.5: Search (JSON only) � hidden on Parser page (handled in ribbons) */}
                   {isJsonLanguage && !isParserPage && (
                     <Tooltip content="Search in Input JSON">
                         <span
@@ -5956,7 +5864,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           className="p-1 rounded-md transition-all text-base cursor-pointer border border-black/30 dark:border-white/30 icon-hover-bg text-slate-700 dark:text-slate-200"
                           aria-label="Compact"
                         >
-                          📦
+                          ??
                         </button>
                       </Tooltip>
                       <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
@@ -5973,7 +5881,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && !isParserPage && !(validationError && errorLines.length > 0) && (
+                  {isJsonLanguage && !(isParserPage || isTransformPage) && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                         <span
                           role="button"
@@ -5987,14 +5895,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </span>
                     </Tooltip>
                   )}
-                  {!isFullscreen && !isParserPage && (
+                  {!isFullscreen && !(isParserPage || isTransformPage) && (
                     <Tooltip content="Enter fullscreen">
                         <span
                           role="button"
                           tabIndex={0}
                           onClick={inputCode.trim() ? handleToggleFullscreen : undefined}
                           onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && inputCode.trim()) { e.preventDefault(); handleToggleFullscreen(); } }}
-                          className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
+                          className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${isBeautifierPage ? (!inputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice cursor-pointer') : (!inputCode.trim() ? 'opacity-40 cursor-not-allowed bg-slate-300 dark:bg-slate-600' : 'hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer bg-slate-200 dark:bg-slate-900')}`}
                           aria-label="Enter Fullscreen"
                         >
                           <i className="fa-solid fa-expand text-base" aria-hidden="true" style={{ color: '#333' }}></i>
@@ -6014,7 +5922,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-blue-600 dark:text-blue-400"
                   aria-label="Upload File"
                 >
-                  📤
+                  ??
                 </button>
               </Tooltip>
               <Tooltip content="Clear input">
@@ -6023,7 +5931,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   className="w-8 h-8 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm shadow-sm border border-slate-200 dark:border-slate-600 transition-all cursor-pointer flex items-center justify-center font-bold text-red-500"
                   aria-label="Clear Input"
                 >
-                  🗑️
+                  ???
                 </button>
               </Tooltip>
             </div>
@@ -6087,7 +5995,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
             {/* Dedicated left rail column and reserved content area */}
             <div className={`${isParserPage ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
-              {showLeftInputActions && !isParserPage && (
+                {showLeftInputActions && !(isParserPage || isTransformPage) && (
                   <div className={`left-rail flex-shrink-0 w-[42px] flex flex-col gap-1.5 pt-2 pb-2 items-center bg-transparent dark:bg-transparent z-20 border-r border-slate-200 dark:border-slate-600 mr-2 transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                     {isBeautifierPage ? (
                       <>
@@ -6278,12 +6186,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
 
                 <div className="relative flex-grow min-h-0">
+                  {/* Rich placeholder overlay matching Compare page (text + icons) */}
+                  {(!inputCode || !inputCode.trim()) && activeLanguage === 'json' && (
+                    <div className="absolute top-8 left-3 z-10 cm-rich-placeholder pointer-events-none select-none text-sm flex items-center gap-2 opacity-70">
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">Paste or upload JSON code</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-600 dark:text-gray-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+                      </svg>
+                      <span className="mx-1 text-indigo-600 dark:text-indigo-400 font-bold">or</span>
+                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">try sample JSON</span>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-600 dark:text-gray-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                      </svg>
+                    </div>
+                  )}
                   <CodeEditor
                     value={inputCode}
                     onChange={handleInputChange}
                     language={activeLanguage}
                     placeholder={activeLanguage === 'json' 
-                      ? 'Paste or Upload JSON Code or try Sample JSON...'
+                      ? '' // Disable editor's built-in placeholder; use rich overlay instead
                       : `Enter your ${activeLanguage.toUpperCase()} code here...`}
                     errorLines={errorSource === 'input' && activeLanguage === 'json' ? errorLines : undefined}
                     lineStyleMap={inputLineStyleMap}
@@ -6322,18 +6244,34 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${isParserPage ? 'bg-slate-800 rounded-lg border border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Parser Output primary/secondary ribbons above content to mirror Input placement */}
-            {isParserPage && !isTransformPage && (
-              <div className="p-2 border-b border-slate-700 bg-slate-900/40 w-full">
+            {(isParserPage || isTransformPage) && (
+              <div className="p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full">
                 <JsonToolbar
                   onFormat={(indent) => handleFormat(indent)}
                   onMinify={() => handleMinify()}
                   onSort={(dir, by) => handleSortOutput(dir, by)}
                   onUndo={handleOutputUndo}
                   onRedo={handleOutputRedo}
-                  onCollapseAll={handleCollapseAllFields}
-                  onExpandAll={handleExpandAllFields}
+                  onCollapseAll={() => {
+                    if (!outputCode || !outputCode.trim()) return;
+                    if (viewFormat === 'code') {
+                      try { outputViewerApiRef.current?.foldAll?.(); } catch {}
+                    } else {
+                      setCollapseAllTrigger(true);
+                      setTimeout(() => setCollapseAllTrigger(false), 120);
+                    }
+                  }}
+                  onExpandAll={() => {
+                    if (!outputCode || !outputCode.trim()) return;
+                    if (viewFormat === 'code') {
+                      try { outputViewerApiRef.current?.unfoldAll?.(); } catch {}
+                    } else {
+                      setExpandAllTrigger(true);
+                      setTimeout(() => setExpandAllTrigger(false), 120);
+                    }
+                  }}
                   onUploadJson={undefined}
                   onSearch={handleToggleOutputSearch}
                   onSave={() => handleDownload()}
@@ -6357,6 +6295,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   variant="compact"
                   formatLabel="Format"
                   validateInPrimaryRibbon={true}
+                  showSeparatorAfterValidatePrimary={false}
                   sampleVariant="icon"
                   historyPlacement="secondary"
                   sortPlacement="secondary-icon"
@@ -6366,6 +6305,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   savePlacement="primary"
                   saveAsPlacement="primary"
                   fullscreenPlacement="secondary"
+                  fullscreenStyle="black"
                   showFormatInPrimary={false}
                   showMinifyInPrimary={false}
                   theme="dark"
@@ -6374,7 +6314,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   enableSearch={viewFormat === 'code'}
                   enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0)}
                   enableSort={!!outputCode && !!outputCode.trim()}
-                  enableValidate={activeLanguage === 'json' && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && !isConversionOutput}
+                  enableValidate={!!outputCode && !!outputCode.trim() && !isStructureAnalysisMode}
                 />
               </div>
             )}
@@ -6382,12 +6322,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {!isParserPage && (
+                {!isParserPage && !isTransformPage && (
                   <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (outputTitle ?? 'Output')}</h2>
                 )}
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
-                {!isConversionOutput && !isParserPage && (
+                {!isConversionOutput && !isParserPage && !isTransformPage && (
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
                   {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
@@ -6435,10 +6375,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             </Tooltip>
                             {showOutputSortDropdown && (
                               <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
-                                <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A → Z)</button>
-                                <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z → A)</button>
-                                <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A → Z)</button>
-                                <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z → A)</button>
+                                <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A ? Z)</button>
+                                <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z ? A)</button>
+                                <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A ? Z)</button>
+                                <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z ? A)</button>
                               </div>
                             )}
                           </div>
@@ -6596,7 +6536,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <div className="absolute right-0 mt-2 z-[9999] w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg p-3 space-y-2 max-h-[80vh] overflow-y-auto">
                         <div className="flex items-center justify-between">
                           <div className="font-medium text-sm">TOON Settings</div>
-                          <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">✕</button>
+                          <button onClick={() => setShowToonSettings(false)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-200" aria-label="Close settings">?</button>
                         </div>
                         <label className="block text-xs text-slate-600 dark:text-slate-300">Flatten depth</label>
                         <input
@@ -6706,7 +6646,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
                 {/* Output Fullscreen toggle - moved to right-aligned group */}
                 {/* Parser-specific controls: Edit Output (unlock) and Copy Output to Input */}
-                {!isParserPage && (
+                {!isParserPage && !isTransformPage && (
                   <>
                     <Tooltip content={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}>
                       <span
@@ -6743,14 +6683,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   </>
                 )}
-                {!isParserPage && (
+                {!isParserPage && !isTransformPage && (
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
                     role="button"
                     tabIndex={0}
                     onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
                     onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${isBeautifierPage ? (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-400 dark:bg-slate-600' : 'hover:bg-slate-800 dark:hover:bg-slate-700 cursor-pointer bg-black dark:bg-slate-900')}`}
+                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${isBeautifierPage ? (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-300 dark:bg-slate-600' : 'hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer bg-slate-200 dark:bg-slate-900')}`}
                     aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                     title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
                   >
@@ -6777,7 +6717,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Select View Format"
                     >
                       <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
-                      <span className="text-xs">▼</span>
+                      <span className="text-xs">?</span>
                     </button>
                     {showViewDropdown && (
                       <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
@@ -6792,13 +6732,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           
                           // Define emoji and colors for each format
                           const formatConfig = {
-                            code: { emoji: '💻', color: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30' },
-                            form: { emoji: '📄', color: 'text-green-600 dark:text-green-400', gradient: 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30' },
-                            text: { emoji: '📝', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30' },
-                            tree: { emoji: '🌳', color: 'text-teal-600 dark:text-teal-400', gradient: 'from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30' },
-                            table: { emoji: '▦', color: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30' },
-                            view: { emoji: '👁️', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' },
-                            toon: { emoji: '🎛️', color: 'text-pink-600 dark:text-pink-400', gradient: 'from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30' }
+                            code: { emoji: '??', color: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30' },
+                            form: { emoji: '??', color: 'text-green-600 dark:text-green-400', gradient: 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30' },
+                            text: { emoji: '??', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30' },
+                            tree: { emoji: '??', color: 'text-teal-600 dark:text-teal-400', gradient: 'from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30' },
+                            table: { emoji: '?', color: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30' },
+                            view: { emoji: '???', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' },
+                            toon: { emoji: '???', color: 'text-pink-600 dark:text-pink-400', gradient: 'from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30' }
                           };
                           
                           const config = formatConfig[format];
@@ -6871,7 +6811,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Download"
                       
                     >
-                      📥
+                      ??
                     </button>
                   </Tooltip>
                   <Tooltip content="Clear output">
@@ -6881,13 +6821,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       aria-label="Clear Output"
                       
                     >
-                      🗑️
+                      ???
                     </button>
                   </Tooltip>
                 </div>
               )}
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
-              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage && (
+              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !(isParserPage || isTransformPage) && (
                 <div className={`right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                   {isBeautifierPage ? (
                     <>
@@ -7111,7 +7051,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                             className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                             title="Use AI to fix complex errors including bracket mismatches and structural issues"
                                           >
-                                            <span>🤖</span>
+                                            <span>??</span>
                                             Fix with AI
                                           </button>
                                           <button
@@ -7143,7 +7083,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                         className="ml-auto px-2 py-0.5 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
                                         aria-label="Clear highlight"
                                       >
-                                        ✖ Clear highlight
+                                        ? Clear highlight
                                       </button>
                                     )}
                                   </div>
@@ -7190,7 +7130,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                                 className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-green-200 dark:border-green-700 text-green-700 dark:text-green-300 text-xs hover:bg-green-50 dark:hover:bg-green-900/20"
                                                 aria-label={`Go to line ${error.line}`}
                                               >
-                                                <span>🎯</span>
+                                                <span>??</span>
                                                 <span>Go</span>
                                               </button>
                                             )}
@@ -7236,7 +7176,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                                 className="ml-auto shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700 text-red-700 dark:text-red-300 text-xs hover:bg-red-50 dark:hover:bg-red-900/20"
                                                 aria-label={`Go to line ${error.line}`}
                                               >
-                                                <span>🎯</span>
+                                                <span>??</span>
                                                 <span>Go</span>
                                               </button>
                                             )}
@@ -7274,7 +7214,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               }
                                             }}
                                           >
-                                            <span className="min-w-0">• Line {line}: // {preview}{m[0].length > 80 ? '…' : ''}</span>
+                                            <span className="min-w-0">� Line {line}: // {preview}{m[0].length > 80 ? '�' : ''}</span>
                                             {errorSource !== 'output' && (
                                               <button
                                                 type="button"
@@ -7282,7 +7222,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                                 className={`shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 text-xs ${isBeautifierPage ? 'border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'}`}
                                                 aria-label={`Go to line ${line}`}
                                               >
-                                                <span>🎯</span>
+                                                <span>??</span>
                                                 <span>Go</span>
                                               </button>
                                             )}
@@ -7310,7 +7250,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                               }
                                             }}
                                           >
-                                            <span className="min-w-0">• Line {line}: /* {preview}{m[0].length > 80 ? '…' : ''}</span>
+                                            <span className="min-w-0">� Line {line}: /* {preview}{m[0].length > 80 ? '�' : ''}</span>
                                             {errorSource !== 'output' && (
                                               <button
                                                 type="button"
@@ -7318,7 +7258,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                                 className={`shrink-0 inline-flex items-center gap-1 h-6 px-2 rounded-md bg-white dark:bg-slate-800 text-xs ${isBeautifierPage ? 'border border-blue-200 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20' : 'border border-purple-200 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20'}`}
                                                 aria-label={`Go to line ${line}`}
                                               >
-                                                <span>🎯</span>
+                                                <span>??</span>
                                                 <span>Go</span>
                                               </button>
                                             )}
@@ -7438,6 +7378,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                                 readOnly={isTransformPage || outputLocked}
                                 expandAll={expandAllTrigger}
                                 collapseAll={collapseAllTrigger}
+                                enableFolding={true}
+                                editorApiRef={outputViewerApiRef}
                                 highlightLine={outputSearchResults.length > 0 && currentOutputSearchIndex >= 0 ? outputSearchResults[currentOutputSearchIndex].line : undefined}
                                 highlightTrigger={outputHighlightTrigger}
                               />
@@ -7479,7 +7421,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* Modal Header */}
               <div className="flex justify-between items-center p-5 border-b border-slate-200 dark:border-slate-700 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-slate-800 dark:to-slate-800 rounded-t-xl">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">📊</span>
+                  <span className="text-2xl">??</span>
                   <h2 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                     JSON Graph View
                   </h2>
@@ -7492,7 +7434,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-700 flex items-center gap-2"
                     title="Expand all nodes"
                   >
-                    <span>➕</span>
+                    <span>?</span>
                     <span className="hidden sm:inline">Expand All</span>
                   </button>
                   
@@ -7501,7 +7443,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="px-4 py-2 text-sm font-medium text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-700 flex items-center gap-2"
                     title="Collapse all nodes"
                   >
-                    <span>➖</span>
+                    <span>?</span>
                     <span className="hidden sm:inline">Collapse All</span>
                   </button>
                   
@@ -7510,7 +7452,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className="px-4 py-2 text-sm font-medium text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-green-200 dark:border-green-700 flex items-center gap-2"
                     title="Sort JSON keys alphabetically"
                   >
-                    <span>🔼</span>
+                    <span>??</span>
                     <span className="hidden sm:inline">Sort</span>
                   </button>
                   
@@ -7522,7 +7464,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 border ${isBeautifierPage ? 'text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 border-blue-200 dark:border-blue-700' : 'text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 border-purple-200 dark:border-purple-700'}`}
                     title="Reset view and center graph"
                   >
-                    <span>🎯</span>
+                    <span>??</span>
                     <span className="hidden sm:inline">Center</span>
                   </button>
                   
@@ -7554,7 +7496,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Color Legend - Compact Bottom Right */}
                 <div className="absolute bottom-2 right-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 p-3 max-w-[200px]" style={{ zIndex: 10, pointerEvents: 'auto' }}>
                   <h3 className="text-xs font-semibold text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-1">
-                    <span className="text-sm">🎨</span>
+                    <span className="text-sm">??</span>
                     <span>Legend</span>
                   </h3>
                   
