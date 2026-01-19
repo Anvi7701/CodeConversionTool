@@ -3797,7 +3797,50 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* New ribbon: Mode and Format selector (above main ribbon) - hidden on Parser page (header provides these) */}
         {isJsonLanguage && !isParserPage && (
-          <div className="flex items-center justify-end gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
+          <div className="flex items-center justify-between gap-4 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
+            {/* Left: Transform actions for Transform page */}
+            {isTransformPage && activeLanguage === 'json' && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) {
+                      setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      return;
+                    }
+                    try {
+                      JSON.parse(inputCode);
+                      setShowJMESPathModal(true);
+                    } catch {
+                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className="btn btn-blue-azure"
+                  title="Transform with JMESPath"
+                >
+                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  <span>Transform with JMESPath</span>
+                </button>
+                <button
+                  onClick={() => {
+                    if (!inputCode.trim()) {
+                      setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      return;
+                    }
+                    try {
+                      JSON.parse(inputCode);
+                      setShowJSONPathModal(true);
+                    } catch {
+                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                    }
+                  }}
+                  className="btn btn-blue-azure"
+                  title="Transform with JSONPath"
+                >
+                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <span>Transform with JSONPath</span>
+                </button>
+              </div>
+            )}
             {/* Mode selector - Fast/Smart(AI) */}
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Mode:</span>
@@ -4840,48 +4883,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 />
               </div>
             )}
-            {isTransformPage && (
-              <div className="px-2 py-2 border-b bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) {
-                      setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined });
-                      return;
-                    }
-                    try {
-                      JSON.parse(inputCode);
-                      setShowJMESPathModal(true);
-                    } catch {
-                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className="btn btn-blue-azure"
-                  title="Transform with JMESPath"
-                >
-                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                  <span>Transform with JMESPath</span>
-                </button>
-                <button
-                  onClick={() => {
-                    if (!inputCode.trim()) {
-                      setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined });
-                      return;
-                    }
-                    try {
-                      JSON.parse(inputCode);
-                      setShowJSONPathModal(true);
-                    } catch {
-                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined });
-                    }
-                  }}
-                  className="btn btn-blue-azure"
-                  title="Transform with JSONPath"
-                >
-                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                  <span>Transform with JSONPath</span>
-                </button>
-              </div>
-            )}
+            {false && isTransformPage}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
                 {!(isParserPage || isTransformPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
