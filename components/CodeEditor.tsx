@@ -29,9 +29,10 @@ interface CodeEditorProps {
   // Optional: override gutter background colors (light/dark) per page theme
   gutterColorLight?: string; // e.g., 'rgba(243, 232, 255, 0.6)' (purple-100)
   gutterColorDark?: string;  // e.g., 'rgba(76, 29, 149, 0.35)' (purple-900 tint)
+  disableActiveLineHighlight?: boolean; // Disable active line background highlighting
 }
 
-export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap: _lineStyleMap, highlightLine, highlightStyle: _highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail: _renderLeftRail, editorApiRef, showLineNumbers: _showLineNumbers = true, gutterColorLight, gutterColorDark }) => {
+export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, language, onPaste, placeholder, errorLine, errorLines, lineStyleMap: _lineStyleMap, highlightLine, highlightStyle: _highlightStyle, highlightPulse, disableAutoScroll, renderLeftRail: _renderLeftRail, editorApiRef, showLineNumbers: _showLineNumbers = true, gutterColorLight, gutterColorDark, disableActiveLineHighlight = false }) => {
   const viewRef = useRef<EditorView | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -179,7 +180,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({ value, onChange, languag
           lineNumbers: true,
             highlightActiveLineGutter: false,
             foldGutter: false,
-            highlightActiveLine: true,
+            highlightActiveLine: !disableActiveLineHighlight,
             dropCursor: true,
             allowMultipleSelections: true,
             indentOnInput: true

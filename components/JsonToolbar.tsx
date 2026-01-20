@@ -59,6 +59,7 @@ interface JsonToolbarProps {
   inputEmpty?: boolean; // state-aware content emptiness to disable relevant actions
   showSeparatorAfterValidatePrimary?: boolean; // control separator after Validate in primary ribbon
   fullscreenStyle?: 'default' | 'black'; // Customize fullscreen button background
+  outputLabel?: string; // Label to display before Search icon (e.g., "JSONPath Output")
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -118,6 +119,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   inputEmpty = false,
   showSeparatorAfterValidatePrimary = true,
   fullscreenStyle = 'default',
+  outputLabel,
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -281,6 +283,15 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
         {hasOutputActions && <div className="toolbar-separator" />}
+
+        {/* Output Label (e.g., JSONPath Output, JMESPath Output) */}
+        {outputLabel && (
+          <div className="toolbar-group" style={{ marginRight: '8px' }}>
+            <span style={{ fontSize: '0.875rem', color: 'white', fontWeight: '500' }}>
+              {outputLabel}
+            </span>
+          </div>
+        )}
 
         {/* Search group: Search only */}
         {onSearch && (
@@ -631,7 +642,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <button
                 className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={onFullscreen}
-                disabled={disabled}
+                disabled={disabled || isEmpty}
                 aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
                 title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
               >

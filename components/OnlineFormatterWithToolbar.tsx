@@ -136,6 +136,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
   // Conversion mode state (track if output is from XML/CSV/YAML conversion)
   const [isConversionOutput, setIsConversionOutput] = useState<boolean>(false);
+  
+  // Transform page state: track if output contains real transform results (not guidance)
+  const [hasTransformResult, setHasTransformResult] = useState<boolean>(false);
+  const [transformType, setTransformType] = useState<'jmespath' | 'jsonpath' | null>(null);
 
   // AI Error state
   const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
@@ -600,6 +604,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               } catch {
                 // ignore errors; JSON invalid case handled elsewhere
               }
+            } else if (isTransformPage) {
+              // On Transform page, show guidance message instead of mirroring input
+              const guidance = [
+                'Ready to transform your JSON.',
+                '',
+                'On the top ribbon (left side), choose:',
+                '- Transform with JMESPath: run queries to reshape data',
+                '- Transform with JSONPath: select and filter nodes',
+                '',
+                'Examples:',
+                'JMESPath: [?price > 100]',
+                'JSONPath: $.store.book[*].author',
+                '',
+                'Tip: Ensure your input is valid JSON. Your transformation result will appear here.'
+              ].join('\n');
+              setOutputCode(guidance);
+              setHasTransformResult(false); // Mark as guidance, not real result
+              setTransformType(null); // Clear transform type when showing guidance
+              setIsStructureAnalysisMode(false);
+              setViewFormat('code');
             } else if (!isDedicatedConversionPage && !isConversionOutput) {
               const formatted = JSON.stringify(res.value, null, 2);
               setOutputCode(formatted);
@@ -3759,16 +3783,35 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   
   return (
     <>
-      <SEO
-        title="Online Code Formatter | AI JSON Tools"
-        description="Format and beautify code instantly for JSON, XML, HTML, CSS, JavaScript, TypeScript, YAML, Java, and more using AI-powered tools. Validate and auto-correct syntax easily."
-        keywords="online code formatter, AI code beautifier, format JSON, format XML, format JavaScript"
-        canonical="https://yourdomain.com/online-formatter"
-        ogImage="https://yourdomain.com/images/online-formatter.jpg"
-        ogUrl="https://yourdomain.com/online-formatter"
-      />
+      {isTransformPage ? (
+        <SEO
+          title="JSON Transformer Online | Convert, Query & Format JSON with JSONPath & JMESPath"
+          description="Transform, query, and format JSON instantly using our fast online JSON Transformer. Apply JSONPath and JMESPath queries, restructure data, and generate clean JSON output—ideal for developers, testers, and API integration workflows."
+          keywords="json transformer online, jsonpath query tool, jmespath transformer, json restructure online, api json query, json filter tool, json manipulation online"
+        />
+      ) : (
+        <SEO
+          title="Online Code Formatter | AI JSON Tools"
+          description="Format and beautify code instantly for JSON, XML, HTML, CSS, JavaScript, TypeScript, YAML, Java, and more using AI-powered tools. Validate and auto-correct syntax easily."
+          keywords="online code formatter, AI code beautifier, format JSON, format XML, format JavaScript"
+          canonical="https://yourdomain.com/online-formatter"
+          ogImage="https://yourdomain.com/images/online-formatter.jpg"
+          ogUrl="https://yourdomain.com/online-formatter"
+        />
+      )}
       
       <div className="w-full flex flex-col gap-6">
+        {/* Hero section for Transform page */}
+        {isTransformPage && (
+          <section className="bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-100 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <h1 className="text-2xl font-bold">Online JSON Transformer – Convert, Query & Format JSON with JSONPath & JMESPath</h1>
+            <h2 className="text-lg font-semibold mt-1">Fast & Smart JSON Transformation Using JSONPath and JMESPath Queries</h2>
+            <p className="text-sm mt-2">
+              Transform your JSON quickly with our online JSON Transformer. Apply JSONPath or JMESPath queries to filter, restructure, and analyze JSON data in real time. Whether you're working with APIs, testing responses, or handling nested datasets, the tool offers Fast Mode for quick results and Smart AI Mode for advanced transformations. Just paste or upload your JSON to generate clean, accurate output for debugging and development.
+            </p>
+          </section>
+        )}
+
         {/* Language selector - removed from here, moved to middle toolbar */}
 
         {/* JSON Toolbar - Hidden, functionality moved to smaller buttons */}
@@ -3804,40 +3847,40 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) {
-                      setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      alert('Please paste or upload JSON data to transform.');
                       return;
                     }
                     try {
                       JSON.parse(inputCode);
                       setShowJMESPathModal(true);
                     } catch {
-                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                      alert('Invalid JSON. Please fix syntax errors before transforming.');
                     }
                   }}
-                  className="btn btn-blue-azure"
+                  className="main-button"
                   title="Transform with JMESPath"
                 >
-                  <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
-                  <span>Transform with JMESPath</span>
+                  <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                  <span className="label">Transform with JMESPath</span>
                 </button>
                 <button
                   onClick={() => {
                     if (!inputCode.trim()) {
-                      setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined });
+                      alert('Please paste or upload JSON data to transform.');
                       return;
                     }
                     try {
                       JSON.parse(inputCode);
                       setShowJSONPathModal(true);
                     } catch {
-                      setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined });
+                      alert('Invalid JSON. Please fix syntax errors before transforming.');
                     }
                   }}
-                  className="btn btn-blue-azure"
+                  className="main-button"
                   title="Transform with JSONPath"
                 >
-                  <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                  <span>Transform with JSONPath</span>
+                  <i className="icon fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                  <span className="label">Transform with JSONPath</span>
                 </button>
               </div>
             )}
@@ -4434,11 +4477,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               {/* On Transform: Structure Analysis + Open Transform + JSONPath */}
               {isTransformPage && !hideStructureAnalysisAndTransform && activeLanguage === 'json' && (
                 <>
-                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn btn-blue-azure`} title="Transform with JMESPath">
+                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste valid JSON to open Transform.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJMESPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before opening Transform.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className="main-button" title="Transform with JMESPath">
                     <i className="fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
                     <span>Transform with JMESPath</span>
                   </button>
-                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className={`btn btn-blue-azure`} title="Transform with JSONPath">
+                  <button onClick={() => { if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste or upload JSON before using JSONPath.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; } try { JSON.parse(inputCode); setShowJSONPathModal(true); } catch { setValidationError({ isValid: false, reason: 'Invalid JSON. Please fix syntax errors before using JSONPath.', isFixableSyntaxError: true, suggestedLanguage: undefined }); } }} className="main-button" title="Transform with JSONPath">
                     <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
                     <span>Transform with JSONPath</span>
                   </button>
@@ -4815,10 +4858,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
-          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
-            {/* Parser: primary + secondary toolbars like Compare, inside same dark container */}
-            {(isParserPage || isTransformPage) && (
+        <div className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+            {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
+            {(isParserPage || isTransformPage || isMinifierPage) && (
               <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
                 <JsonToolbar
                   onFormat={handleFormat}
@@ -4886,9 +4929,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {false && isTransformPage}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
-                {!(isParserPage || isTransformPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
+                {!(isParserPage || isTransformPage || isMinifierPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage) ? 'hidden' : ''}`}>
+                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage || isMinifierPage) ? 'hidden' : ''}`}>
                   {/* Sample Data (TOON-friendly) � placed to the left of Collapse (TOON page only) */}
                   {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
@@ -5883,7 +5926,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && !(isParserPage || isTransformPage) && !(validationError && errorLines.length > 0) && (
+                  {isJsonLanguage && !(isParserPage || isTransformPage || isMinifierPage) && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                         <span
                           role="button"
@@ -5897,7 +5940,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </span>
                     </Tooltip>
                   )}
-                  {!isFullscreen && !(isParserPage || isTransformPage) && (
+                  {!isFullscreen && !(isParserPage || isTransformPage || isMinifierPage) && (
                     <Tooltip content="Enter fullscreen">
                         <span
                           role="button"
@@ -5996,8 +6039,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
 
             {/* Dedicated left rail column and reserved content area */}
-            <div className={`${isParserPage ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
-                {showLeftInputActions && !(isParserPage || isTransformPage) && (
+            <div className={`${(isParserPage || isTransformPage || isMinifierPage) ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
+                {showLeftInputActions && !(isParserPage || isTransformPage || isMinifierPage) && (
                   <div className={`left-rail flex-shrink-0 w-[42px] flex flex-col gap-1.5 pt-2 pb-2 items-center bg-transparent dark:bg-transparent z-20 border-r border-slate-200 dark:border-slate-600 mr-2 transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                     {isBeautifierPage ? (
                       <>
@@ -6224,6 +6267,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   // Apply purple gutter only when purple theme is active on JSON Beautifier
                   gutterColorLight={isPurpleTheme ? 'rgba(243, 232, 255, 0.6)' : undefined}
                   gutterColorDark={isPurpleTheme ? 'rgba(76, 29, 149, 0.35)' : undefined}
+                  disableActiveLineHighlight={isTransformPage || isParserPage || isMinifierPage}
                   />
                 </div>
               </div>
@@ -6246,9 +6290,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
-            {/* Parser Output primary/secondary ribbons above content to mirror Input placement */}
-            {(isParserPage || isTransformPage) && (
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+            {/* Parser/Transform/Minifier Output primary/secondary ribbons above content to mirror Input placement */}
+            {(isParserPage || isTransformPage || isMinifierPage) && (
               <div className="p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full">
                 <JsonToolbar
                   onFormat={(indent) => handleFormat(indent)}
@@ -6284,9 +6328,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onClear={handleClearOutput}
                   onCopy={handleCopyOutput}
                   onFullscreen={() => handleToggleOutputFullscreen()}
-                  onToggleEditLock={() => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); }}
+                  onToggleEditLock={!isTransformPage ? () => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); } : undefined}
                   isLocked={!!outputLocked}
-                  onCopyOutputToInput={() => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); }}
+                  onCopyOutputToInput={!isTransformPage ? () => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); } : undefined}
                   canUndo={canUndoOutput}
                   canRedo={canRedoOutput}
                   hasErrors={!!(validationError || outputError || aiError)}
@@ -6312,11 +6356,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   showMinifyInPrimary={false}
                   theme="dark"
                   printPlacement="secondary"
-                  inputEmpty={!outputCode || !outputCode.trim()}
-                  enableSearch={viewFormat === 'code'}
-                  enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0)}
-                  enableSort={!!outputCode && !!outputCode.trim()}
-                  enableValidate={!!outputCode && !!outputCode.trim() && !isStructureAnalysisMode}
+                  inputEmpty={!outputCode || !outputCode.trim() || (isTransformPage && !hasTransformResult)}
+                  enableSearch={viewFormat === 'code' && (!isTransformPage || hasTransformResult)}
+                  enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (!isTransformPage || hasTransformResult)}
+                  enableSort={!!outputCode && !!outputCode.trim() && (!isTransformPage || hasTransformResult)}
+                  enableValidate={!!outputCode && !!outputCode.trim() && !isStructureAnalysisMode && (!isTransformPage || hasTransformResult)}
+                  outputLabel={isTransformPage && transformType ? (transformType === 'jmespath' ? 'JMESPath Output' : 'JSONPath Output') : undefined}
                 />
               </div>
             )}
@@ -6324,12 +6369,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {!isParserPage && !isTransformPage && (
+                {!isParserPage && !isTransformPage && !isMinifierPage && (
                   <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (outputTitle ?? 'Output')}</h2>
                 )}
                 {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
                 {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
-                {!isConversionOutput && !isParserPage && !isTransformPage && (
+                {!isConversionOutput && !isParserPage && !isTransformPage && !isMinifierPage && (
                 <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
                   {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
                     <>
@@ -6648,7 +6693,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
                 {/* Output Fullscreen toggle - moved to right-aligned group */}
                 {/* Parser-specific controls: Edit Output (unlock) and Copy Output to Input */}
-                {!isParserPage && !isTransformPage && (
+                {!isParserPage && !isTransformPage && !isMinifierPage && (
                   <>
                     <Tooltip content={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}>
                       <span
@@ -6685,7 +6730,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </Tooltip>
                   </>
                 )}
-                {!isParserPage && !isTransformPage && (
+                {!isParserPage && !isTransformPage && !isMinifierPage && (
                 <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
                   <span
                     role="button"
@@ -6702,7 +6747,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 )}
                 
                 {/* View Format Dropdown - disabled on parser and transform pages */}
-                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && (
+                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && !isMinifierPage && (
                   <div className="relative dropdown-container">
                     <button
                       onClick={() => {
@@ -6829,7 +6874,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 </div>
               )}
               {/* Right-side rail for Output (visible for all views when no errors/special states) */}
-              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !(isParserPage || isTransformPage) && (
+              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !(isParserPage || isTransformPage || isMinifierPage) && (
                 <div className={`right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                   {isBeautifierPage ? (
                     <>
@@ -7315,7 +7360,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       <div className="flex-1 min-h-0 relative">
                         {/* Output Search Panel */}
                         {showOutputSearchPanel && viewFormat === 'code' && (
-                          <div className={`flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-700 ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage) ? 'mr-[42px]' : ''}`}>
+                          <div className={`flex items-center gap-2 px-3 py-2 bg-purple-50 dark:bg-purple-900/30 border-b border-purple-200 dark:border-purple-700 ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage && !isTransformPage && !isMinifierPage) ? 'mr-[42px]' : ''}`}>
                             <input
                               type="text"
                               value={outputSearchQuery}
@@ -7368,7 +7413,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           </div>
                         )}
                         
-                        <div className={`relative h-full ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage) ? 'mr-[42px]' : ''}`}>
+                        <div className={`relative h-full ${(!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !isParserPage && !isTransformPage && !isMinifierPage) ? 'mr-[42px]' : ''}`}>
                           {/* Render different views based on viewFormat for JSON */}
                           {activeLanguage === 'json' && viewFormat !== 'code'
                             ? renderStructuredOutputView()
@@ -7540,6 +7585,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             inputJson={inputCode}
             onApply={(result) => {
               setOutputCode(result);
+              setHasTransformResult(true); // Mark as real transform result
+              setTransformType('jmespath'); // Track that JMESPath was used
               setViewFormat('code'); // Switch to Code view to show result
               setValidationError(null); // Clear any validation errors
               setOutputError(null); // Clear any output errors
@@ -7555,6 +7602,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             inputJson={inputCode}
             onApply={(resultText) => {
               setOutputCode(resultText);
+              setHasTransformResult(true); // Mark as real transform result
+              setTransformType('jsonpath'); // Track that JSONPath was used
               setViewFormat('code');
               setValidationError(null);
               setOutputError(null);
