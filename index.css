@@ -148,7 +148,7 @@ button.main-button:hover,
 .parser-ribbon .main-button .label,
 .parser-ribbon .main-button i,
 .parser-ribbon .main-button span {
-  color: white !important;
+  color: #000000 !important;
 }
 
 /* Navigation/secondary action buttons for JSON Parser page */
