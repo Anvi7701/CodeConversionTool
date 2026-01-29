@@ -124,61 +124,6 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
   const [toonNullToken, setToonNullToken] = useState<string>('-');
   const [toonPath, setToonPath] = useState<string>('');
-
-                <button
-                  className={`main-button${viewFormat === 'tree' ? ' active' : ''}`}
-                  onClick={() => setViewFormat('tree')}
-                  title="Tree View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-tree" aria-hidden="true"></i>
-                  <span>Tree View</span>
-                </button>
-                <button
-                  className={`main-button${viewFormat === 'graph' ? ' active' : ''}`}
-                  onClick={handleShowGraph}
-                  title="Graph View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-project-diagram" aria-hidden="true"></i>
-                  <span>Graph View</span>
-                </button>
-                <button
-                  className={`main-button${viewFormat === 'form' ? ' active' : ''}`}
-                  onClick={() => setViewFormat('form')}
-                  title="Form View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-list" aria-hidden="true"></i>
-                  <span>Form View</span>
-                </button>
-                <button
-                  className={`main-button${viewFormat === 'table' ? ' active' : ''}`}
-                  onClick={() => setViewFormat('table')}
-                  title="Table View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-table" aria-hidden="true"></i>
-                  <span>Table View</span>
-                </button>
-                <button
-                  className={`main-button${viewFormat === 'console' ? ' active' : ''}`}
-                  onClick={() => setViewFormat('console')}
-                  title="Console View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-terminal" aria-hidden="true"></i>
-                  <span>Console View</span>
-                </button>
-                <button
-                  className={`main-button${viewFormat === 'text' ? ' active' : ''}`}
-                  onClick={() => setViewFormat('text')}
-                  title="Text View"
-                  disabled={!outputCode || !outputCode.trim()}
-                >
-                  <i className="fa-solid fa-font" aria-hidden="true"></i>
-                  <span>Text View</span>
-                </button>
   
   // View mode state
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
@@ -4320,7 +4265,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
                     <button
                       onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
-                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      className="main-button"
                       title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
                     >
                       <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
@@ -4366,7 +4311,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   )}
                   {/* Graph button - opens in-page Graph Viewer (same workflow) */}
                   {activeLanguage === 'json' && !isParserPage && !isTransformPage && (
-                    <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }} className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`} title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}>
+                    <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }} className="main-button" title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}>
                       <i className="fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
                       <span>Graph View</span>
                     </button>
@@ -4382,7 +4327,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Convert JSON to XML"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -4409,7 +4354,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-xml', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Convert JSON to XML"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -4420,7 +4365,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-csv', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Convert JSON to CSV"
                   >
                     <i className="fa-solid fa-table" aria-hidden="true"></i>
@@ -4431,7 +4376,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-html', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Convert JSON to HTML"
                   >
                     <i className="fa-solid fa-code" aria-hidden="true"></i>
@@ -4442,7 +4387,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-to-yaml', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Convert JSON to YAML"
                   >
                     <i className="fa-solid fa-file-code" aria-hidden="true"></i>
@@ -4453,7 +4398,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       if (!inputCode.trim()) return;
                       navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
                     }}
-                    className="btn btn-blue-azure structure-btn"
+                    className="main-button structure-btn"
                     title="JSON Structure Analyzer"
                   >
                     <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
@@ -4468,7 +4413,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         navigate('/json-transform');
                       }
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Open JSON Transform"
                   >
                     <i className="fa-solid fa-right-left" aria-hidden="true"></i>
@@ -4478,7 +4423,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     onClick={() => {
                       navigate('/json-compare');
                     }}
-                    className="btn btn-blue-azure"
+                    className="main-button"
                     title="Compare JSON objects"
                   >
                     <i className="fa-solid fa-code-compare" aria-hidden="true"></i>
@@ -4488,13 +4433,13 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               )}
               {/* On Beautifier: Place To XML and To CSV right after Graph View, no grouping */}
               {isBeautifierPage && activeLanguage === 'json' && !isParserPage && !isEditorPage && (
-                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to XML">
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-xml', { state: { inputJson: inputCode } }); }} className={"main-button"} title="Convert JSON to XML">
                   <i className="fa-solid fa-code" aria-hidden="true"></i>
                   <span>To XML</span>
                 </button>
               )}
               {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
-                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to CSV">
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"main-button"} title="Convert JSON to CSV">
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
                   <span>To CSV</span>
                 </button>
