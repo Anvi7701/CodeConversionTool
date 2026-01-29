@@ -3931,12 +3931,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
         )}
 
-        {/* Parser page ribbon with slate-themed buttons */}
-        {isJsonLanguage && isParserPage && activeLanguage === 'json' && (
-          <section className="bg-transparent p-0 mb-2">
-            <div className="p-2">
-              <div className="parser-ribbon compact flex flex-row items-center gap-2">
-                <div className="main-actions">
+        {/* Parser page ribbon moved to input container - see line 4931+ */}
                   {/* Parse JSON (true parsing like JSON.parse) */}
                   <button
                     onClick={() => {
@@ -4119,23 +4114,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <span className="label">Transform</span>
                   </button>
 
-                  {/* Structure Analysis */}
-                  <button
-                    onClick={() => {
-                      if (!inputCode.trim()) return;
-                      navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
-                    }}
-                    className={`nav-button`}
-                    title="JSON Structure Analyzer"
-                  >
-                    <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
-                    <span className="label">Structure Analysis</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
+
 
         {/* Compact toolbar with smaller buttons and dropdowns (non-Parser pages) */}
         {isJsonLanguage && !(isParserPage || isTransformPage) && (
@@ -4927,8 +4906,211 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         {/* Editor Area */}
         <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
           <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
-            {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
-            {(isParserPage || isTransformPage || isMinifierPage) && (
+            {/* Parser page ribbon with slate-themed buttons */}
+            {isParserPage && activeLanguage === 'json' && (
+              <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
+                <div className="parser-ribbon compact flex flex-row items-center gap-2">
+                  <div className="main-actions">
+                    {/* Parse JSON (true parsing like JSON.parse) */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        const res = parseJsonSafe(inputCode.trim());
+                        if (res.ok) {
+                          try {
+                            const formatted = JSON.stringify(res.value, null, 2);
+                            setOutputCode(formatted);
+                            setIsConversionOutput(false);
+                            setViewFormat('code');
+                            setOutputLocked(true);
+                            setOutputTitle('Parsed JSON');
+                          } catch (err: any) {
+                            setValidationError({
+                              isValid: false,
+                              reason: err?.message || 'Failed to format parsed JSON.',
+                              isFixableSyntaxError: false,
+                              suggestedLanguage: undefined
+                            });
+                          }
+                        } else {
+                          const { errors: allErrors, error: parseError } = res as ParseResultErr;
+                          const msg = parseError?.message || 'Invalid JSON. Please fix syntax errors before parsing.';
+                          setValidationError({
+                            isValid: false,
+                            reason: allErrors && allErrors.length ? `${msg}` : msg,
+                            isFixableSyntaxError: true,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      }}
+                      className={`main-button`}
+                      title="Parse JSON (JSON.parse)"
+                    >
+                      <i className="icon fa-solid fa-code" aria-hidden="true"></i>
+                      <span className="label">Parse JSON</span>
+                    </button>
+
+                    {/* Pretty Print (simply JSON.parse + JSON.stringify with 2-space indent) */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        try {
+                          const obj = JSON.parse(inputCode.trim());
+                          const pretty = JSON.stringify(obj, null, 2);
+                          setOutputCode(pretty);
+                          setIsConversionOutput(false);
+                          setViewFormat('code');
+                          setOutputLocked(true);
+                          setOutputTitle('Pretty Printed JSON');
+                        } catch (err: any) {
+                          setValidationError({
+                            isValid: false,
+                            reason: err?.message || 'Invalid JSON. Please fix syntax errors before pretty printing.',
+                            isFixableSyntaxError: true,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      }}
+                      className={`main-button`}
+                      title="Pretty Print JSON (2-space indent)"
+                    >
+                      <i className="icon fa-solid fa-align-left" aria-hidden="true"></i>
+                      <span className="label">Pretty Print</span>
+                    </button>
+
+                    {/* Compact JSON (remove all whitespace) */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        handleCompact();
+                      }}
+                      className={`main-button`}
+                      title="Compact JSON (remove all whitespace)"
+                    >
+                      <i className="icon fa-solid fa-compress" aria-hidden="true"></i>
+                      <span className="label">Compact</span>
+                    </button>
+
+                    {/* Generate JSON Schema (Draft-07) */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        try {
+                          JSON.parse(inputCode.trim());
+                          const { schemaText } = generateSchemaFromSample(inputCode.trim());
+                          setOutputCode(schemaText);
+                          setIsConversionOutput(true);
+                          setViewFormat('code');
+                          setOutputLocked(true);
+                          setOutputTitle('Draft-07 schema');
+                        } catch (err: any) {
+                          setValidationError({
+                            isValid: false,
+                            reason: `Invalid JSON. Please fix syntax errors before generating schema. Details: ${err?.message || ''}`,
+                            isFixableSyntaxError: true,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      }}
+                      className={`main-button`}
+                      title="Generate JSON Schema (Draft-07)"
+                    >
+                      <i className="icon fa-solid fa-wand-magic-sparkles" aria-hidden="true"></i>
+                      <span className="label">Generate Schema</span>
+                    </button>
+                  </div>
+                  <div className="nav-actions">
+                    {/* Export via jq (Windows PowerShell): download a .ps1 that pretty-prints (and sorts keys) using jq */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) { setValidationError({ isValid: false, reason: 'Please paste JSON before exporting via jq.', isFixableSyntaxError: false, suggestedLanguage: undefined }); return; }
+                        try {
+                          const obj = JSON.parse(inputCode.trim());
+                          const compact = JSON.stringify(obj); // compact for robust here-string
+                          const ps = `# Requires jq (https://jqlang.github.io/jq/)\r\n# Save this script (export-via-jq.ps1) and run it in Windows PowerShell.\r\n# Outputs: output.pretty.json and output.sorted.pretty.json in the current directory.\r\n\r\n$json = @'\r\n${compact}\r\n'@\r\n\r\n# Pretty print\r\n$json | jq . | Set-Content -Encoding UTF8 output.pretty.json\r\n\r\n# Pretty print with sorted keys\r\n$json | jq -S . | Set-Content -Encoding UTF8 output.sorted.pretty.json\r\n`;
+                          const blob = new Blob([ps], { type: 'application/octet-stream' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = 'export-via-jq.ps1';
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        } catch (err: any) {
+                          setValidationError({
+                            isValid: false,
+                            reason: err?.message || 'Invalid JSON. Please fix syntax errors before exporting via jq.',
+                            isFixableSyntaxError: true,
+                            suggestedLanguage: undefined
+                          });
+                        }
+                      }}
+                      className={`nav-button`}
+                      title="Export via jq (PowerShell script)"
+                    >
+                      <i className="icon fa-solid fa-file-export" aria-hidden="true"></i>
+                      <span className="label">Export via jq</span>
+                    </button>
+
+                    {/* Tree View (opens separate page) */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        navigate('/json-tree-view', { state: { inputJson: inputCode } });
+                      }}
+                      className={`nav-button`}
+                      title="Open JSON Tree View"
+                    >
+                      <i className="icon fa-solid fa-sitemap" aria-hidden="true"></i>
+                      <span className="label">Tree View</span>
+                    </button>
+
+                    {/* Graph View (opens in-page Graph Viewer) */}
+                    <button
+                      onClick={() => { if (isActionDisabled || !inputCode.trim()) return; handleShowGraph(); }}
+                      className={`nav-button`}
+                      title={isBeautifierPage ? 'JSON Graph Visualizer' : 'Visualize as Graph'}
+                    >
+                      <i className="icon fa-solid fa-diagram-project fa-project-diagram" aria-hidden="true"></i>
+                      <span className="label">Graph View</span>
+                    </button>
+
+                    {/* Transform (JMESPath/JSONPath on Transform page) */}
+                    <button
+                      onClick={() => {
+                        const hasInput = !!inputCode.trim();
+                        if (hasInput) {
+                          navigate('/json-transform', { state: { inputJson: inputCode } });
+                        } else {
+                          navigate('/json-transform');
+                        }
+                      }}
+                      className={`nav-button`}
+                      title="Open JSON Transform"
+                    >
+                      <i className="icon fa-solid fa-right-left" aria-hidden="true"></i>
+                      <span className="label">Transform</span>
+                    </button>
+
+                    {/* Structure Analysis */}
+                    <button
+                      onClick={() => {
+                        if (!inputCode.trim()) return;
+                        navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
+                      }}
+                      className={`nav-button`}
+                      title="JSON Structure Analyzer"
+                    >
+                      <i className="icon fa-solid fa-network-wired" aria-hidden="true"></i>
+                      <span className="label">Structure Analysis</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {/* Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
+            {(isTransformPage || isMinifierPage) && (
               <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
                 <JsonToolbar
                   onFormat={handleFormat}
