@@ -124,6 +124,61 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [toonArrayJoin, setToonArrayJoin] = useState<string>('|');
   const [toonNullToken, setToonNullToken] = useState<string>('-');
   const [toonPath, setToonPath] = useState<string>('');
+
+  // Graph view state
+  const [showGraph, setShowGraph] = useState<boolean>(false);
+  const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
+  const [selectedNodePath, setSelectedNodePath] = useState<string>('');
+
+  // Modal state
+  const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
+  const [showJSONPathModal, setShowJSONPathModal] = useState<boolean>(false);
+
+  // Conversion mode state (track if output is from XML/CSV/YAML conversion)
+  const [isConversionOutput, setIsConversionOutput] = useState<boolean>(false);
+  
+  // Transform page state: track if output contains real transform results (not guidance)
+  const [hasTransformResult, setHasTransformResult] = useState<boolean>(false);
+  const [transformType, setTransformType] = useState<'jmespath' | 'jsonpath' | null>(null);
+
+  // AI Error state
+  const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
+  const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
+  
+  // Test mode to simulate errors (Ctrl+Shift+E=503, Ctrl+Shift+S=500, Ctrl+Shift+R=429)
+  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | '429' | null>(null);
+
+  // Fast/Smart mode for JSON formatter
+  const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
+  const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
+  const [commentLines, setCommentLines] = useState<number[]>([]);
+  const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
+  const [showFixSummary, setShowFixSummary] = useState(false);
+  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input');
+  // Highlighted line targeting in input editor
+  const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
+  const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
+  const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
+  const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
+  // Ref for input editor folding API
+  const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
+  const outputViewerApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
+  // Input line numbers are always on to match output gutter
+  const [showInputLineNumbers] = useState<boolean>(true);
+
+  // Modal: JSON validation success (popup instead of banner)
+  const [showValidationSuccess, setShowValidationSuccess] = useState<boolean>(false);
+  const [validationSuccessText, setValidationSuccessText] = useState<string>('JSON is valid');
+
+  // History management for undo/redo
+  const [history, setHistory] = useState<string[]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
+  const lastSavedToHistoryRef = useRef<string>('');
+  
+  // Output history management for undo/redo
+  const [outputHistory, setOutputHistory] = useState<string[]>([]);
+  const [outputHistoryIndex, setOutputHistoryIndex] = useState<number>(-1);
+  const isApplyingOutputHistoryRef = useRef<boolean>(false);
   
   // View mode state
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
@@ -4254,7 +4309,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           navigate('/json-tree-view', { state: { inputJson: inputCode } });
                         }
                       }}
-                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      className="main-button"
                       title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                     >
                       <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
@@ -4302,7 +4357,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           navigate('/json-tree-view', { state: { inputJson: inputCode } });
                         }
                       }}
-                      className={`btn ${isBeautifierPage ? 'btn-blue-ice' : 'btn-blue-azure'}`}
+                      className="main-button"
                       title={isBeautifierPage ? 'JSON Tree Viewer' : 'Open JSON Tree View in a separate page'}
                     >
                       <i className="fa-solid fa-sitemap" aria-hidden="true"></i>
