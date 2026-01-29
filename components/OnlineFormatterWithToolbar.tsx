@@ -125,60 +125,60 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [toonNullToken, setToonNullToken] = useState<string>('-');
   const [toonPath, setToonPath] = useState<string>('');
 
-  // Graph view state
-  const [showGraph, setShowGraph] = useState<boolean>(false);
-  const [graphCollapsedNodes, setGraphCollapsedNodes] = useState<Set<string>>(new Set());
-  const [selectedNodePath, setSelectedNodePath] = useState<string>('');
-
-  // Modal state
-  const [showJMESPathModal, setShowJMESPathModal] = useState<boolean>(false);
-  const [showJSONPathModal, setShowJSONPathModal] = useState<boolean>(false);
-
-  // Conversion mode state (track if output is from XML/CSV/YAML conversion)
-  const [isConversionOutput, setIsConversionOutput] = useState<boolean>(false);
-  
-  // Transform page state: track if output contains real transform results (not guidance)
-  const [hasTransformResult, setHasTransformResult] = useState<boolean>(false);
-  const [transformType, setTransformType] = useState<'jmespath' | 'jsonpath' | null>(null);
-
-  // AI Error state
-  const [aiError, setAiError] = useState<{ type: AIErrorType; code?: number; message: string; originalError?: string } | null>(null);
-  const [lastAiRequest, setLastAiRequest] = useState<(() => Promise<void>) | null>(null);
-  
-  // Test mode to simulate errors (Ctrl+Shift+E=503, Ctrl+Shift+S=500, Ctrl+Shift+R=429)
-  const [testErrorMode, setTestErrorMode] = useState<'503' | '500' | '429' | null>(null);
-
-  // Fast/Smart mode for JSON formatter
-  const [formatterMode, setFormatterMode] = useState<FormatterMode>('fast');
-  const [errorLines, setErrorLines] = useState<ErrorPosition[]>([]);
-  const [commentLines, setCommentLines] = useState<number[]>([]);
-  const [appliedFixes, setAppliedFixes] = useState<FixChange[]>([]);
-  const [showFixSummary, setShowFixSummary] = useState(false);
-  const [errorSource, setErrorSource] = useState<'input' | 'output'>('input');
-  // Highlighted line targeting in input editor
-  const [highlightedLine, setHighlightedLine] = useState<number | null>(null);
-  const [highlightedType, setHighlightedType] = useState<'simple' | 'complex' | 'comment' | null>(null);
-  const [highlightPulse, setHighlightPulse] = useState<boolean>(false);
-  const [disableAutoScroll, setDisableAutoScroll] = useState<boolean>(false);
-  // Ref for input editor folding API
-  const inputEditorApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
-  const outputViewerApiRef = useRef<{ foldAll: () => void; unfoldAll: () => void } | null>(null);
-  // Input line numbers are always on to match output gutter
-  const [showInputLineNumbers] = useState<boolean>(true);
-
-  // Modal: JSON validation success (popup instead of banner)
-  const [showValidationSuccess, setShowValidationSuccess] = useState<boolean>(false);
-  const [validationSuccessText, setValidationSuccessText] = useState<string>('JSON is valid');
-
-  // History management for undo/redo
-  const [history, setHistory] = useState<string[]>([]);
-  const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  const lastSavedToHistoryRef = useRef<string>('');
-  
-  // Output history management for undo/redo
-  const [outputHistory, setOutputHistory] = useState<string[]>([]);
-  const [outputHistoryIndex, setOutputHistoryIndex] = useState<number>(-1);
-  const isApplyingOutputHistoryRef = useRef<boolean>(false);
+                <button
+                  className={`main-button${viewFormat === 'tree' ? ' active' : ''}`}
+                  onClick={() => setViewFormat('tree')}
+                  title="Tree View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-tree" aria-hidden="true"></i>
+                  <span>Tree View</span>
+                </button>
+                <button
+                  className={`main-button${viewFormat === 'graph' ? ' active' : ''}`}
+                  onClick={handleShowGraph}
+                  title="Graph View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-project-diagram" aria-hidden="true"></i>
+                  <span>Graph View</span>
+                </button>
+                <button
+                  className={`main-button${viewFormat === 'form' ? ' active' : ''}`}
+                  onClick={() => setViewFormat('form')}
+                  title="Form View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-list" aria-hidden="true"></i>
+                  <span>Form View</span>
+                </button>
+                <button
+                  className={`main-button${viewFormat === 'table' ? ' active' : ''}`}
+                  onClick={() => setViewFormat('table')}
+                  title="Table View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-table" aria-hidden="true"></i>
+                  <span>Table View</span>
+                </button>
+                <button
+                  className={`main-button${viewFormat === 'console' ? ' active' : ''}`}
+                  onClick={() => setViewFormat('console')}
+                  title="Console View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-terminal" aria-hidden="true"></i>
+                  <span>Console View</span>
+                </button>
+                <button
+                  className={`main-button${viewFormat === 'text' ? ' active' : ''}`}
+                  onClick={() => setViewFormat('text')}
+                  title="Text View"
+                  disabled={!outputCode || !outputCode.trim()}
+                >
+                  <i className="fa-solid fa-font" aria-hidden="true"></i>
+                  <span>Text View</span>
+                </button>
   
   // View mode state
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
@@ -4142,7 +4142,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <div className="beautifier-toolbar flex flex-col items-start gap-2">
                   {/* Row 1: Format + Beautify + Minify + Pretty print */}
                   <div className="flex items-center gap-2">
-                    {!hideFormatButtons && (
+                    {!hideFormatButtons && !isMinifierPage && (
                       <div className="relative dropdown-container overflow-visible">
                         <button
                           onClick={() => {
@@ -4158,7 +4158,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </div>
                     )}
 
-                    {!hideFormatButtons && (
+                    {!hideFormatButtons && !isMinifierPage && (
                       <div className="relative dropdown-container overflow-visible">
                         <button
                           onClick={() => {
@@ -4185,7 +4185,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                       </div>
                     )}
 
-                    {showMinifyNextToBeautify && !hideFormatButtons && (
+                    {showMinifyNextToBeautify && !hideFormatButtons && !isMinifierPage && (
                       <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-azure" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
                         <i className="fa-solid fa-compress" aria-hidden="true"></i>
                         <span>Minify</span>
@@ -4205,7 +4205,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               ) : (
                 <>
                   {/* Format (Input JSON) - placed before Beautify */}
-                  {!hideFormatButtons && (
+                  {!hideFormatButtons && !isMinifierPage && (
                     <div className="relative dropdown-container overflow-visible">
                       <button
                         onClick={() => {
@@ -4221,7 +4221,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </div>
                   )}
                   {/* Beautify button with dropdown */}
-                  {!hideFormatButtons && (
+                  {!hideFormatButtons && !isMinifierPage && (
                     <div className="relative dropdown-container overflow-visible">
                       <button
                         onClick={() => {
@@ -4248,7 +4248,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     </div>
                   )}
                   {/* Minify button (Beautifier page only) */}
-                  {showMinifyNextToBeautify && !hideFormatButtons && (
+                  {showMinifyNextToBeautify && !hideFormatButtons && !isMinifierPage && (
                     <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-ice" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
                       <i className="fa-solid fa-compress" aria-hidden="true"></i>
                       <span>Minify</span>
@@ -4426,6 +4426,64 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     <i className="fa-solid fa-table" aria-hidden="true"></i>
                     <span>To CSV</span>
                   </button>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-html', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Convert JSON to HTML"
+                  >
+                    <i className="fa-solid fa-code" aria-hidden="true"></i>
+                    <span>To HTML</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-to-yaml', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Convert JSON to YAML"
+                  >
+                    <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+                    <span>To YAML</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!inputCode.trim()) return;
+                      navigate('/json-structure-analyzer', { state: { inputJson: inputCode } });
+                    }}
+                    className="btn btn-blue-azure structure-btn"
+                    title="JSON Structure Analyzer"
+                  >
+                    <i className="fa-solid fa-network-wired" aria-hidden="true"></i>
+                    <span>Structure Analysis</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const hasInput = !!inputCode.trim();
+                      if (hasInput) {
+                        navigate('/json-transform', { state: { inputJson: inputCode } });
+                      } else {
+                        navigate('/json-transform');
+                      }
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Open JSON Transform"
+                  >
+                    <i className="fa-solid fa-right-left" aria-hidden="true"></i>
+                    <span>Transform</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigate('/json-compare');
+                    }}
+                    className="btn btn-blue-azure"
+                    title="Compare JSON objects"
+                  >
+                    <i className="fa-solid fa-code-compare" aria-hidden="true"></i>
+                    <span>Compare</span>
+                  </button>
                 </>
               )}
               {/* On Beautifier: Place To XML and To CSV right after Graph View, no grouping */}
@@ -4439,6 +4497,12 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-csv', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to CSV">
                   <i className="fa-solid fa-table" aria-hidden="true"></i>
                   <span>To CSV</span>
+                </button>
+              )}
+              {isBeautifierPage && activeLanguage === 'json' && !isParserPage && (
+                <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-yaml', { state: { inputJson: inputCode } }); }} className={"btn btn-blue-azure"} title="Convert JSON to YAML">
+                  <i className="fa-solid fa-file-code" aria-hidden="true"></i>
+                  <span>To YAML</span>
                 </button>
               )}
 
@@ -4888,7 +4952,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onViewGraph={undefined}
                   onSave={handleSave}
                   onSaveAs={handleSaveAsJsonInput}
-                  onPrint={handlePrint}
+                  onPrint={isMinifierPage ? undefined : handlePrint}
                   onValidate={handleValidate}
                   onCompare={undefined}
                   onClear={() => { if (!inputCode.trim()) return; setInputCode(''); addToHistory(''); }}
@@ -4911,16 +4975,19 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   highlightUpload={!inputCode.trim()}
                   highlightSample={!inputCode.trim()}
                   uploadPlacement="primary"
+                  uploadLabel="Upload Data"
                   samplePlacement="primary"
-                  copyPlacement="primary"
-                  savePlacement="primary"
-                  saveAsPlacement="primary"
+                  sampleLabel="Sample"
+                  copyPlacement="secondary"
+                  savePlacement="secondary"
+                  saveAsPlacement="secondary"
                   fullscreenPlacement="secondary"
                   fullscreenStyle="black"
                   printPlacement="secondary"
-                  showFormatInPrimary={false}
-                  showMinifyInPrimary={false}
+                  showFormatInPrimary={true}
+                  showMinifyInPrimary={true}
                   onSearch={handleToggleSearch}
+                  searchPlacement="secondary"
                   theme="dark"
                   inputEmpty={!inputCode.trim()}
                 />
@@ -6233,7 +6300,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 <div className="relative flex-grow min-h-0">
                   {/* Rich placeholder overlay matching Compare page (text + icons) */}
                   {(!inputCode || !inputCode.trim()) && activeLanguage === 'json' && (
-                    <div className="absolute top-8 left-3 z-10 cm-rich-placeholder pointer-events-none select-none text-sm flex items-center gap-2 opacity-70">
+                    <div className="absolute top-[6px] left-[56px] z-10 cm-rich-placeholder pointer-events-none select-none text-sm flex items-center gap-2 opacity-70">
                       <span className="text-indigo-600 dark:text-indigo-400 font-bold">Paste or upload JSON code</span>
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gray-600 dark:text-gray-400">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
@@ -6322,7 +6389,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onSearch={handleToggleOutputSearch}
                   onSave={() => handleDownload()}
                   onSaveAs={() => handleSaveAsJsonOutput()}
-                  onPrint={() => handlePrint()}
+                  onPrint={isMinifierPage ? undefined : () => handlePrint()}
                   onValidate={handleValidateOutput}
                   onCompare={undefined}
                   onClear={handleClearOutput}
@@ -6330,7 +6397,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onFullscreen={() => handleToggleOutputFullscreen()}
                   onToggleEditLock={!isTransformPage ? () => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); } : undefined}
                   isLocked={!!outputLocked}
-                  onCopyOutputToInput={!isTransformPage ? () => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); } : undefined}
+                  onCopyOutputToInput={!isTransformPage && !isMinifierPage ? () => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); } : undefined}
                   canUndo={canUndoOutput}
                   canRedo={canRedoOutput}
                   hasErrors={!!(validationError || outputError || aiError)}
@@ -6347,15 +6414,16 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   sortPlacement="secondary-icon"
                   uploadPlacement="secondary"
                   samplePlacement="secondary"
-                  copyPlacement="primary"
-                  savePlacement="primary"
-                  saveAsPlacement="primary"
+                  copyPlacement="secondary"
+                  savePlacement="secondary"
+                  saveAsPlacement="secondary"
                   fullscreenPlacement="secondary"
                   fullscreenStyle="black"
                   showFormatInPrimary={false}
                   showMinifyInPrimary={false}
                   theme="dark"
                   printPlacement="secondary"
+                  searchPlacement="secondary"
                   inputEmpty={!outputCode || !outputCode.trim() || (isTransformPage && !hasTransformResult)}
                   enableSearch={viewFormat === 'code' && (!isTransformPage || hasTransformResult)}
                   enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (!isTransformPage || hasTransformResult)}
@@ -6549,7 +6617,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               </div>
                 <div className="flex items-center gap-2">
                 {/* Validate Output (JSON) - next to view controls */}
-                {!isParserPage && !hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
+                {!isParserPage && !hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isMinifierPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
                   <Tooltip content="Validate Output JSON">
                     <span
                       role="button"
