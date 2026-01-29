@@ -102,7 +102,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   errorCount,
   isFullscreen = false,
   disabled = false,
-  isEmpty = false,
   language: _language = 'json',
   variant = 'default',
   formatLabel = 'Beautify',
