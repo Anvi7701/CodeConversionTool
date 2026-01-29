@@ -19,6 +19,7 @@ interface JsonToolbarProps {
   onPrint?: () => void;
   onValidate: () => void;
   onCompare?: () => void;
+  onTransform?: () => void;
   onClear: () => void;
   onCopy: () => void;
   onFullscreen?: () => void;
@@ -43,6 +44,7 @@ interface JsonToolbarProps {
   sampleVariant?: 'button' | 'icon'; // Control Sample rendering style
   historyPlacement?: 'primary' | 'secondary';
   sortPlacement?: 'primary' | 'secondary-icon';
+  searchPlacement?: 'primary' | 'secondary'; // Control Search icon placement
   highlightUpload?: boolean;
   highlightSample?: boolean;
   uploadPlacement?: 'primary' | 'secondary';
@@ -60,6 +62,8 @@ interface JsonToolbarProps {
   showSeparatorAfterValidatePrimary?: boolean; // control separator after Validate in primary ribbon
   fullscreenStyle?: 'default' | 'black'; // Customize fullscreen button background
   outputLabel?: string; // Label to display before Search icon (e.g., "JSONPath Output")
+  uploadLabel?: string; // Label for Upload button (e.g., "Upload Data") - when set, renders as full button instead of icon-only
+  sampleLabel?: string; // Label for Sample button (e.g., "Sample") - when set, renders as full button instead of icon-only
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -80,6 +84,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   onPrint: _onPrint,
   onValidate,
   onCompare,
+  onTransform,
   onClear,
   onCopy,
   onFullscreen,
@@ -103,6 +108,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   sampleVariant = 'button',
   historyPlacement = 'primary',
   sortPlacement = 'primary',
+  searchPlacement = 'primary',
   highlightUpload = false,
   highlightSample = false,
   uploadPlacement = 'secondary',
@@ -120,6 +126,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   showSeparatorAfterValidatePrimary = true,
   fullscreenStyle = 'default',
   outputLabel,
+  uploadLabel,
+  sampleLabel,
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
@@ -156,6 +164,68 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
     <div className={containerClass}>
       {/* PRIMARY RIBBON: Format & Edit */}
       <div className="toolbar-ribbon primary-ribbon">
+        {/* Upload Data and Sample buttons - positioned BEFORE Validate when in primary with labels */}
+        {((uploadPlacement === 'primary' && onUploadJson && uploadLabel) || (samplePlacement === 'primary' && onGenerateSample && sampleLabel)) && (
+          <>
+            <div className="toolbar-group upload-sample-group">
+              {uploadPlacement === 'primary' && onUploadJson && uploadLabel && (
+                <button
+                  className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''} ${highlightUpload ? 'highlight' : ''}`}
+                  onClick={onUploadJson}
+                  disabled={disabled}
+                  aria-label="Upload JSON file"
+                  title="Upload JSON"
+                >
+                  <span className="icon">📤</span>
+                  <span className="label">{uploadLabel}</span>
+                </button>
+              )}
+              {samplePlacement === 'primary' && onGenerateSample && sampleLabel && (
+                <div className="toolbar-button-group">
+                  <button
+                    className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''} ${highlightSample ? 'highlight' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); setSampleDropdownOpen(!sampleDropdownOpen); }}
+                    disabled={disabled}
+                    aria-label="Generate sample JSON"
+                    title="Insert Sample"
+                  >
+                    <span className="icon">✨</span>
+                    <span className="label">{sampleLabel}</span>
+                    <span className="dropdown-arrow">▼</span>
+                  </button>
+                  {sampleDropdownOpen && (
+                    <div className="dropdown-menu">
+                      {sampleTemplates.map((template) => (
+                        <button key={template.key} onClick={() => { onGenerateSample(template.key); setSampleDropdownOpen(false); }}>
+                          {template.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
+        {/* Validate button (full button style) - positioned BEFORE Format when validateInPrimaryRibbon and no output actions */}
+        {validateInPrimaryRibbon && !hasOutputActions && (
+          <>
+            <div className="toolbar-group validate-group">
+              <button
+                className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onValidate}
+                disabled={disabled || isEmpty || !enableValidate}
+                aria-label="Validate JSON"
+                title="Validate JSON"
+              >
+                <span className="icon validate-tick" style={{ marginRight: '4px' }}>✓</span>
+                <span className="label">Validate</span>
+              </button>
+            </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
         {/* Format group: Beautify + Minify (Compare expects these in primary) */}
         {showFormatInPrimary && (
           <div className="toolbar-group format-group">
@@ -183,11 +253,20 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               </button>
               {formatDropdownOpen && (
                 <div className="dropdown-menu">
+                  <button onClick={() => { onFormat(1); setFormatDropdownOpen(false); }}>
+                    1 space
+                  </button>
                   <button onClick={() => { onFormat(2); setFormatDropdownOpen(false); }}>
                     <span className="checkmark">✓</span> 2 spaces
                   </button>
+                  <button onClick={() => { onFormat(3); setFormatDropdownOpen(false); }}>
+                    3 spaces
+                  </button>
                   <button onClick={() => { onFormat(4); setFormatDropdownOpen(false); }}>
                     4 spaces
+                  </button>
+                  <button onClick={() => { onFormat(5); setFormatDropdownOpen(false); }}>
+                    5 spaces
                   </button>
                   <button onClick={() => { onFormat(0); setFormatDropdownOpen(false); }}>
                     Tabs
@@ -199,7 +278,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             {/* Minify */}
             {showMinifyInPrimary && (
               <button
-                className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
+                className={`toolbar-btn primary minify-btn ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={onMinify}
                 disabled={disabled}
                 aria-label="Minify JSON (Ctrl+M)"
@@ -211,10 +290,10 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
         {showFormatInPrimary && <div className="toolbar-separator" />}
-        {/* Data group: Upload, Sample */}
-        {(uploadPlacement === 'primary' || samplePlacement === 'primary') && (
+        {/* Data group: Upload (icon-only when no label), Sample (icon-only when no label) */}
+        {((uploadPlacement === 'primary' && !uploadLabel) || (samplePlacement === 'primary' && !sampleLabel)) && (
           <div className="toolbar-group data-group">
-            {uploadPlacement === 'primary' && onUploadJson && (
+            {uploadPlacement === 'primary' && onUploadJson && !uploadLabel && (
               <div className="toolbar-button-group">
                 <button
                   className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''} ${highlightUpload ? 'highlight' : ''}`}
@@ -227,7 +306,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 </button>
               </div>
             )}
-            {samplePlacement === 'primary' && onGenerateSample && (
+            {samplePlacement === 'primary' && onGenerateSample && !sampleLabel && (
               <div className="toolbar-button-group">
                 <button
                   className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''} ${highlightSample ? 'highlight' : ''}`}
@@ -253,7 +332,26 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             )}
           </div>
         )}
-        {(uploadPlacement === 'primary' || samplePlacement === 'primary') && <div className="toolbar-separator" />}
+        {((uploadPlacement === 'primary' && !uploadLabel) || (samplePlacement === 'primary' && !sampleLabel)) && <div className="toolbar-separator" />}
+
+        {/* Validate button (full button style) - positioned BEFORE Lock when validateInPrimaryRibbon and has output actions */}
+        {validateInPrimaryRibbon && hasOutputActions && (
+          <>
+            <div className="toolbar-group validate-group">
+              <button
+                className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onValidate}
+                disabled={disabled || isEmpty || !enableValidate}
+                aria-label="Validate JSON"
+                title="Validate JSON"
+              >
+                <span className="icon validate-tick" style={{ marginRight: '4px' }}>✓</span>
+                <span className="label">Validate</span>
+              </button>
+            </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
 
         {/* Output actions group: Lock Output, Copy Output to Input (first section for output toolbar) */}
         {hasOutputActions && (
@@ -293,83 +391,132 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
 
-        {/* Search group: Search only */}
-        {onSearch && (
-          <div className="toolbar-group search-group">
-            <button
-              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-              onClick={onSearch}
-              disabled={disabled || isEmpty || !enableSearch}
-              aria-label="Search"
-              title="Search"
-            >
-              <span className="icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
-            </button>
-          </div>
-        )}
-        {onSearch && <div className="toolbar-separator" />}
-
-        {/* Edit group: Copy, Save As, Download in separate section */}
-        {(copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && (
-          <div className="toolbar-group edit-group">
-            {copyPlacement === 'primary' && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onCopy}
-                disabled={disabled || isEmpty}
-                aria-label="Copy"
-                title="Copy"
-              >
-                <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
-              </button>
-            )}
-            {saveAsPlacement === 'primary' && onSaveAs && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onSaveAs}
-                disabled={disabled || isEmpty}
-                aria-label="Save As JSON"
-                title="Save As"
-              >
-                <span className="icon"><i className="fa-regular fa-floppy-disk" aria-hidden="true"></i></span>
-              </button>
-            )}
-            {savePlacement === 'primary' && onSave && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onSave}
-                disabled={disabled || isEmpty}
-                aria-label="Download JSON"
-                title="Download"
-              >
-                <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
-              </button>
-            )}
-          </div>
-        )}
-        {(copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && <div className="toolbar-separator" />}
-
-        {/* Validate group: right-aligned */}
+        {/* Validate group: positioned directly after Format/Lock buttons */}
         {validateInPrimaryRibbon && (
           <>
-            <div className="toolbar-flex-spacer" />
-            <div className="toolbar-group validate-group">
-              <button
-                className={`toolbar-btn icon-only success ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onValidate}
-                disabled={disabled || isEmpty || !enableValidate}
-                aria-label="Validate JSON"
-                title="Validate JSON"
-              >
-                <span className="icon">✓</span>
-              </button>
-            </div>
+            {/* Edit group: Copy, Save As, Download - positioned before Search when validate is in primary */}
+            {(copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && (
+              <>
+                <div className="toolbar-group edit-group">
+                  {copyPlacement === 'primary' && (
+                    <button
+                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                      onClick={onCopy}
+                      disabled={disabled || isEmpty}
+                      aria-label="Copy"
+                      title="Copy"
+                    >
+                      <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
+                    </button>
+                  )}
+                  {saveAsPlacement === 'primary' && onSaveAs && (
+                    <button
+                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                      onClick={onSaveAs}
+                      disabled={disabled || isEmpty}
+                      aria-label="Save As JSON"
+                      title="Save As"
+                    >
+                      <span className="icon"><i className="fa-regular fa-floppy-disk" aria-hidden="true"></i></span>
+                    </button>
+                  )}
+                  {savePlacement === 'primary' && onSave && (
+                    <button
+                      className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                      onClick={onSave}
+                      disabled={disabled || isEmpty}
+                      aria-label="Download JSON"
+                      title="Download"
+                    >
+                      <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
+                    </button>
+                  )}
+                </div>
+                <div className="toolbar-separator" />
+              </>
+            )}
+            {/* Search group: Search only - shown in primary when searchPlacement is primary */}
+            {onSearch && searchPlacement === 'primary' && (
+              <>
+                <div className="toolbar-group search-group">
+                  <button
+                    className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                    onClick={onSearch}
+                    disabled={disabled || isEmpty || !enableSearch}
+                    aria-label="Search"
+                    title="Search"
+                  >
+                    <span className="icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
+                  </button>
+                </div>
+                <div className="toolbar-separator" />
+              </>
+            )}
+            {/* Validate icon removed - now shown as full button at the beginning of toolbar */}
+            {onFullscreen && fullscreenPlacement === 'primary' && (
+              <>
+                <div className="toolbar-separator" />
+                <div className="toolbar-group view-group">
+                  <button
+                    className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+                    onClick={onFullscreen}
+                    disabled={disabled || isEmpty}
+                    aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
+                    title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                  >
+                    <span className="icon">⛶</span>
+                  </button>
+                </div>
+              </>
+            )}
             {showSeparatorAfterValidatePrimary && <div className="toolbar-separator" />}
           </>
         )}
 
-        {/* View group: Fullscreen */}
-        {fullscreenPlacement === 'primary' && onFullscreen && (
+        {/* Edit group: Copy, Save As, Download - shown in normal position when validate is NOT in primary */}
+        {!validateInPrimaryRibbon && (copyPlacement === 'primary' || (saveAsPlacement === 'primary' && onSaveAs) || (savePlacement === 'primary' && onSave)) && (
+          <>
+            <div className="toolbar-group edit-group">
+              {copyPlacement === 'primary' && (
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onCopy}
+                  disabled={disabled || isEmpty}
+                  aria-label="Copy"
+                  title="Copy"
+                >
+                  <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
+                </button>
+              )}
+              {saveAsPlacement === 'primary' && onSaveAs && (
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onSaveAs}
+                  disabled={disabled || isEmpty}
+                  aria-label="Save As JSON"
+                  title="Save As"
+                >
+                  <span className="icon"><i className="fa-regular fa-floppy-disk" aria-hidden="true"></i></span>
+                </button>
+              )}
+              {savePlacement === 'primary' && onSave && (
+                <button
+                  className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                  onClick={onSave}
+                  disabled={disabled || isEmpty}
+                  aria-label="Download JSON"
+                  title="Download"
+                >
+                  <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
+                </button>
+              )}
+            </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
+
+        {/* View group: Fullscreen - only show here if validate is NOT in primary ribbon */}
+        {fullscreenPlacement === 'primary' && !validateInPrimaryRibbon && onFullscreen && (
           <div className="toolbar-group view-group">
             <button
               className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
@@ -389,8 +536,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
       {/* SECONDARY RIBBON: Tools & Actions */}
       <div className="toolbar-ribbon secondary-ribbon">
-        {/* Section 1: Upload, Sample */}
-        {(onUploadJson || onGenerateSample) && (uploadPlacement === 'secondary' || samplePlacement === 'secondary') && (
+        {/* Section 1: Upload, Sample (only when not using labeled buttons in primary) */}
+        {((onUploadJson && uploadPlacement === 'secondary') || (onGenerateSample && samplePlacement === 'secondary' && !sampleLabel)) && (
           <div className="toolbar-group data-group">
             {onUploadJson && uploadPlacement === 'secondary' && (
               <div className="toolbar-button-group">
@@ -405,7 +552,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 </button>
               </div>
             )}
-            {onGenerateSample && samplePlacement === 'secondary' && (
+            {onGenerateSample && samplePlacement === 'secondary' && !sampleLabel && (
               <div className="toolbar-button-group">
                 <button
                   className={`toolbar-btn ${sampleVariant === 'icon' ? 'icon-only' : ''} ${variant === 'compact' ? 'compact' : ''} ${highlightSample ? 'highlight' : ''}`}
@@ -441,7 +588,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
 
-        {(onUploadJson || onGenerateSample) && (uploadPlacement === 'secondary' || samplePlacement === 'secondary') && <div className="toolbar-separator" />}
+        {((onUploadJson && uploadPlacement === 'secondary') || (onGenerateSample && samplePlacement === 'secondary' && !sampleLabel)) && <div className="toolbar-separator" />}
 
         {/* Section 2: Collapse All, Expand All */}
         {(onCollapseAll || onExpandAll) && (
@@ -503,56 +650,78 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
         {historyPlacement === 'secondary' && (onUndo || onRedo) && <div className="toolbar-separator" />}
 
-        {/* Section 3.5: Sort (icon) when placed in secondary */}
-        {sortPlacement === 'secondary-icon' && (
+        {/* Section 3.4: Search & Sort group when placed in secondary - combined in same section */}
+        {((onSearch && searchPlacement === 'secondary') || sortPlacement === 'secondary-icon') && (
           <>
-            <div className="toolbar-group sort-secondary-group">
-              <div className="toolbar-button-group">
+            <div className="toolbar-group search-sort-group">
+              {/* Search icon */}
+              {onSearch && searchPlacement === 'secondary' && (
                 <button
                   className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                  onClick={(e) => { e.stopPropagation(); setSortDropdownOpen(!sortDropdownOpen); }}
-                  disabled={disabled || isEmpty || !enableSort}
-                  aria-label="Sort options"
-                  title="Sort"
+                  onClick={onSearch}
+                  disabled={disabled || isEmpty || !enableSearch}
+                  aria-label="Search"
+                  title="Search"
                 >
-                  <span className="icon"><i className="fa-solid fa-sort" aria-hidden="true"></i></span>
+                  <span className="icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i></span>
                 </button>
-                {sortDropdownOpen && (
-                  <div className="dropdown-menu">
-                    <button onClick={() => { onSort('asc', 'keys'); setSortDropdownOpen(false); }}>
-                      ↑ Keys Ascending
-                    </button>
-                    <button onClick={() => { onSort('desc', 'keys'); setSortDropdownOpen(false); }}>
-                      ↓ Keys Descending
-                    </button>
-                    <div className="dropdown-divider" />
-                    <button onClick={() => { onSort('asc', 'values'); setSortDropdownOpen(false); }}>
-                      ↑ Values Ascending
-                    </button>
-                    <button onClick={() => { onSort('desc', 'values'); setSortDropdownOpen(false); }}>
-                      ↓ Values Descending
-                    </button>
-                  </div>
-                )}
-              </div>
+              )}
+              {/* Sort icon with dropdown */}
+              {sortPlacement === 'secondary-icon' && (
+                <div className="toolbar-button-group">
+                  <button
+                    className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); setSortDropdownOpen(!sortDropdownOpen); }}
+                    disabled={disabled || isEmpty || !enableSort}
+                    aria-label="Sort options"
+                    title="Sort"
+                  >
+                    <span className="icon"><i className="fa-solid fa-sort" aria-hidden="true"></i></span>
+                  </button>
+                  {sortDropdownOpen && (
+                    <div className="dropdown-menu">
+                      <button onClick={() => { onSort('asc', 'keys'); setSortDropdownOpen(false); }}>
+                        ↑ Keys Ascending
+                      </button>
+                      <button onClick={() => { onSort('desc', 'keys'); setSortDropdownOpen(false); }}>
+                        ↓ Keys Descending
+                      </button>
+                      <div className="dropdown-divider" />
+                      <button onClick={() => { onSort('asc', 'values'); setSortDropdownOpen(false); }}>
+                        ↑ Values Ascending
+                      </button>
+                      <button onClick={() => { onSort('desc', 'values'); setSortDropdownOpen(false); }}>
+                        ↓ Values Descending
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div className="toolbar-separator" />
           </>
         )}
-        {/* Section 4: Clear, Copy, Download */}
-        {(onClear || (onCopy && copyPlacement === 'secondary') || (onSave && savePlacement === 'secondary') || (onSaveAs && saveAsPlacement === 'secondary')) && (
-          <div className="toolbar-group edit-group">
-            {onClear && (
+
+        {/* Section 3.6: Transform (icon) - for navigating to JSON Transform page */}
+        {onTransform && (
+          <>
+            <div className="toolbar-group transform-group">
               <button
                 className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onClear}
-                disabled={disabled || isEmpty}
-                aria-label="Clear"
-                title="Clear"
+                onClick={onTransform}
+                disabled={disabled}
+                aria-label="Transform"
+                title="Transform"
               >
-                <span className="icon"><i className="fa-solid fa-trash-can" aria-hidden="true"></i></span>
+                <span className="icon"><i className="fa-solid fa-right-left" aria-hidden="true"></i></span>
               </button>
-            )}
+            </div>
+            <div className="toolbar-separator" />
+          </>
+        )}
+        {/* Section 4: Copy, Save, Download */}
+        {((onCopy && copyPlacement === 'secondary') || (onSaveAs && saveAsPlacement === 'secondary') || (onSave && savePlacement === 'secondary')) && (
+          <div className="toolbar-group edit-group">
             {onCopy && copyPlacement === 'secondary' && (
               <button
                 className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
@@ -562,17 +731,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 title="Copy"
               >
                 <span className="icon"><i className="fa-regular fa-copy" aria-hidden="true"></i></span>
-              </button>
-            )}
-            {onSave && savePlacement === 'secondary' && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onSave}
-                disabled={disabled || isEmpty}
-                aria-label="Download JSON"
-                title="Download"
-              >
-                <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
               </button>
             )}
             {onSaveAs && saveAsPlacement === 'secondary' && (
@@ -586,6 +744,49 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 <span className="icon"><i className="fa-regular fa-floppy-disk" aria-hidden="true"></i></span>
               </button>
             )}
+            {onSave && savePlacement === 'secondary' && (
+              <button
+                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={onSave}
+                disabled={disabled || isEmpty}
+                aria-label="Download JSON"
+                title="Download"
+              >
+                <span className="icon"><i className="fa-solid fa-download" aria-hidden="true"></i></span>
+              </button>
+            )}
+          </div>
+        )}
+        {/* Separator before Clear */}
+        {onClear && <div className="toolbar-separator" />}
+        {/* Section 5: Clear (separated) */}
+        {onClear && (
+          <div className="toolbar-group edit-group">
+            <button
+              className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
+              onClick={onClear}
+              disabled={disabled || isEmpty}
+              aria-label="Clear"
+              title="Clear"
+            >
+              <span className="icon"><i className="fa-solid fa-trash-can" aria-hidden="true"></i></span>
+            </button>
+          </div>
+        )}
+        {/* Separator before Fullscreen */}
+        {onFullscreen && fullscreenPlacement === 'secondary' && <div className="toolbar-separator" />}
+        {/* Fullscreen in secondary ribbon */}
+        {onFullscreen && fullscreenPlacement === 'secondary' && (
+          <div className="toolbar-group view-group">
+            <button
+              className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
+              onClick={onFullscreen}
+              disabled={disabled || isEmpty}
+              aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
+              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+            >
+              <span className="icon">⛶</span>
+            </button>
           </div>
         )}
 
@@ -616,16 +817,16 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
 
-        {(onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary') ? <div className="toolbar-separator" /> : null}
+        {(_onPrint && printPlacement === 'secondary') ? <div className="toolbar-separator" /> : null}
 
         {/* Push view group to far right on secondary ribbon */}
-        {((onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary')) && (
+        {(_onPrint && printPlacement === 'secondary') && (
           <div className="toolbar-flex-spacer" />
         )}
 
-        {((onFullscreen && fullscreenPlacement === 'secondary') || (_onPrint && printPlacement === 'secondary')) && (
+        {(_onPrint && printPlacement === 'secondary') && (
           <div className="toolbar-group view-group">
-            {/* Print before Fullscreen */}
+            {/* Print */}
             {_onPrint && printPlacement === 'secondary' && (
               <button
                 className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
@@ -635,18 +836,6 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 title="Print"
               >
                 <span className="icon"><i className="fa-solid fa-print" aria-hidden="true"></i></span>
-              </button>
-            )}
-            {/* Fullscreen at extreme right */}
-            {onFullscreen && fullscreenPlacement === 'secondary' && (
-              <button
-                className={`toolbar-btn icon-only fullscreen ${fullscreenStyle === 'black' ? 'fullscreen-black' : ''} ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onFullscreen}
-                disabled={disabled || isEmpty}
-                aria-label={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen (F11)'}
-                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-              >
-                <span className="icon">⛶</span>
               </button>
             )}
           </div>
