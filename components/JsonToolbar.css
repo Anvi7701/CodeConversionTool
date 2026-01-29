@@ -51,11 +51,11 @@
   padding: 4px 0;
 }
 
-/* Vertical separators inside embedded ribbons: mirror Compare (slate-700) */
+/* Vertical separators inside embedded ribbons: lighter color for visibility */
 .json-toolbar-container.embedded .toolbar-separator {
   width: 1px;
   height: 24px; /* match Compare's taller separators */
-  background-color: #334155; /* slate-700 */
+  background-color: #64748b; /* slate-500 for better visibility against dark backgrounds */
   margin: 0 6px;
 }
 
@@ -115,6 +115,16 @@
   height: 24px;
   background: linear-gradient(to bottom, transparent, #d0d0d0, transparent);
   margin: 0 6px;
+  flex-shrink: 0; /* Prevent separator from being squeezed in flex layouts */
+}
+
+/* Secondary ribbon separators need solid color for visibility */
+.secondary-ribbon .toolbar-separator {
+  width: 1px;
+  height: 20px;
+  background: #94a3b8; /* slate-400 - visible against both light and dark backgrounds */
+  margin: 0 8px;
+  flex-shrink: 0;
 }
 
 /* Button Group */
@@ -229,6 +239,11 @@
   color: #000 !important;
 }
 
+/* Green tick icon for Validate button */
+.toolbar-btn.primary .icon.validate-tick {
+  color: #22c55e !important;
+}
+
 .toolbar-btn.primary:hover:not(:disabled) {
   background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
@@ -320,7 +335,7 @@
 .json-toolbar-container.theme-dark .toolbar-separator {
   width: 1px;
   height: 24px;
-  background-color: #334155; /* slate-700 */
+  background-color: #64748b; /* slate-500 for better visibility against slate-700 background */
 }
 
 /* Attention highlight for key actions (e.g., Upload, Sample) */
@@ -414,11 +429,11 @@
   left: 0;
   background: white;
   border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
   z-index: 99999;
-  min-width: 200px;
-  padding: 6px;
+  min-width: 140px;
+  padding: 4px;
   animation: dropdownSlideIn 0.2s ease-out;
   pointer-events: auto;
 }
@@ -436,17 +451,17 @@
 
 .dropdown-menu button {
   width: 100%;
-  padding: 10px 14px;
+  padding: 6px 10px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  border-radius: 6px;
-  font-size: 14px;
+  border-radius: 4px;
+  font-size: 13px;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: #333;
 }
 
@@ -459,7 +474,7 @@
 .dropdown-menu .checkmark {
   color: #667eea;
   font-weight: bold;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .dropdown-divider {
@@ -782,21 +797,44 @@
   background: #64748b; /* slate-500/600 hover */
   border-color: #818b9b; /* lighter grey border on hover */
 }
-/* Primary buttons in dark theme: use slate palette instead of purple gradient */
-.json-toolbar-container.theme-dark .toolbar-btn.primary {
-  background: #475569; /* slate-600 */
-  border-color: #64748b; /* slate-500/600 */
-  color: #f8fafc !important; /* slate-50 text */
+/* Primary buttons in dark theme: use same purple gradient as light theme */
+/* Only Minify button gets purple gradient in dark theme */
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: #000 !important;
+  font-weight: 600;
 }
-.json-toolbar-container.theme-dark .toolbar-btn.primary .icon,
-.json-toolbar-container.theme-dark .toolbar-btn.primary .label,
-.json-toolbar-container.theme-dark .toolbar-btn.primary i,
-.json-toolbar-container.theme-dark .toolbar-btn.primary span {
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn .icon,
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn .label,
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn i,
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn span {
+  color: #000 !important;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.primary.minify-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+/* All other primary buttons in dark theme: slate color */
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) {
+  background: #475569;
+  border-color: #64748b;
+  color: #f8fafc !important;
+  font-weight: 600;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) .icon,
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) .label,
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) i,
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) span {
   color: #f8fafc !important;
 }
-.json-toolbar-container.theme-dark .toolbar-btn.primary:hover:not(:disabled) {
-  background: #334155; /* slate-700 */
-  border-color: #475569; /* slate-600 */
+/* Green tick icon for Validate button in dark theme */
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn) .icon.validate-tick {
+  color: #22c55e !important;
+}
+.json-toolbar-container.theme-dark .toolbar-btn.primary:not(.minify-btn):hover:not(:disabled) {
+  background: #334155;
+  border-color: #475569;
 }
 .json-toolbar-container.theme-dark .toolbar-btn.success {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
