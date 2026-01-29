@@ -180,6 +180,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   const [outputHistoryIndex, setOutputHistoryIndex] = useState<number>(-1);
   const isApplyingOutputHistoryRef = useRef<boolean>(false);
   
+  // Ref for scrolling to editor area on Transform page
+  const editorAreaRef = useRef<HTMLDivElement>(null);
+  
   // View mode state
   const [isStructureAnalysisMode, setIsStructureAnalysisMode] = useState<boolean>(false);
 
@@ -4922,7 +4925,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
+        <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-0' : 'gap-6'} min-h-[600px]`}>
           <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
             {(isParserPage || isTransformPage || isMinifierPage) && (
@@ -7661,6 +7664,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               setOutputError(null); // Clear any output errors
               setSuccessMessage(null); // Don't show success message - output will show in Output section
               setShowJMESPathModal(false);
+              // Scroll to editor area to show input and output
+              setTimeout(() => {
+                editorAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
             }}
             onClose={() => setShowJMESPathModal(false)}
           />
@@ -7678,6 +7685,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               setOutputError(null);
               setSuccessMessage(null);
               setShowJSONPathModal(false);
+              // Scroll to editor area to show input and output
+              setTimeout(() => {
+                editorAreaRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }, 100);
             }}
             onClose={() => setShowJSONPathModal(false)}
             onHighlightPath={(p) => highlightPathInInput(p)}
