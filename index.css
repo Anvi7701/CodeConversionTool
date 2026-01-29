@@ -131,7 +131,7 @@ button.main-button,
   box-shadow: none !important;
   white-space: nowrap !important;
   min-width: 120px !important;                 /* consistent button width */
-  justify-content: center !important;
+  justify-content: center !important;          /* center content within button */
 }
 
 .main-button:hover,
