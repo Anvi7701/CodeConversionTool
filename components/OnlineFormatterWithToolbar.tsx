@@ -4955,7 +4955,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onViewGraph={undefined}
                   onSave={handleSave}
                   onSaveAs={handleSaveAsJsonInput}
-                  onPrint={isMinifierPage ? undefined : handlePrint}
+                  onPrint={(isMinifierPage || isTransformPage) ? undefined : handlePrint}
                   onValidate={handleValidate}
                   onCompare={undefined}
                   onClear={() => { if (!inputCode.trim()) return; setInputCode(''); addToHistory(''); }}
