@@ -37,6 +37,7 @@ interface JsonToolbarProps {
   errorCount: number;
   isFullscreen?: boolean;
   disabled?: boolean;
+  isEmpty?: boolean; // When true, disables Format and Minify buttons (but not Upload/Sample)
   language?: string;
   variant?: 'default' | 'compact';
   formatLabel?: string; // Override Beautify label (e.g., "Format")
@@ -101,6 +102,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   errorCount,
   isFullscreen = false,
   disabled = false,
+  isEmpty = false,
   language: _language = 'json',
   variant = 'default',
   formatLabel = 'Beautify',
@@ -234,7 +236,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <button
                 className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={() => onFormat(2)}
-                disabled={disabled}
+                disabled={disabled || isEmpty}
                 aria-label="Beautify JSON (Ctrl+B)"
               >
                 <span className="icon">🎨</span>
@@ -246,7 +248,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   e.stopPropagation();
                   setFormatDropdownOpen(!formatDropdownOpen);
                 }}
-                disabled={disabled}
+                disabled={disabled || isEmpty}
                 aria-label="Formatting options"
               >
                 ▼
@@ -280,7 +282,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <button
                 className={`toolbar-btn primary minify-btn ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={onMinify}
-                disabled={disabled}
+                disabled={disabled || isEmpty}
                 aria-label="Minify JSON (Ctrl+M)"
               >
                 <span className="icon">📦</span>
