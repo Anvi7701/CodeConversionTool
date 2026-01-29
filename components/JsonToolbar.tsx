@@ -236,7 +236,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <button
                 className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={() => onFormat(2)}
-                disabled={disabled || isEmpty}
+                disabled={disabled || inputEmpty}
                 aria-label="Beautify JSON (Ctrl+B)"
               >
                 <span className="icon">🎨</span>
@@ -248,7 +248,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                   e.stopPropagation();
                   setFormatDropdownOpen(!formatDropdownOpen);
                 }}
-                disabled={disabled || isEmpty}
+                disabled={disabled || inputEmpty}
                 aria-label="Formatting options"
               >
                 ▼
@@ -282,7 +282,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               <button
                 className={`toolbar-btn primary minify-btn ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={onMinify}
-                disabled={disabled || isEmpty}
+                disabled={disabled || inputEmpty}
                 aria-label="Minify JSON (Ctrl+M)"
               >
                 <span className="icon">📦</span>

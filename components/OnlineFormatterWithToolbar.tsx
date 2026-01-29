@@ -4964,7 +4964,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   errorCount={validationError ? 1 : 0}
                   isFullscreen={!!document.fullscreenElement}
                   disabled={isActionDisabled}
-                  isEmpty={!inputCode.trim()}
+                  inputEmpty={!inputCode.trim()}
                   language={activeLanguage}
                   variant="compact"
                   formatLabel="Format"
