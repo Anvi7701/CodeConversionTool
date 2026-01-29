@@ -6399,7 +6399,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onClear={handleClearOutput}
                   onCopy={handleCopyOutput}
                   onFullscreen={() => handleToggleOutputFullscreen()}
-                  onToggleEditLock={!isTransformPage ? () => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); } : undefined}
+                  onToggleEditLock={!isMinifierPage ? () => { if (!outputCode?.trim()) return; setOutputLocked((v) => !v); } : undefined}
                   isLocked={!!outputLocked}
                   onCopyOutputToInput={!isTransformPage && !isMinifierPage ? () => { if (!outputCode?.trim()) return; setInputCode(outputCode!); setViewFormat('code'); } : undefined}
                   canUndo={canUndoOutput}
