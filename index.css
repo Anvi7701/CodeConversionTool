@@ -232,6 +232,18 @@ button.nav-button:hover,
 }
 
 /* Compact parser ribbon: place all buttons in one line with tighter sizing */
+.parser-ribbon-container {
+  width: 100%;
+  background-color: #f8fafc; /* subtle light band */
+  border: 1px solid #e2e8f0; /* slate-200 */
+  padding: 8px 12px;
+  border-radius: 0; /* no rounded corners */
+  box-shadow: none;
+}
+html.dark .parser-ribbon-container {
+  background-color: rgba(51, 65, 85, 0.45); /* slate-700/opacity */
+  border: 1px solid #475569; /* slate-600 */
+}
 .parser-ribbon.compact {
   display: flex;
   flex-wrap: nowrap;
@@ -239,9 +251,9 @@ button.nav-button:hover,
   gap: 6px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background-color: #f8fafc;  /* very light slate background (slate-50) */
-  padding: 8px 12px;
-  border-radius: 4px;
+  background-color: transparent; /* remove ribbon container background */
+  padding: 0; /* remove inner padding to avoid any banding */
+  border-radius: 0; /* no rounded corners on ribbon container */
 }
 .parser-ribbon.compact .main-actions,
 .parser-ribbon.compact .nav-actions {

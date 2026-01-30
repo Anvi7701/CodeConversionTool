@@ -93,8 +93,8 @@ export const JsonParserPage: React.FC = () => {
           <p className="text-sm mt-2">Perfect for developers working with APIs and large JSON files.</p>
         </section>
 
-        {/* Tool container: white in light mode, dark in dark mode */}
-        <section className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 force-light-editors">
+        {/* Tool container: remove outer boundary (no background, border, radius, or shadow) */}
+        <section className="bg-transparent dark:bg-transparent p-0 m-0 border-0 rounded-none shadow-none force-light-editors">
           {/* Use shared formatter/editor only; schema appears in main Output */}
           <OnlineFormatterWithToolbar
             initialLanguage="json"

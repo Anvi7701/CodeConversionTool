@@ -64,7 +64,7 @@ export const JsonFormatterPage: React.FC = () => {
       </div>
       <OnlineFormatterWithToolbar
         initialLanguage="json"
-        showLeftInputActions={true}
+        showLeftInputActions={false}
         inlineStructureAnalysisIcon={false}
         inlineSortValidateIcons={false}
         showMinifyNextToBeautify={true}

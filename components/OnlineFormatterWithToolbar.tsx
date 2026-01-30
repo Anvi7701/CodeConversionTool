@@ -233,6 +233,26 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
   // Show Output toolbar icons on Beautifier, Editor, Formatter, and Minifier pages; keep hidden elsewhere
   const hideOutputToolbarIconsExceptFullscreen = !(isBeautifierPage || isEditorPage || isFormatterPage || isMinifierPage || isParserPage || isTransformPage);
 
+  // Handle changing Output view format via toolbar dropdown
+  const handleChangeOutputViewFormat = (format: 'code' | 'view' | 'tree' | 'form' | 'text' | 'table' | 'toon') => {
+    if (activeLanguage === 'json' && outputCode && format !== 'code') {
+      setPreviousView(viewFormat);
+      const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format } as any);
+      if (!isValid) {
+        return;
+      }
+    }
+
+    if ((format === 'form' || format === 'tree') && viewFormat !== format) {
+      setExpandAllTrigger(true);
+      setTimeout(() => setExpandAllTrigger(false), 100);
+    }
+
+    setOutputHistory([]);
+    setOutputHistoryIndex(-1);
+    setViewFormat(format);
+  };
+
   // Initialize input (and optional conversion) from navigation state when provided
   const hasInitializedFromRouteRef = useRef<boolean>(false);
   useEffect(() => {
@@ -3931,9 +3951,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
           </div>
         )}
 
-        {/* Parser page ribbon with slate-themed buttons - styled like Minifier ribbon */}
+        {/* Parser page ribbon: wrapped in its own container for visual distinction */}
         {isJsonLanguage && isParserPage && activeLanguage === 'json' && (
-          <section className="bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 mb-2">
+          <div className="parser-ribbon-container mb-2">
             <div className="parser-ribbon compact flex flex-row items-center gap-2">
               <div className="main-actions">
                   {/* Parse JSON (true parsing like JSON.parse) */}
@@ -4132,11 +4152,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </button>
                 </div>
               </div>
-          </section>
+            </div>
         )}
 
-        {/* Compact toolbar with smaller buttons and dropdowns (non-Parser pages) */}
-        {isJsonLanguage && !(isParserPage || isTransformPage) && (
+        {/* Compact toolbar with smaller buttons and dropdowns (exclude Parser/Transform/Formatter to mirror Minifier) */}
+        {isJsonLanguage && !(isParserPage || isTransformPage || isFormatterPage) && (
           <div className={`flex ${isBeautifierPage ? 'flex-wrap items-start' : 'items-center justify-between'} gap-2 bg-light-card dark:bg-dark-card rounded-lg shadow-lg p-3 overflow-visible z-20 ${isFormatterPage ? 'formatter-toolbar' : ''} ${isBeautifierPage ? 'beautifier-toolbar' : ''}`}>
             <div className={`flex ${isBeautifierPage ? 'flex-wrap gap-y-2' : ''} items-start gap-2 overflow-visible`}>
               {isBeautifierPage ? (
@@ -4923,11 +4943,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3' : 'gap-6'} min-h-[600px]`}>
-          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+        <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'gap-3' : 'gap-6'} min-h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
-            {(isParserPage || isTransformPage || isMinifierPage) && (
-              <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
+            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
+              <div className={`${isParserPage ? 'w-full p-0 bg-transparent border-0' : 'w-full p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600'}`}>
                 <JsonToolbar
                   onFormat={handleFormat}
                   onMinify={handleCompact}
@@ -4953,7 +4973,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onViewGraph={undefined}
                   onSave={handleSave}
                   onSaveAs={handleSaveAsJsonInput}
-                  onPrint={(isMinifierPage || isTransformPage) ? undefined : handlePrint}
+                  onPrint={(isMinifierPage || isTransformPage || isParserPage || isFormatterPage) ? undefined : handlePrint}
                   onValidate={handleValidate}
                   onCompare={undefined}
                   onClear={() => { if (!inputCode.trim()) return; setInputCode(''); addToHistory(''); }}
@@ -4991,16 +5011,15 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   onSearch={handleToggleSearch}
                   searchPlacement="secondary"
                   theme="dark"
-                  inputEmpty={!inputCode.trim()}
                 />
               </div>
             )}
             {false && isTransformPage}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
-                {!(isParserPage || isTransformPage || isMinifierPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
+                {!(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage || isMinifierPage) ? 'hidden' : ''}`}>
+                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'hidden' : ''}`}>
                   {/* Sample Data (TOON-friendly) � placed to the left of Collapse (TOON page only) */}
                   {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
@@ -5995,7 +6014,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && !(isParserPage || isTransformPage || isMinifierPage) && !(validationError && errorLines.length > 0) && (
+                  {isJsonLanguage && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                         <span
                           role="button"
@@ -6009,7 +6028,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </span>
                     </Tooltip>
                   )}
-                  {!isFullscreen && !(isParserPage || isTransformPage || isMinifierPage) && (
+                  {!isFullscreen && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
                     <Tooltip content="Enter fullscreen">
                         <span
                           role="button"
@@ -6108,7 +6127,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
 
             {/* Dedicated left rail column and reserved content area */}
-            <div className={`${(isParserPage || isTransformPage || isMinifierPage) ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
+            <div className={`${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
                 {showLeftInputActions && !(isParserPage || isTransformPage || isMinifierPage) && (
                   <div className={`left-rail flex-shrink-0 w-[42px] flex flex-col gap-1.5 pt-2 pb-2 items-center bg-transparent dark:bg-transparent z-20 border-r border-slate-200 dark:border-slate-600 mr-2 transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                     {isBeautifierPage ? (
@@ -6359,10 +6378,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
-            {/* Parser/Transform/Minifier Output primary/secondary ribbons above content to mirror Input placement */}
-            {(isParserPage || isTransformPage || isMinifierPage) && (
-              <div className="p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full">
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+            {/* Parser/Transform/Minifier/Formatter Output primary/secondary ribbons above content to mirror Input placement */}
+            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
+              <div className={`${isParserPage ? 'w-full p-0 bg-transparent border-0' : 'p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full'}`}>
                 <JsonToolbar
                   onFormat={(indent) => handleFormat(indent)}
                   onMinify={() => handleMinify()}
@@ -6431,6 +6450,11 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   enableStructure={activeLanguage === 'json' && ['form','tree','view','code','text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (!isTransformPage || hasTransformResult)}
                   enableSort={!!outputCode && !!outputCode.trim() && (!isTransformPage || hasTransformResult)}
                   enableValidate={!!outputCode && !!outputCode.trim() && !isStructureAnalysisMode && (!isTransformPage || hasTransformResult)}
+                  // Move View dropdown into Primary output toolbar
+                  onChangeView={handleChangeOutputViewFormat}
+                  currentViewFormat={viewFormat as any}
+                  enableView={!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && !isMinifierPage}
+                  viewPlacement="primary"
                   outputLabel={isTransformPage && transformType ? (transformType === 'jmespath' ? 'JMESPath Output' : 'JSONPath Output') : undefined}
                 />
               </div>
@@ -6439,201 +6463,22 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {!isParserPage && !isTransformPage && !isMinifierPage && (
+                {/* Remove Output label on Formatter page */}
+                {!isParserPage && !isTransformPage && !isMinifierPage && !isFormatterPage && (
                   <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (outputTitle ?? 'Output')}</h2>
                 )}
-                {/* Expand/Collapse icons - positioned immediately after Output label with ml-4 spacing (matching Input section) */}
-                {/* Hide toolbar when output is from conversion (XML/CSV/YAML) */}
-                {!isConversionOutput && !isParserPage && !isTransformPage && !isMinifierPage && (
-                <div className="flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent">
-                  {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && ['form', 'tree', 'view', 'code', 'text'].includes(viewFormat) && !isStructureAnalysisMode && !(validationError && errorLines.length > 0) && (
-                    <>
-                      <Tooltip content="Collapse all fields">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={outputCode?.trim() ? handleCollapseAllFields : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleCollapseAllFields(); } }}
-                          className={`${iconButtonClass} ml-1 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Collapse All"
-                        >
-                          <i className={`fa-solid fa-arrows-down-to-line ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      <Tooltip content="Expand all fields">
-                        <span
-                          role="button"
-                          tabIndex={0}
-                          onClick={outputCode?.trim() ? handleExpandAllFields : undefined}
-                          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleExpandAllFields(); } }}
-                          className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                          aria-label="Expand All"
-                        >
-                          <i className={`fa-solid fa-arrows-up-to-line ${iconTextClass}`} aria-hidden="true"></i>
-                        </span>
-                      </Tooltip>
-                      {!isTransformPage && (
-                        <>
-                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                          {/* Output Sort (JSON) - positioned after Expand All (matching Input section layout) */}
-                          <div className="relative inline-flex dropdown-container overflow-visible">
-                            <Tooltip content="Sort Output JSON (toggle options)">
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={() => { if (!outputCode || !outputCode.trim()) return; setShowOutputSortDropdown(!showOutputSortDropdown); }}
-                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode && outputCode.trim()) { e.preventDefault(); setShowOutputSortDropdown(!showOutputSortDropdown); } }}
-                                className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : showOutputSortDropdown ? 'bg-blue-700 dark:bg-blue-600 hover:bg-blue-800 dark:hover:bg-blue-700' : 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600'}`}
-                                aria-label="Sort Output"
-                                title="Sort Output JSON"
-                              >
-                                <i className="fa-solid fa-sort text-white text-sm" aria-hidden="true"></i>
-                              </span>
-                            </Tooltip>
-                            {showOutputSortDropdown && (
-                              <div className="absolute right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg z-50 min-w-[150px]">
-                                <button onClick={() => { handleSortOutput('asc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (A ? Z)</button>
-                                <button onClick={() => { handleSortOutput('desc','keys'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Keys (Z ? A)</button>
-                                <button onClick={() => { handleSortOutput('asc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (A ? Z)</button>
-                                <button onClick={() => { handleSortOutput('desc','values'); setShowOutputSortDropdown(false); }} className="w-full px-2 py-1 text-xs text-left hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-900 dark:text-gray-100">Values (Z ? A)</button>
-                              </div>
-                            )}
-                          </div>
-                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                        </>
-                      )}
-
-                      {!isTransformPage && (
-                        <>
-                          {/* Undo/Redo for Output - positioned after Sort (matching Input section layout) */}
-                          <Tooltip content="Undo last change">
-                            {isParserPage ? (
-                              <button
-                                onClick={canUndoOutput ? handleOutputUndo : undefined}
-                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
-                                className="toolbar-btn icon-only compact"
-                                disabled={!canUndoOutput}
-                                aria-label="Undo"
-                                title="Undo"
-                              >
-                                <span className="icon"><i className="fa-solid fa-rotate-left" aria-hidden="true"></i></span>
-                              </button>
-                            ) : (
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={canUndoOutput ? handleOutputUndo : undefined}
-                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canUndoOutput) { e.preventDefault(); handleOutputUndo(); } }}
-                                className={`${iconButtonClass} ${canUndoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                                aria-label="Undo"
-                              >
-                                <i className={`fa-solid fa-rotate-left ${iconTextClass}`} aria-hidden="true"></i>
-                              </span>
-                            )}
-                          </Tooltip>
-                          <Tooltip content="Redo last change">
-                            {isParserPage ? (
-                              <button
-                                onClick={canRedoOutput ? handleOutputRedo : undefined}
-                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
-                                className="toolbar-btn icon-only compact"
-                                disabled={!canRedoOutput}
-                                aria-label="Redo"
-                                title="Redo"
-                              >
-                                <span className="icon"><i className="fa-solid fa-rotate-right" aria-hidden="true"></i></span>
-                              </button>
-                            ) : (
-                              <span
-                                role="button"
-                                tabIndex={0}
-                                onClick={canRedoOutput ? handleOutputRedo : undefined}
-                                onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && canRedoOutput) { e.preventDefault(); handleOutputRedo(); } }}
-                                className={`${iconButtonClass} ${canRedoOutput ? '' : 'opacity-40 cursor-not-allowed'}`}
-                                aria-label="Redo"
-                              >
-                                <i className={`fa-solid fa-rotate-right ${iconTextClass}`} aria-hidden="true"></i>
-                              </span>
-                            )}
-                          </Tooltip>
-                          <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                        </>
-                      )}
-
-                      {/* Search Output JSON (code view only) */}
-                      {!isTransformPage && viewFormat === 'code' && (
-                        <Tooltip content="Search in Output JSON">
-                          <span
-                            role="button"
-                            tabIndex={0}
-                            onClick={outputCode?.trim() ? handleToggleOutputSearch : undefined}
-                            onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputSearch(); } }}
-                            className={`w-8 h-8 rounded-md transition-all flex items-center justify-center ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-orange-400 dark:bg-orange-400' : showOutputSearchPanel ? 'bg-orange-700 dark:bg-orange-600 hover:bg-orange-800 dark:hover:bg-orange-700 cursor-pointer' : 'bg-orange-600 dark:bg-orange-500 hover:bg-orange-700 dark:hover:bg-orange-600 cursor-pointer'}`}
-                            aria-label="Search Output"
-                          >
-                            <i className="fa-solid fa-search text-white text-sm" aria-hidden="true"></i>
-                          </span>
-                        </Tooltip>
-                      )}
-                      {!isTransformPage && (<div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>)}
-                    </>
-                  )}
-                  {/* Icon Toolbar for special states (validation errors, structure analysis, etc.) */}
-                  {!hideOutputToolbarIconsExceptFullscreen && !isTransformPage && (validationError || outputError || aiError || successMessage || isStructureAnalysisMode) && (
-                    <>
-                      {!(validationError && errorLines.length > 0) && (
-                        <>
-                          <Tooltip content="Save to file">
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={handleSave}
-                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSave(); } }}
-                              className={`${iconButtonClass} ${(!outputCode && !inputCode.trim()) ? 'opacity-40 cursor-not-allowed' : ''}`}
-                              aria-label="Save"
-                            >
-                              <i className={`fa-solid fa-floppy-disk ${iconTextClass}`} aria-hidden="true"></i>
-                            </span>
-                          </Tooltip>
-                          <Tooltip content={viewFormat === 'toon' ? 'Copy TOON to clipboard' : 'Copy to clipboard'}>
-                            <span
-                              role="button"
-                              tabIndex={0}
-                              onClick={handleCopyOutput}
-                              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCopyOutput(); } }}
-                              className={`${iconButtonClass} ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed' : ''}`}
-                              aria-label="Copy"
-                            >
-                              <i className={`fa-solid fa-copy ${iconTextClass}`} aria-hidden="true"></i>
-                            </span>
-                          </Tooltip>
-                        </>
-                      )}
-                      <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                    </>
-                  )}
-                  {/* TOON Settings moved near Output Fullscreen */}
-                  {/* Undo/Redo buttons removed; replaced by icon-only pills at the end of this toolbar */}
-                </div>
-                )}
+                {/* Duplicate icons above the output toolbar removed to avoid redundancy */}
+                
+                
+                
+                
+                
+                
+                
+                
               </div>
-                <div className="flex items-center gap-2">
-                {/* Validate Output (JSON) - next to view controls */}
-                {!isParserPage && !hideOutputToolbarIconsExceptFullscreen && !isTransformPage && !isMinifierPage && !isConversionOutput && activeLanguage === 'json' && !isStructureAnalysisMode && ['form','tree','view','code','text'].includes(viewFormat) && !(validationError && errorLines.length > 0) && (
-                  <Tooltip content="Validate Output JSON">
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={handleValidateOutput}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleValidateOutput(); } }}
-                      className={`w-8 h-8 rounded-md transition-all cursor-pointer flex items-center justify-center ${isBeautifierPage ? (!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode || !outputCode.trim() ? 'opacity-40 cursor-not-allowed bg-green-600 dark:bg-green-500' : 'hover:bg-green-700 dark:hover:bg-green-600 bg-green-600 dark:bg-green-500')}`}
-                      aria-label="Validate Output"
-                      title="Validate Output JSON"
-                    >
-                      <i className="fa-solid fa-check text-sm" aria-hidden="true" style={{ color: '#333' }}></i>
-                    </span>
-                  </Tooltip>
-                )}
+              <div className="flex items-center gap-2">
+                {/* Removed Validate Output icon from header to avoid duplication */}
                 {/* Output Fullscreen toggle - immediately after icons */}
                 {!hideOutputToolbarIconsExceptFullscreen && activeLanguage === 'json' && viewFormat === 'toon' && (
                   <div className="relative toon-settings-popover">
@@ -6761,157 +6606,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
                   </div>
                 )}
-                {/* Output Fullscreen toggle - moved to right-aligned group */}
-                {/* Parser-specific controls: Edit Output (unlock) and Copy Output to Input */}
-                {!isParserPage && !isTransformPage && !isMinifierPage && (
-                  <>
-                    <Tooltip content={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}>
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          if (!outputCode?.trim()) return;
-                          setOutputLocked((v) => !v);
-                        }}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); setOutputLocked((v) => !v); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-1 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-blue-400 dark:bg-blue-400' : (outputLocked ? 'bg-blue-600 dark:bg-blue-500 hover:bg-blue-700 dark:hover:bg-blue-600' : 'bg-slate-500 dark:bg-slate-600 hover:bg-slate-600 dark:hover:bg-slate-500')} cursor-pointer`}
-                        aria-label={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}
-                        title={outputLocked ? 'Edit Output (unlock)' : 'Lock Output (read-only)'}
-                      >
-                        <i className={`fa-solid ${outputLocked ? 'fa-pen-to-square' : 'fa-lock'} text-white text-sm`} aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
-                    <Tooltip content="Copy output to input">
-                      <span
-                        role="button"
-                        tabIndex={0}
-                        onClick={() => {
-                          if (!outputCode?.trim()) return;
-                          setInputCode(outputCode);
-                          setViewFormat('code');
-                        }}
-                        onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); setInputCode(outputCode!); setViewFormat('code'); } }}
-                        className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-teal-400 dark:bg-teal-400' : 'bg-teal-600 dark:bg-teal-500 hover:bg-teal-700 dark:hover:bg-teal-600'} cursor-pointer`}
-                        aria-label="Copy output to input"
-                        title="Copy output to input"
-                      >
-                        <i className="fa-solid fa-arrow-left-long text-white text-sm" aria-hidden="true"></i>
-                      </span>
-                    </Tooltip>
-                  </>
-                )}
-                {!isParserPage && !isTransformPage && !isMinifierPage && (
-                <Tooltip content={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}>
-                  <span
-                    role="button"
-                    tabIndex={0}
-                    onClick={outputCode?.trim() ? handleToggleOutputFullscreen : undefined}
-                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && outputCode?.trim()) { e.preventDefault(); handleToggleOutputFullscreen(); } }}
-                    className={`w-8 h-8 rounded-md transition-all flex items-center justify-center mr-2 ${isBeautifierPage ? (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed icon-blue-ice' : 'icon-blue-ice') : (!outputCode?.trim() ? 'opacity-40 cursor-not-allowed bg-slate-300 dark:bg-slate-600' : 'hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer bg-slate-200 dark:bg-slate-900')}`}
-                    aria-label={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                    title={isOutputFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-                  >
-                    <i className={`fa-solid ${isOutputFullscreen ? 'fa-compress' : 'fa-expand'} text-sm`} aria-hidden="true" style={{ color: '#333' }}></i>
-                  </span>
-                </Tooltip>
-                )}
+                {/* Removed Lock Output and Copy Output→Input icons from header */}
+                {/* Removed Output Fullscreen icon from header */}
                 
-                {/* View Format Dropdown - disabled on parser and transform pages */}
-                {!lockViewTo && activeLanguage === 'json' && !(validationError && errorLines.length > 0) && (!isConversionOutput || isMinifierPage) && !isParserPage && !isTransformPage && !isMinifierPage && (
-                  <div className="relative dropdown-container">
-                    <button
-                      onClick={() => {
-                        if (isStructureAnalysisMode || !outputCode?.trim()) return;
-                        console.log('View dropdown clicked, current format:', viewFormat);
-                        setShowViewDropdown(!showViewDropdown);
-                      }}
-                      disabled={isStructureAnalysisMode || !outputCode?.trim()}
-                      className={`px-3 py-1.5 text-sm rounded-md transition-colors flex items-center gap-1.5 ${
-                        (isStructureAnalysisMode || !outputCode?.trim())
-                          ? 'bg-slate-400 dark:bg-slate-600 cursor-not-allowed opacity-60' 
-                          : 'bg-blue-500 hover:bg-blue-600 cursor-pointer'
-                      } text-white`}
-                      aria-label="Select View Format"
-                    >
-                      <span>{viewFormat.charAt(0).toUpperCase() + viewFormat.slice(1)}</span>
-                      <span className="text-xs">?</span>
-                    </button>
-                    {showViewDropdown && (
-                      <div className="absolute right-0 mt-1 bg-gradient-to-br from-white to-slate-50 dark:from-slate-800 dark:to-slate-900 border border-slate-300 dark:border-slate-600 rounded-md shadow-lg z-20 min-w-[150px] overflow-hidden">
-                        {(() => {
-                          const allFormats: ViewFormat[] = ['code', 'form', 'text', 'tree', 'table', 'view', 'toon'];
-                          const excludeOnEditOrMinifier: ViewFormat[] = ['text','table','toon','view'];
-                          const formatsToRender: ViewFormat[] = (isEditorPage || isMinifierPage)
-                            ? (allFormats.filter(f => !(excludeOnEditOrMinifier as ViewFormat[]).includes(f)) as ViewFormat[])
-                            : allFormats;
-                          return formatsToRender.map((format) => {
-                          const isDisabled = isStructureAnalysisMode && format !== 'view';
-                          
-                          // Define emoji and colors for each format
-                          const formatConfig = {
-                            code: { emoji: '??', color: 'text-blue-600 dark:text-blue-400', gradient: 'from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30' },
-                            form: { emoji: '??', color: 'text-green-600 dark:text-green-400', gradient: 'from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30' },
-                            text: { emoji: '??', color: 'text-purple-600 dark:text-purple-400', gradient: 'from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30' },
-                            tree: { emoji: '??', color: 'text-teal-600 dark:text-teal-400', gradient: 'from-teal-50 to-cyan-50 dark:from-teal-900/30 dark:to-cyan-900/30' },
-                            table: { emoji: '?', color: 'text-orange-600 dark:text-orange-400', gradient: 'from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30' },
-                            view: { emoji: '???', color: 'text-indigo-600 dark:text-indigo-400', gradient: 'from-indigo-50 to-blue-50 dark:from-indigo-900/30 dark:to-blue-900/30' },
-                            toon: { emoji: '???', color: 'text-pink-600 dark:text-pink-400', gradient: 'from-pink-50 to-rose-50 dark:from-pink-900/30 dark:to-rose-900/30' }
-                          };
-                          
-                          const config = formatConfig[format];
-                          
-                          return (
-                            <button
-                              key={format}
-                              onClick={() => {
-                                if (isDisabled) return;
-                                
-                                // Validate output JSON before switching views (including Form/Tree)
-                                if (activeLanguage === 'json' && outputCode && format !== 'code') {
-                                  setPreviousView(viewFormat); // Store current view before validation
-                                  const isValid = validateOutputJson(outputCode, { type: 'view-switch', targetView: format });
-                                  if (!isValid) {
-                                    // Don't switch view if JSON is invalid - pending action stored
-                                    setShowViewDropdown(false);
-                                    return;
-                                  }
-                                }
-                                
-                                // Auto-expand when switching to Form or Tree view
-                                if ((format === 'form' || format === 'tree') && viewFormat !== format) {
-                                  setExpandAllTrigger(true);
-                                  // Reset the trigger after a brief moment to allow future expansions
-                                  setTimeout(() => setExpandAllTrigger(false), 100);
-                                }
-                                
-                                // Reset output history when switching views (undo/redo will be disabled initially)
-                                setOutputHistory([]);
-                                setOutputHistoryIndex(-1);
-                                
-                                setViewFormat(format);
-                                setShowViewDropdown(false);
-                              }}
-                              className={`w-full text-left px-3 py-2 text-[13px] transition-all duration-150 flex items-center gap-2 ${
-                                isDisabled 
-                                  ? 'opacity-40 cursor-not-allowed text-slate-400 dark:text-slate-500' 
-                                  : `hover:bg-gradient-to-r hover:${config.gradient} cursor-pointer`
-                              } ${
-                                viewFormat === format 
-                                  ? `bg-gradient-to-r ${config.gradient} font-semibold border-l-2 ${config.color.replace('text-', 'border-').replace(' dark:', ' dark:border-')}` 
-                                  : 'text-slate-800 dark:text-slate-200'
-                              }`}
-                              disabled={isDisabled}
-                            >
-                              <span className="text-base">{config.emoji}</span>
-                              <span className={`${viewFormat === format ? config.color : 'text-slate-800 dark:text-slate-200'} tracking-tight`}>{format.charAt(0).toUpperCase() + format.slice(1)}</span>
-                            </button>
-                          );
-                          });
-                        })()}
-                      </div>
-                    )}
-                  </div>
-                )}
+                {/* View dropdown moved into Primary output toolbar */}
                 {/* Removed textual Exit button in fullscreen; use icon-based toggle only */}
               </div>
             </div>
@@ -6943,8 +6641,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                   </Tooltip>
                 </div>
               )}
-              {/* Right-side rail for Output (visible for all views when no errors/special states) */}
-              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && !(isParserPage || isTransformPage || isMinifierPage) && (
+              {/* Right-side rail for Output (visible only on Beautifier; other pages use the output toolbar) */}
+              {!validationError && !outputError && !aiError && !successMessage && !isStructureAnalysisMode && isBeautifierPage && (
                 <div className={`right-rail absolute top-2 right-0 w-[42px] flex flex-col gap-1.5 pt-2 pl-2 pr-2 items-center bg-transparent dark:bg-transparent z-20 border-l border-slate-200 dark:border-slate-600 rounded-md transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                   {isBeautifierPage ? (
                     <>

@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import './JsonToolbar.css';
 
+// Local view format type used for the View dropdown
+type ViewFormat = 'code' | 'form' | 'text' | 'tree' | 'table' | 'view' | 'toon';
+
 interface JsonToolbarProps {
   onFormat: (indentSize: number) => void;
   onMinify: () => void;
@@ -65,6 +68,11 @@ interface JsonToolbarProps {
   outputLabel?: string; // Label to display before Search icon (e.g., "JSONPath Output")
   uploadLabel?: string; // Label for Upload button (e.g., "Upload Data") - when set, renders as full button instead of icon-only
   sampleLabel?: string; // Label for Sample button (e.g., "Sample") - when set, renders as full button instead of icon-only
+  // View dropdown props (Primary Output toolbar)
+  onChangeView?: (format: ViewFormat) => void;
+  currentViewFormat?: ViewFormat;
+  enableView?: boolean;
+  viewPlacement?: 'primary' | 'secondary';
 }
 
 export const JsonToolbar: React.FC<JsonToolbarProps> = ({
@@ -129,11 +137,17 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   outputLabel,
   uploadLabel,
   sampleLabel,
+  // View dropdown controls
+  onChangeView,
+  currentViewFormat,
+  enableView = true,
+  viewPlacement = 'secondary',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [sampleDropdownOpen, setSampleDropdownOpen] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [viewDropdownOpen, setViewDropdownOpen] = useState(false);
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -141,13 +155,14 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
       setFormatDropdownOpen(false);
       setSortDropdownOpen(false);
       setSampleDropdownOpen(false);
+      setViewDropdownOpen(false);
     };
 
     if (formatDropdownOpen || sortDropdownOpen || sampleDropdownOpen) {
       document.addEventListener('click', handleClickOutside);
       return () => document.removeEventListener('click', handleClickOutside);
     }
-  }, [formatDropdownOpen, sortDropdownOpen, sampleDropdownOpen]);
+  }, [formatDropdownOpen, sortDropdownOpen, sampleDropdownOpen, viewDropdownOpen]);
 
   // Sample templates
   const sampleTemplates = [
@@ -160,7 +175,8 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
 
   const containerClass = `json-toolbar-container ${embedded ? 'embedded' : ''} ${theme === 'dark' ? 'theme-dark' : ''}`;
   const isEmpty = !!inputEmpty;
-  const hasOutputActions = !!(onToggleEditLock || onCopyOutputToInput);
+  // Only treat Lock Output as an output action; Copy Output→Input icon removed
+  const hasOutputActions = !!(onToggleEditLock);
   return (
     <div className={containerClass}>
       {/* PRIMARY RIBBON: Format & Edit */}
@@ -368,17 +384,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
                 <span className="icon"><i className={`fa-solid ${isLocked ? 'fa-pen-to-square' : 'fa-lock'}`} aria-hidden="true"></i></span>
               </button>
             )}
-            {onCopyOutputToInput && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={onCopyOutputToInput}
-                disabled={disabled || isEmpty}
-                aria-label="Copy output to input"
-                title="Copy output to input"
-              >
-                <span className="icon"><i className="fa-solid fa-arrow-left-long" aria-hidden="true"></i></span>
-              </button>
-            )}
+            {/* Copy Output→Input icon removed */}
           </div>
         )}
         {hasOutputActions && <div className="toolbar-separator" />}
@@ -528,6 +534,35 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             >
               <span className="icon">⛶</span>
             </button>
+          </div>
+        )}
+
+        {/* Push View dropdown to extreme right */}
+        <div className="toolbar-flex-spacer" />
+        {viewPlacement === 'primary' && onChangeView && (
+          <div className="toolbar-group view-format-group">
+            <div className="toolbar-button-group">
+              <button
+                className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
+                onClick={(e) => { e.stopPropagation(); setViewDropdownOpen(!viewDropdownOpen); }}
+                disabled={disabled || isEmpty || enableView === false}
+                aria-label="Select View Format"
+                title="View"
+              >
+                <span className="icon">👁️</span>
+                <span className="label">{(currentViewFormat || 'code').charAt(0).toUpperCase() + (currentViewFormat || 'code').slice(1)}</span>
+                <span className="dropdown-arrow">▼</span>
+              </button>
+              {viewDropdownOpen && (
+                <div className="dropdown-menu">
+                  {(['code','form','text','tree','table','view','toon'] as ViewFormat[]).map((format) => (
+                    <button key={format} onClick={() => { onChangeView(format); setViewDropdownOpen(false); }}>
+                      {format.charAt(0).toUpperCase() + format.slice(1)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -818,29 +853,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
           </div>
         )}
 
-        {(_onPrint && printPlacement === 'secondary') ? <div className="toolbar-separator" /> : null}
-
-        {/* Push view group to far right on secondary ribbon */}
-        {(_onPrint && printPlacement === 'secondary') && (
-          <div className="toolbar-flex-spacer" />
-        )}
-
-        {(_onPrint && printPlacement === 'secondary') && (
-          <div className="toolbar-group view-group">
-            {/* Print */}
-            {_onPrint && printPlacement === 'secondary' && (
-              <button
-                className={`toolbar-btn icon-only ${variant === 'compact' ? 'compact' : ''}`}
-                onClick={_onPrint}
-                disabled={disabled || isEmpty}
-                aria-label="Print"
-                title="Print"
-              >
-                <span className="icon"><i className="fa-solid fa-print" aria-hidden="true"></i></span>
-              </button>
-            )}
-          </div>
-        )}
+        {/* Print button removed from secondary ribbon (right of Fullscreen) */}
       </div>
 
       {/* Keyboard Shortcuts Modal */}
