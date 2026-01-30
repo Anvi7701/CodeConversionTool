@@ -4924,7 +4924,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
 
         {/* Editor Area */}
         <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage) ? 'gap-3' : 'gap-6'} min-h-[600px]`}>
-          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
             {(isParserPage || isTransformPage || isMinifierPage) && (
               <div className="p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600">
@@ -6359,7 +6359,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Parser/Transform/Minifier Output primary/secondary ribbons above content to mirror Input placement */}
             {(isParserPage || isTransformPage || isMinifierPage) && (
               <div className="p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full">
