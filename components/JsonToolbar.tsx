@@ -144,6 +144,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   viewPlacement = 'secondary',
 }) => {
   const [formatDropdownOpen, setFormatDropdownOpen] = useState(false);
+  const [formatMoreOpen, setFormatMoreOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const [sampleDropdownOpen, setSampleDropdownOpen] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
@@ -153,6 +154,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
   React.useEffect(() => {
     const handleClickOutside = () => {
       setFormatDropdownOpen(false);
+      setFormatMoreOpen(false);
       setSortDropdownOpen(false);
       setSampleDropdownOpen(false);
       setViewDropdownOpen(false);
@@ -249,7 +251,7 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
             {/* Beautify with Dropdown */}
             <div className="toolbar-button-group">
               <button
-                className={`toolbar-btn primary ${variant === 'compact' ? 'compact' : ''}`}
+                className={`toolbar-btn primary minify-btn ${variant === 'compact' ? 'compact' : ''}`}
                 onClick={() => onFormat(2)}
                 disabled={disabled || inputEmpty}
                 aria-label="Beautify JSON (Ctrl+B)"
@@ -270,24 +272,47 @@ export const JsonToolbar: React.FC<JsonToolbarProps> = ({
               </button>
               {formatDropdownOpen && (
                 <div className="dropdown-menu">
-                  <button onClick={() => { onFormat(1); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(1); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     1 space
                   </button>
-                  <button onClick={() => { onFormat(2); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(2); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     <span className="checkmark">✓</span> 2 spaces
                   </button>
-                  <button onClick={() => { onFormat(3); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(3); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     3 spaces
                   </button>
-                  <button onClick={() => { onFormat(4); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(4); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     4 spaces
                   </button>
-                  <button onClick={() => { onFormat(5); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(5); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     5 spaces
                   </button>
-                  <button onClick={() => { onFormat(0); setFormatDropdownOpen(false); }}>
+                  <button onClick={() => { onFormat(0); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
                     Tabs
                   </button>
+                  <div className="dropdown-divider" />
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setFormatMoreOpen(!formatMoreOpen); }}
+                    className="more-toggle"
+                  >
+                    More... {formatMoreOpen ? '▲' : '▼'}
+                  </button>
+                  {formatMoreOpen && (
+                    <div className="more-options">
+                      <button onClick={() => { onFormat(6); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
+                        6 spaces
+                      </button>
+                      <button onClick={() => { onFormat(7); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
+                        7 spaces
+                      </button>
+                      <button onClick={() => { onFormat(8); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
+                        8 spaces
+                      </button>
+                      <button onClick={() => { onFormat(9); setFormatDropdownOpen(false); setFormatMoreOpen(false); }}>
+                        9 spaces
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

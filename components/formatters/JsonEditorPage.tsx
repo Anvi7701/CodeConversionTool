@@ -62,7 +62,7 @@ export const JsonEditorPage: React.FC = () => {
       {/* Restore toolbar layout with outside-gutter rails and purple theme */}
       <OnlineFormatterWithToolbar
         initialLanguage="json"
-        showLeftInputActions={true}
+        showLeftInputActions={false}
         inlineStructureAnalysisIcon={false}
         inlineSortValidateIcons={false}
         showMinifyNextToBeautify={false}

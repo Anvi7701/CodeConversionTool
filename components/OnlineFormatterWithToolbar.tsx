@@ -649,7 +649,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
               setViewFormat('code');
             } else if (!isDedicatedConversionPage && !isConversionOutput) {
               const formatted = JSON.stringify(res.value, null, 2);
-              setOutputCode(formatted);
+              // Only update output if Lock Output is not enabled
+              if (!outputLocked) {
+                setOutputCode(formatted);
+              }
               // Preserve the current view format (e.g., TOON on TOON page)
               // Default behavior: switch to 'view' for beautifier-like pages
               // Exception: on JSON Editor page, keep 'code' as the default view
@@ -4170,7 +4173,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                             if (isActionDisabled || !inputCode.trim()) return;
                             handleFormatInputJson();
                           }}
-                          className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`}
+                          className="btn btn-blue-ice"
                           title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                         >
                           <i className="fa-solid fa-align-left" aria-hidden="true"></i>
@@ -4207,14 +4210,14 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                     )}
 
                     {showMinifyNextToBeautify && !hideFormatButtons && !isMinifierPage && (
-                      <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-azure" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
+                      <button onClick={() => { if (isActionDisabled || !inputCode.trim()) return; if (!isMinifierPage) { navigate('/json-minifier', { state: { inputJson: inputCode } }); return; } handleCompact(); }} className="btn btn-blue-ice" title={isBeautifierPage ? 'JSON Minifier' : 'Minify JSON (remove all whitespace)'}>
                         <i className="fa-solid fa-compress" aria-hidden="true"></i>
                         <span>Minify</span>
                       </button>
                     )}
 
                     {isBeautifierPage && activeLanguage === 'json' && !hideFormatButtons && (
-                      <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python-pretty', { state: { inputJson: inputCode } }); }} className="btn btn-blue-azure" title="Generate Python pretty print script">
+                      <button onClick={() => { if (!inputCode.trim()) return; navigate('/json-to-python-pretty', { state: { inputJson: inputCode } }); }} className="btn btn-blue-ice" title="Generate Python pretty print script">
                         <i className="fa-brands fa-python" aria-hidden="true"></i>
                         <span>Pretty print</span>
                       </button>
@@ -4233,7 +4236,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                           if (isActionDisabled || !inputCode.trim()) return;
                           handleFormatInputJson();
                         }}
-                        className={`btn ${isBeautifierPage ? 'btn-blue-azure' : 'btn-blue-azure'}`}
+                        className="btn btn-blue-ice"
                         title={isBeautifierPage ? 'JSON Formatter' : 'Format Input JSON (Ctrl+L)'}
                       >
                         <i className="fa-solid fa-align-left" aria-hidden="true"></i>
@@ -4943,10 +4946,10 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
         )}
 
         {/* Editor Area */}
-        <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'gap-3' : 'gap-6'} min-h-[600px]`}>
-          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
+        <div ref={editorAreaRef} className={`w-full flex flex-col lg:flex-row ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) ? 'gap-3' : 'gap-6'} min-h-[600px]`}>
+          <div className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-hidden p-6 gap-3 relative z-10 h-[600px]'}`}>
             {/* Parser/Transform/Minifier: primary + secondary toolbars like Compare, inside same dark container */}
-            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
+            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) && (
               <div className={`${isParserPage ? 'w-full p-0 bg-transparent border-0' : 'w-full p-2 border-b bg-slate-100 border-slate-300 dark:bg-slate-700/40 dark:border-slate-600'}`}>
                 <JsonToolbar
                   onFormat={handleFormat}
@@ -5017,9 +5020,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {false && isTransformPage}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2 relative z-50 w-full">
-                {!(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
+                {!(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) && (<h2 className="text-lg font-semibold">Input</h2>)}
                 {/* Icon Toolbar - positioned next to "Input" heading */}
-                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'hidden' : ''}`}>
+                <div className={`flex items-center gap-1 ml-4 opacity-100 pointer-events-auto relative z-50 bg-transparent dark:bg-transparent px-2 py-1 rounded-md border border-transparent ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) ? 'hidden' : ''}`}>
                   {/* Sample Data (TOON-friendly) � placed to the left of Collapse (TOON page only) */}
                   {isJsonLanguage && viewFormat === 'toon' && (
                     <Tooltip content="Insert sample JSON (TOON-friendly)">
@@ -6014,7 +6017,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                 {/* Toolbar always rendered; hidden when left rail is enabled */}
                 {/* Right-aligned toolbar: Validate and Enter Fullscreen */}
                 <div className="flex items-center gap-1 ml-auto">
-                  {isJsonLanguage && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && !(validationError && errorLines.length > 0) && (
+                  {isJsonLanguage && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) && !(validationError && errorLines.length > 0) && (
                     <Tooltip content="Validate Input JSON">
                         <span
                           role="button"
@@ -6028,7 +6031,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
                         </span>
                     </Tooltip>
                   )}
-                  {!isFullscreen && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
+                  {!isFullscreen && !(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) && (
                     <Tooltip content="Enter fullscreen">
                         <span
                           role="button"
@@ -6127,7 +6130,7 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
 
             {/* Dedicated left rail column and reserved content area */}
-            <div className={`${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
+            <div className={`${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) ? 'parser-input-toolbar flex-grow min-h-0 flex flex-row relative bg-transparent border-0 rounded-none' : 'flex-grow min-h-0 flex flex-row relative border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900'}`}>
                 {showLeftInputActions && !(isParserPage || isTransformPage || isMinifierPage) && (
                   <div className={`left-rail flex-shrink-0 w-[42px] flex flex-col gap-1.5 pt-2 pb-2 items-center bg-transparent dark:bg-transparent z-20 border-r border-slate-200 dark:border-slate-600 mr-2 transition-opacity ${showViewDropdown ? 'opacity-40 pointer-events-none' : ''}`}>
                     {isBeautifierPage ? (
@@ -6378,9 +6381,9 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             )}
           </div>
 
-          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
+          <div ref={outputContainerRef} className={`w-full lg:w-1/2 flex flex-col ${(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) ? 'bg-transparent overflow-hidden h-[600px] p-0' : 'bg-light-card dark:bg-dark-card rounded-lg shadow-lg border border-slate-300 dark:border-slate-600 overflow-visible p-6 gap-3'} ${isOutputFullscreen ? 'h-screen' : 'h-[600px]'}`}>
             {/* Parser/Transform/Minifier/Formatter Output primary/secondary ribbons above content to mirror Input placement */}
-            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage) && (
+            {(isParserPage || isTransformPage || isMinifierPage || isFormatterPage || isEditorPage) && (
               <div className={`${isParserPage ? 'w-full p-0 bg-transparent border-0' : 'p-2 border-b bg-slate-100 border-slate-300 dark:border-slate-600 dark:bg-slate-700/40 w-full'}`}>
                 <JsonToolbar
                   onFormat={(indent) => handleFormat(indent)}
@@ -6463,8 +6466,8 @@ export const OnlineFormatterWithToolbar: React.FC<OnlineFormatterWithToolbarProp
             {/* Output heading with View selector and Exit fullscreen button */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                {/* Remove Output label on Formatter page */}
-                {!isParserPage && !isTransformPage && !isMinifierPage && !isFormatterPage && (
+                {/* Remove Output label on Formatter/Editor page */}
+                {!isParserPage && !isTransformPage && !isMinifierPage && !isFormatterPage && !isEditorPage && (
                   <h2 className="text-lg font-semibold">{isMinifierPage ? 'Minify JSON' : (outputTitle ?? 'Output')}</h2>
                 )}
                 {/* Duplicate icons above the output toolbar removed to avoid redundancy */}
